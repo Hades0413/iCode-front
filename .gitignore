@@ -1,0 +1,92 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+.pnp
+.pnp.js
+.pnp.cjs
+
+# =========================
+# Build output
+# =========================
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+
+# =========================
+# Variables de entorno
+# =========================
+# .env.example es la única plantilla versionada — el resto son valores
+# reales de cada máquina/ambiente, nunca se suben.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# =========================
+# Testing & coverage
+# =========================
+/coverage
+/.nyc_output
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================
+# Archivos temporales sueltos
+# (convención usada en este repo para scripts de verificación
+# descartables: *.tmp.ts, *.tmp.tsx)
+# =========================
+*.tmp.ts
+*.tmp.tsx
+.temp
+.tmp
+.cache
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =========================
+# IDEs y editores
+# =========================
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# VSCode (se guarda la config compartida, se ignora el estado personal)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# =========================
+# Claude Code local settings
+# =========================
+.claude/settings.local.json*
