@@ -53,6 +53,14 @@ lerna-debug.log*
 .cache
 
 # =========================
+# Certificados TLS de docker/ssl/ ("make ssl-generate" los recrea)
+# =========================
+docker/ssl/*.pem
+docker/ssl/*.key
+docker/ssl/*.crt
+!docker/ssl/README.md
+
+# =========================
 # OS files
 # =========================
 .DS_Store

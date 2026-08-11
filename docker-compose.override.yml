@@ -1,0 +1,17 @@
+# DEV. Compose lo suma solo (sin -f) sobre docker-compose.yml — es el
+# comportamiento estándar de Docker Compose para este nombre de archivo.
+# Para producción se ignora del todo: ver docker-compose.prod.yml.
+services:
+  web:
+    build:
+      target: dev
+    env_file:
+      - .env.dev
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - /app/node_modules
+    ports:
+      - '5173:5173'

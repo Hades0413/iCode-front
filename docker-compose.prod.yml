@@ -1,0 +1,20 @@
+# PRODUCCIÓN. Se aplica EXPLÍCITAMENTE, encadenado con docker-compose.yml
+# (make docker-up-prod ya lo hace) — a diferencia de override.yml, esto
+# nunca se suma solo. La imagen "runtime" YA ES nginx (TLS + estáticos):
+# no hace falta un segundo contenedor de reverse proxy como en iCode-back,
+# porque no queda ningún proceso Node al que hacerle proxy en producción.
+#
+# VITE_API_URL viaja como build arg (no como env_file): Vite la hornea en
+# el bundle en build-time, así que cambiarla implica reconstruir la
+# imagen, no solo reiniciar el contenedor (ver docker/Dockerfile).
+services:
+  web:
+    build:
+      target: runtime
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./docker/ssl:/etc/nginx/ssl:ro

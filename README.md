@@ -40,8 +40,43 @@ pnpm dev
 ```bash
 pnpm build      # typecheck + build de producción
 pnpm lint
+pnpm format     # Prettier sobre src/
 pnpm preview    # sirve el build de producción localmente
 ```
+
+O con `make` (`make help` lista todos los comandos):
+
+```bash
+make install
+make dev
+make build
+```
+
+## Docker
+
+Mismo criterio que [iCode-back](../iCode-back#docker): un solo
+`docker/Dockerfile` multi-stage, `docker-compose.override.yml` se suma
+solo en dev, producción encadena `docker-compose.prod.yml` a mano. La
+diferencia principal es que este proyecto no tiene base de datos ni
+proceso propio en producción — el `target: runtime` del Dockerfile ya es
+nginx sirviendo el build estático + TLS, sin un segundo contenedor de
+reverse proxy delante.
+
+```bash
+make env-setup     # crea .env.dev y .env.prod desde .env.example
+
+# desarrollo: Vite con hot-reload dentro del contenedor (bind mount, sin nginx/SSL)
+make docker-up
+make docker-logs
+
+# producción: compila con VITE_API_URL de .env.prod y sirve con nginx (TLS + estáticos)
+make docker-up-prod
+```
+
+Ojo con `VITE_API_URL` en producción: Vite la hornea en el bundle en
+**build time**, no en runtime — cambiarla en `.env.prod` no tiene efecto
+hasta correr `make docker-build-prod` de nuevo (ver
+`docker-compose.prod.yml` y `.env.example`).
 
 ## Autenticación
 
@@ -66,3 +101,12 @@ ocultando algo en el cliente).
 Usuarios de prueba: los mismos del seed de iCode-back (`admin` /
 `Passw0rd1!`, entre otros — ver
 [el README de iCode-back](../iCode-back/README.md#autenticación)).
+
+## Contributing
+
+Flujo de ramas, PRs y convención de commits en [CONTRIBUTING.md](CONTRIBUTING.md)
+— es el mismo para este repo y para iCode-back.
+
+## License
+
+[MIT](LICENSE)
