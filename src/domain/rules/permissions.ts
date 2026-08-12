@@ -5,17 +5,30 @@ import type { AuthenticatedUser } from '../entities/authenticated-user.entity';
  * del negocio, no del transporte: lo usan igual el backend simulado (para
  * contestar 403) y la UI (para no ofrecer una acción que va a fallar).
  *
- * TODO(back): sincronizar con el seed real de iCode-back cuando esté
- * disponible — los códigos son plausibles pero inventados.
+ * Sincronizado con el seed real de iCode-back
+ * (PUENTE18_FRONTEND_INTEGRATION.md, sección 1) — el back usa singular
+ * para TODO el catálogo (`PATIENT_READ`, no `PATIENTS_READ`), convención
+ * ya existente ahí desde antes de este dominio. Los nombres de las
+ * constantes de acá (`patientsRead`, en plural) quedaron como estaban
+ * para no tocar el resto del código que las usa — lo único que importa
+ * es que el STRING de la derecha matchee al backend real.
  */
 export const PERMISSIONS = {
   /* --- el especialista de pediatría --- */
-  /** Ver la cohorte de pacientes en tutela. */
-  patientsRead: 'PATIENTS_READ',
+  /**
+   * Ver la cohorte de pacientes en tutela (el tablero completo, no uno
+   * puntual) — permiso distinto de `patientsRead` en el back real: ese
+   * es del dominio de consentimiento (leer TU propio paciente), y si el
+   * tablero también lo aceptara, cualquier tutor vería la cohorte entera
+   * de otros. Ver PUENTE18_FRONTEND_INTEGRATION.md, sección 12.
+   */
+  patientsCohortRead: 'PATIENT_COHORT_READ',
+  /** Ver el propio paciente puntual (dominio de consentimiento). */
+  patientsRead: 'PATIENT_READ',
   /** Editar la ficha, generar y aprobar el resumen clínico. */
-  patientsWrite: 'PATIENTS_WRITE',
+  patientsWrite: 'PATIENT_WRITE',
   /** Ver el panel de seguimiento post-transición. */
-  reportsRead: 'REPORTS_READ',
+  reportsRead: 'REPORT_READ',
   /**
    * Reclamarle al área de Referencias que no hizo lo suyo. Es lo único que
    * el médico puede hacer sobre ese tramo: él no habla con la posta.
@@ -24,7 +37,7 @@ export const PERMISSIONS = {
 
   /* --- el área de Referencias y Contrarreferencias --- */
   /** Ver las bandejas del área (por avisar y por contrarreferir). */
-  referralsRead: 'REFERRALS_READ',
+  referralsRead: 'REFERRAL_READ',
   /** Mandarle el aviso a la posta, 2 meses antes de los 18. */
   healthPostNotify: 'HEALTH_POST_NOTIFY',
   /** Subir la carta de contrarreferencia y enviarla a la posta. */

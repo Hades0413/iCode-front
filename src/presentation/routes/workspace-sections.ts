@@ -38,7 +38,7 @@ export const WORKSPACE_SECTIONS: readonly WorkspaceSection[] = [
     key: 'pacientes',
     label: 'Pacientes',
     to: '/pacientes',
-    permission: PERMISSIONS.patientsRead,
+    permission: PERMISSIONS.patientsCohortRead,
     workspace: 'clinic',
   },
   {

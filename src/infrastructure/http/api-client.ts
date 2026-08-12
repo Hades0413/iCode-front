@@ -1,12 +1,16 @@
 import axios from 'axios';
 import { env } from '../config/env';
-import { tokenStorage } from '../storage/token-storage';
 
 /** Evento propio para "la sesión ya no sirve" — AuthProvider lo escucha para limpiar el estado de React sin acoplar este archivo a React. */
 export const SESSION_EXPIRED_EVENT = 'icode:session-expired';
 
 export const apiClient = axios.create({
   baseURL: env.apiUrl,
+  // El token viaja en una cookie httpOnly que pone iCode-back (ver
+  // SESSION_COOKIE_NAME) — sin esto, el navegador no la manda en un
+  // request cross-origin (el front corre en otro puerto que la API) ni
+  // guarda la que llega en la respuesta de /auth/login.
+  withCredentials: true,
 });
 
 /**
@@ -49,25 +53,14 @@ if (import.meta.env.VITE_USE_MOCK_DATA === '1') {
     (await pendingMockAdapter)(config);
 }
 
-// Igual que SessionAuthGuard del lado del servidor: aquí solo AGREGAMOS el
-// header, la validación real siempre pasa en iCode-back.
-apiClient.interceptors.request.use((config) => {
-  const token = tokenStorage.getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
 // Un 401 aquí significa lo mismo que en el backend: sesión revocada,
-// expirada, o el usuario fue desactivado (ver SessionAuthGuard) — no hay
-// forma de "refrescar" un token opaco, así que la única salida es
-// limpiarlo y avisar a la UI.
+// expirada, o el usuario fue desactivado (ver SessionAuthGuard). No hay
+// nada que "limpiar" del lado del cliente (el token vive en una cookie
+// httpOnly que el propio backend vence/borra) — solo avisarle a la UI.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      tokenStorage.clearToken();
       window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
     }
     return Promise.reject(error);

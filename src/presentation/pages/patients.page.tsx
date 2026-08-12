@@ -180,7 +180,7 @@ export function PatientsPage() {
           <LoadErrorState
             status={error.status}
             message={error.message}
-            permission={PERMISSIONS.patientsRead}
+            permission={PERMISSIONS.patientsCohortRead}
             onRetry={reload}
           />
         ) : isLoading ? (

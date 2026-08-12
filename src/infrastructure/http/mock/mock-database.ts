@@ -54,6 +54,7 @@ const USERS: readonly MockUserRow[] = [
     isActive: true,
     // El de la demo: entra a las dos mitades del hospital.
     permissions: [
+      PERMISSIONS.patientsCohortRead,
       PERMISSIONS.patientsRead,
       PERMISSIONS.patientsWrite,
       PERMISSIONS.reportsRead,
@@ -75,6 +76,7 @@ const USERS: readonly MockUserRow[] = [
     // reclamarle al área. No habla con la posta — eso no es suyo. Solo ve
     // pacientes de SU especialidad: el recorte lo hace el servidor.
     permissions: [
+      PERMISSIONS.patientsCohortRead,
       PERMISSIONS.patientsRead,
       PERMISSIONS.patientsWrite,
       PERMISSIONS.reportsRead,
@@ -110,7 +112,11 @@ const USERS: readonly MockUserRow[] = [
     // Ve el tablero pero no puede firmar ni reclamarle al área: sirve para
     // comprobar que las acciones no aparecen sin permiso (y que el servidor
     // igual las rechazaría con 403).
-    permissions: [PERMISSIONS.patientsRead, PERMISSIONS.reportsRead],
+    permissions: [
+      PERMISSIONS.patientsCohortRead,
+      PERMISSIONS.patientsRead,
+      PERMISSIONS.reportsRead,
+    ],
   },
   {
     id: 7,
@@ -172,8 +178,13 @@ const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
  * viven en la base: si las guardáramos en una variable de módulo, cada
  * refresh o hot-reload te desloguearía y el front parecería roto por algo
  * que nunca pasaría contra iCode-back. Esta clave es la "tabla sessions"
- * del servidor falso, no estado de la app — el token del usuario lo sigue
- * guardando infrastructure/storage/token-storage.ts, aparte.
+ * del servidor falso, no estado de la app.
+ *
+ * Contra el backend real el token nunca lo guarda el front (viaja en una
+ * cookie httpOnly que pone iCode-back, ver `SESSION_COOKIE_NAME`) — este
+ * mock es una simulación en el navegador sin un viaje de red real
+ * de por medio, así que no hay cookie que setear: sigue siendo
+ * localStorage acá adentro, nomás para esta simulación.
  */
 function readSessions(): Record<string, MockSession> {
   try {
