@@ -18,11 +18,15 @@ dist-ssr/
 # Variables de entorno
 # =========================
 # .env.example es la única plantilla versionada — el resto son valores
-# reales de cada máquina/ambiente, nunca se suben.
+# reales de cada máquina/ambiente (algunos con contraseñas de demo, ver
+# .env.example), nunca se suben.
 .env
 .env.*
 !.env.example
 !.env.*.example
+# Convención de Vite: cualquier archivo "*.local" es siempre personal de
+# la máquina, incluso si no matchea los patrones de arriba.
+*.local
 
 # =========================
 # Testing & coverage
@@ -48,9 +52,15 @@ lerna-debug.log*
 # =========================
 *.tmp.ts
 *.tmp.tsx
+*.tmp
+*.bak
+*.orig
+*.rej
 .temp
 .tmp
 .cache
+.eslintcache
+.pnpm-store/
 
 # =========================
 # Certificados TLS de docker/ssl/ ("make ssl-generate" los recrea)
@@ -68,13 +78,18 @@ docker/ssl/*.crt
 ._*
 .Spotlight-V100
 .Trashes
+.AppleDouble
+.LSOverride
 ehthumbs.db
 Thumbs.db
+desktop.ini
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
+.directory
 
 # =========================
 # IDEs y editores
@@ -86,6 +101,8 @@ Thumbs.db
 .settings/
 *.sublime-workspace
 *.sublime-project
+# Extensión "Local History" de VSCode y similares.
+.history/
 
 # VSCode (se guarda la config compartida, se ignora el estado personal)
 .vscode/*

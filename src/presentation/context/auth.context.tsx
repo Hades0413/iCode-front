@@ -1,27 +1,26 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { AuthService } from '../../application/services/auth.service';
-import { authRepository } from '../../infrastructure/repositories/auth.repository';
-import { tokenStorage } from '../../infrastructure/storage/token-storage';
+import { authService } from '../../composition-root';
 import { SESSION_EXPIRED_EVENT } from '../../infrastructure/http/api-client';
 import type { AuthenticatedUser } from '../../domain/entities/authenticated-user.entity';
 import { AuthContext } from './auth-context';
 
 /**
- * Composition root: acá es donde se "inyectan" las implementaciones
- * concretas (HttpAuthRepository, LocalStorageTokenStorage) en el
- * servicio de application — el único lugar de todo el front que conoce
- * ambos lados. Un DI container sería sobre-diseño para esta escala.
+ * Estado de sesión para React. El servicio ya viene armado desde el
+ * composition root (src/composition-root.ts): este archivo solo se ocupa
+ * de reflejarlo en el árbol de componentes.
+ *
+ * Aquí no hay nada de "modo prototipo": al arrancar solo se pregunta si hay
+ * una sesión guardada. Que el formulario de ingreso venga con los datos
+ * puestos y no exija nada es asunto de la pantalla de login, no de la
+ * sesión — así este archivo se comporta igual con el backend real.
  */
-const authService = new AuthService(authRepository, tokenStorage);
-
-export function AuthProvider({
-  children,
-}: Readonly<{ children: ReactNode }>) {
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+
     authService.getCurrentUser().then((current) => {
       if (!cancelled) {
         setUser(current);
@@ -30,7 +29,7 @@ export function AuthProvider({
     });
 
     // Si un 401 llega en cualquier request (sesión revocada/expirada/
-    // usuario desactivado del lado de iCode-back), reflejarlo acá sin
+    // usuario desactivado del lado de iCode-back), reflejarlo aquí sin
     // esperar a la próxima navegación.
     const handleSessionExpired = () => setUser(null);
     window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
@@ -41,9 +40,13 @@ export function AuthProvider({
     };
   }, []);
 
+  // Devuelve el perfil además de guardarlo: quien hace login necesita saber
+  // a qué pantalla mandar a este usuario, y esperar al próximo render del
+  // contexto para leerlo sería adivinar cuándo llegó.
   const login = useCallback(async (userName: string, password: string) => {
     const profile = await authService.login(userName, password);
     setUser(profile);
+    return profile;
   }, []);
 
   const logout = useCallback(async () => {

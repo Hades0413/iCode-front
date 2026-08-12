@@ -1,0 +1,1628 @@
+/* ============================================================
+   ESCRITORIO CLÍNICO — lo propio de la vista del especialista.
+   Los tokens, resets y primitivas están en design-system.css.
+
+   Dos paneles flotando sobre el fondo: el riel (menú) y la tarjeta
+   de contenido, los dos con esquinas redondeadas y sombra. Nada va
+   pegado al borde de la ventana y el contenido queda centrado.
+   ============================================================ */
+
+.p18 .clinic {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 100vh;
+  /* Sin max-width a propósito: es un tablero de datos, el ancho de la
+     ventana se usa entero. Lo que NO se estira es la prosa — cada texto
+     largo tiene su propio tope (ver .wrapmax y .sheet-b). */
+  padding: 18px;
+}
+
+/* ============================================================
+   RIEL — panel flotante, degradado teal → índigo (el puente)
+   ============================================================ */
+.p18 .rail {
+  width: 262px;
+  flex: none;
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 16px 16px;
+  border-radius: 22px;
+  color: #fff;
+  background: linear-gradient(
+    168deg,
+    var(--rail-2) 0%,
+    var(--rail) 38%,
+    var(--rail-mid) 72%,
+    var(--rail-3) 100%
+  );
+  box-shadow: var(--sh-3);
+  overflow-y: auto;
+}
+.p18[data-role='adu'] .rail {
+  background: linear-gradient(
+    168deg,
+    var(--rail-adu-2) 0%,
+    var(--rail-adu) 60%
+  );
+}
+
+/* ---------- marca ---------- */
+.p18 .rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 2px 4px 0;
+}
+.p18 .rail-brand .glyph {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+.p18 .rail-brand .bn2 {
+  font-size: var(--t-body-lg);
+  font-weight: 660;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+.p18 .rail-brand .sub {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  margin-top: 3px;
+}
+
+/* ---------- la campanita del médico ---------- */
+.p18 .noti {
+  position: relative;
+  margin-left: auto;
+  flex: none;
+}
+.p18 .noti-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--sh-1);
+  transition:
+    color 0.14s var(--ease),
+    border-color 0.14s var(--ease),
+    box-shadow 0.14s var(--ease);
+}
+.p18 .noti-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+  box-shadow: var(--sh-2);
+}
+.p18 .noti-count {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--badge-crit);
+  color: var(--badge-crit-ink);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--wash);
+}
+
+/* El panel: claro sobre el riel oscuro, uno por aviso, cada uno lleva a la
+   ficha donde se resuelve. */
+.p18 .noti-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 300px;
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 40;
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--sh-3);
+  animation: enter 0.16s var(--ease);
+}
+.p18 .noti-t {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+  padding: 4px 8px 8px;
+}
+.p18 .noti-empty {
+  padding: 4px 8px 8px;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.p18 .noti-item {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
+  border-radius: 10px;
+  text-align: left;
+  align-items: flex-start;
+  transition: background 0.14s var(--ease);
+}
+.p18 .noti-item:hover {
+  background: var(--wash);
+}
+.p18 .noti-mk {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+}
+.p18 .noti-mk.hot {
+  background: var(--crit-tint);
+  color: var(--crit);
+}
+.p18 .noti-x {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.p18 .noti-x b {
+  font-size: var(--t-meta);
+  font-weight: 640;
+  line-height: 1.25;
+}
+.p18 .noti-x span {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* ---------- segmentado: las dos mitades del trabajo ---------- */
+.p18 .rail-seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.16);
+}
+.p18 .rail-seg a {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: var(--t-small);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: 0.14s var(--ease);
+  white-space: nowrap;
+}
+.p18 .rail-seg a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.p18 .rail-seg a.on {
+  background: var(--paper);
+  color: var(--rail);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+/* ---------- grupos de navegación ---------- */
+.p18 .rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.p18 .rail-group-t {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  padding: 0 10px 7px;
+}
+.p18 .rn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 42px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  font-size: var(--t-meta);
+  color: rgba(255, 255, 255, 0.82);
+  transition: 0.14s var(--ease);
+  text-align: left;
+  width: 100%;
+  text-decoration: none;
+}
+.p18 .rn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.p18 .rn.on {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.p18 .rn svg {
+  flex: none;
+  opacity: 0.9;
+}
+.p18 .rn.on svg {
+  opacity: 1;
+}
+.p18 .rn > span:not(.rcount) {
+  min-width: 0;
+  line-height: 1.3;
+}
+
+/* ---------- badges de conteo ---------- */
+.p18 .rcount {
+  margin-left: auto;
+  flex: none;
+  min-width: 24px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.p18 .rcount.ok {
+  background: var(--badge-ok);
+  color: var(--badge-ok-ink);
+}
+.p18 .rcount.warn {
+  background: var(--badge-warn);
+  color: var(--badge-warn-ink);
+}
+.p18 .rcount.hot {
+  background: var(--badge-crit);
+  color: var(--badge-crit-ink);
+}
+
+/* ---------- quién está adentro ---------- */
+.p18 .rail-who {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.p18 .rail-avatar {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--rail);
+  font-size: var(--t-meta);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.p18 .rail-who .who-txt {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 3px;
+}
+.p18 .rail-who .nm {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.p18 .rail-who .rl {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.p18 .rail-out {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  transition: 0.14s var(--ease);
+}
+.p18 .rail-out:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.p18 .rail-out[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   CONTENIDO — tarjeta flotante y centrada
+   ============================================================ */
+.p18 .main {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+  border-radius: 22px;
+  box-shadow: var(--sh-2);
+  overflow: hidden;
+}
+.p18 .page-h {
+  padding: 30px 32px 26px;
+  background: linear-gradient(
+    150deg,
+    var(--acc-tint) 0%,
+    color-mix(in srgb, var(--acc-tint) 35%, var(--paper)) 45%,
+    var(--paper) 100%
+  );
+  border-bottom: 1px solid var(--line);
+}
+.p18 .page-t {
+  font-size: var(--t-page);
+  font-weight: 680;
+  letter-spacing: -0.026em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+.p18 .page-sub {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  color: var(--ink-2);
+  font-size: var(--t-meta);
+}
+.p18 .page-sub span {
+  padding: 0 12px;
+  border-left: 1px solid var(--line-2);
+}
+.p18 .page-sub span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.p18 .page-sub b {
+  font-weight: 660;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.p18 .page-sub .flag,
+.p18 .page-sub .flag b {
+  color: var(--crit);
+}
+.p18 .page-sub .dim {
+  color: var(--ink-3);
+}
+.p18 .page-body {
+  padding: 0 32px 34px;
+}
+
+/* ---------- la franja de arriba del contenido ---------- */
+.p18 .workarea {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.p18 .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* El volver global: deshace el último paso, o lleva al inicio del rol. */
+.p18 .topback {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 14px 0 10px;
+  border-radius: 19px;
+  font-size: var(--t-meta);
+  font-weight: 560;
+  color: var(--ink-2);
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--sh-1);
+  transition:
+    color 0.14s var(--ease),
+    border-color 0.14s var(--ease),
+    box-shadow 0.14s var(--ease);
+}
+.p18 .topback:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+  box-shadow: var(--sh-2);
+}
+.p18 .topback-i {
+  display: inline-flex;
+  transform: rotate(180deg);
+}
+.p18 .crumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+.p18 .crumb button {
+  transition: color 0.14s;
+}
+.p18 .crumb button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* ============================================================
+   LOS TRES NÚMEROS DEL TABLERO — arriba y clickeables
+   ============================================================
+   Cada tarjeta es un botón que filtra la lista por lo que cuenta;
+   la activa queda marcada para que el número de arriba y las filas
+   de abajo nunca digan cosas distintas. */
+.p18 .stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  padding: 26px 0 4px;
+}
+.p18 .stat {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  padding: 18px 20px 17px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  text-align: left;
+  overflow: hidden;
+  transition:
+    box-shadow 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+.p18 .stat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+.p18 .stat:active {
+  transform: translateY(0);
+  box-shadow: var(--sh-1);
+}
+.p18 .stat.on {
+  border-color: var(--ink);
+  box-shadow: var(--sh-2);
+}
+/* El filete de arriba dice de qué se trata el número sin leerlo. */
+.p18 .stat::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--line-2);
+}
+.p18 .stat[data-severity='ok']::after {
+  background: var(--ok);
+}
+.p18 .stat[data-severity='warn']::after {
+  background: var(--warn);
+}
+.p18 .stat[data-severity='crit']::after {
+  background: var(--crit);
+}
+.p18 .stat[data-severity='ok'] {
+  background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
+}
+.p18 .stat[data-severity='warn'] {
+  background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
+}
+.p18 .stat[data-severity='crit'] {
+  background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
+}
+
+.p18 .stat-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.p18 .stat-l {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1.25;
+}
+/* "Ver estos" aparece al pasar por encima: la tarjeta avisa que lleva a algún
+   lado sin gritarlo todo el tiempo. */
+.p18 .stat-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: 0.16s var(--ease);
+}
+.p18 .stat:hover .stat-go,
+.p18 .stat:focus-visible .stat-go,
+.p18 .stat.on .stat-go {
+  opacity: 1;
+  transform: none;
+}
+.p18 .stat.on .stat-go {
+  color: var(--ink);
+  font-weight: 560;
+}
+
+.p18 .stat-v {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: var(--t-kpi);
+  font-weight: 690;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.p18 .stat[data-severity='ok'] .stat-v {
+  color: var(--ok-ink);
+}
+.p18 .stat[data-severity='warn'] .stat-v {
+  color: var(--warn-ink);
+}
+.p18 .stat[data-severity='crit'] .stat-v {
+  color: var(--crit);
+}
+.p18 .stat-of {
+  font-size: var(--t-meta);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+.p18 .stat-m {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(16, 24, 22, 0.09);
+  overflow: hidden;
+}
+.p18 .stat-m > i {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: 3px;
+  background: var(--acc);
+  transition: width 0.9s var(--ease);
+}
+.p18 .stat-m > i[data-severity='ok'] {
+  background: var(--ok);
+}
+.p18 .stat-m > i[data-severity='warn'] {
+  background: var(--warn);
+}
+.p18 .stat-m > i[data-severity='crit'] {
+  background: var(--crit);
+}
+.p18 .stat-m > i[data-severity='neutral'] {
+  background: var(--line-2);
+}
+
+.p18 .stat-parts {
+  display: grid;
+  gap: 7px;
+}
+.p18 .stat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+}
+/* El punto de cada pedazo, del color de su barra. */
+.p18 .stat-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.p18 .stat-legend > span::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+.p18 .stat-legend > span[data-severity='crit']::before {
+  background: var(--crit);
+}
+.p18 .stat-legend > span[data-severity='warn']::before {
+  background: var(--warn);
+}
+.p18 .stat-legend > span[data-severity='ok']::before {
+  background: var(--ok);
+}
+.p18 .stat-legend b {
+  color: var(--ink);
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+.p18 .stat-hint {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* ---------- la barra que acota la lista ---------- */
+.p18 .filterbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+/* ============================================================
+   TARJETAS DE NÚMERO — el valor, su proporción y a dónde lleva
+   (las usa el panel de seguimiento, donde son el contenido)
+   ============================================================ */
+.p18 .kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(198px, 1fr));
+  gap: 14px;
+  padding: 26px 0 6px;
+}
+.p18 .kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 17px 18px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  text-align: left;
+  overflow: hidden;
+  transition:
+    box-shadow 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+/* El filete de color se ve SIEMPRE cuando el número importa: es lo que hace
+   que el tablero se lea de un golpe de vista y no parezca apagado. */
+.p18 .kpi::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--line-2);
+  opacity: 0;
+  transition: opacity 0.18s var(--ease);
+}
+.p18 .kpi[data-severity='ok']::after,
+.p18 .kpi[data-severity='warn']::after,
+.p18 .kpi[data-severity='crit']::after,
+.p18 .kpi.on::after,
+.p18 .kpi:hover::after {
+  opacity: 1;
+}
+.p18 .kpi[data-severity='ok']::after {
+  background: var(--ok);
+}
+.p18 .kpi[data-severity='warn']::after {
+  background: var(--warn);
+}
+.p18 .kpi[data-severity='crit']::after {
+  background: var(--crit);
+}
+.p18 .kpi.on::after {
+  background: var(--ink);
+}
+.p18 .kpi[data-severity='ok'].on::after {
+  background: var(--ok);
+}
+.p18 .kpi[data-severity='warn'].on::after {
+  background: var(--warn);
+}
+.p18 .kpi[data-severity='crit'].on::after {
+  background: var(--crit);
+}
+/* Fondo tintado según la severidad: color de verdad, no solo un filete. */
+.p18 .kpi[data-severity='ok'] {
+  background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
+}
+.p18 .kpi[data-severity='warn'] {
+  background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
+}
+.p18 .kpi[data-severity='crit'] {
+  background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
+}
+.p18 button.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+.p18 button.kpi:active {
+  transform: translateY(0);
+  box-shadow: var(--sh-1);
+}
+.p18 .kpi.on {
+  border-color: var(--ink);
+  box-shadow: var(--sh-2);
+}
+/* Sin onClick no se levanta ni se marca: no finge ser clickeable. */
+.p18 .kpi-static {
+  cursor: default;
+}
+.p18 .kpi-l {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  font-weight: 560;
+  line-height: 1.3;
+}
+.p18 .kpi-v {
+  font-size: var(--t-kpi);
+  font-weight: 690;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.p18 .kpi[data-severity='ok'] .kpi-v {
+  color: var(--ok-ink);
+}
+.p18 .kpi[data-severity='warn'] .kpi-v {
+  color: var(--warn-ink);
+}
+.p18 .kpi[data-severity='crit'] .kpi-v {
+  color: var(--crit);
+}
+/* La unidad, más chica que el número: "100 %" se lee como un porcentaje
+   sin que el símbolo compita con la cifra. */
+.p18 .kpi-suf {
+  font-size: 0.5em;
+  font-weight: 650;
+  margin-left: 3px;
+  letter-spacing: 0;
+}
+
+.p18 .kpi-m {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(16, 24, 22, 0.09);
+  overflow: hidden;
+  margin: 8px 0 3px;
+}
+.p18 .kpi-m > i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--acc);
+  width: var(--w, 0%);
+  transition: width 0.9s var(--ease);
+}
+.p18 .kpi[data-severity='ok'] .kpi-m > i {
+  background: var(--ok);
+}
+.p18 .kpi[data-severity='warn'] .kpi-m > i {
+  background: var(--warn);
+}
+.p18 .kpi[data-severity='crit'] .kpi-m > i {
+  background: var(--crit);
+}
+.p18 .kpi-h {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.35;
+}
+
+/* ---------- secciones ---------- */
+.p18 .sec {
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+}
+.p18 .sec:first-child {
+  border-top: 0;
+}
+.p18 .sec-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.p18 .sec-t {
+  font-size: var(--t-title);
+  font-weight: 660;
+  letter-spacing: -0.012em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.p18 .sec-t::before {
+  content: '';
+  width: 4px;
+  height: 17px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--m-ped), var(--acc));
+  flex: none;
+}
+
+.p18 .search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 35px;
+  padding: 0 14px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  min-width: 262px;
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s;
+}
+.p18 .search:focus-within {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+.p18 .search input {
+  border: 0;
+  outline: 0;
+  background: none;
+  width: 100%;
+  font-size: var(--t-meta);
+}
+.p18 .search svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+/* ---------- tabla ---------- */
+.p18 .tw {
+  overflow-x: auto;
+  margin: 0 -32px;
+  padding: 0 32px;
+}
+.p18 table.dt {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;
+}
+.p18 table.dt th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-2);
+  font-weight: 700;
+  background: var(--acc-tint);
+  border-bottom: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line));
+  white-space: nowrap;
+}
+.p18 table.dt th:first-child {
+  border-radius: 12px 0 0 0;
+}
+.p18 table.dt th:last-child {
+  border-radius: 0 12px 0 0;
+}
+.p18 table.dt th button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.14s;
+}
+.p18 table.dt th button:hover {
+  opacity: 0.7;
+}
+.p18 table.dt th .arw {
+  font-size: var(--t-meta);
+  line-height: 1;
+}
+.p18 table.dt td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body);
+  vertical-align: middle;
+  background: var(--paper);
+  transition: background 0.12s;
+}
+.p18 table.dt tbody tr {
+  cursor: pointer;
+}
+.p18 table.dt tbody tr:hover td {
+  background: var(--acc-tint);
+}
+.p18 table.dt tbody tr:hover .go {
+  opacity: 1;
+  transform: translateX(0);
+}
+.p18 table.dt tbody tr:hover .rowact {
+  opacity: 1;
+}
+.p18 .go {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: 0.16s var(--ease);
+  color: var(--ink-3);
+  display: inline-flex;
+}
+.p18 .go:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+.p18 .rowact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  opacity: 0.6;
+  transition: opacity 0.16s var(--ease);
+}
+.p18 .rowact:focus-within {
+  opacity: 1;
+}
+.p18 td.stripe {
+  position: relative;
+  padding-left: 18px;
+}
+.p18 td.stripe::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: width 0.16s var(--ease);
+}
+.p18 tr.u-crit td.stripe::before {
+  background: var(--crit);
+}
+.p18 tr.u-warn td.stripe::before {
+  background: var(--warn);
+}
+.p18 tr.u-crit:hover td.stripe::before,
+.p18 tr.u-warn:hover td.stripe::before {
+  width: 6px;
+}
+.p18 .ini {
+  font-weight: 660;
+  font-size: var(--t-body-lg);
+  letter-spacing: -0.01em;
+}
+.p18 .hc {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.p18 .dxc {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.p18 .ttl {
+  font-family: var(--mono);
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+}
+.p18 .ttl b {
+  font-weight: 700;
+}
+.p18 .ttl.crit {
+  color: var(--crit);
+}
+.p18 .ttl.warn {
+  color: var(--warn);
+}
+/* Dónde está el caso: la posta que lo tiene o el hospital que le dio cita. */
+.p18 .dest {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.3;
+}
+.p18 .dest.late {
+  color: var(--warn-ink);
+  font-weight: 560;
+}
+
+/* ---------- columna "Resumen": cuánto está armado y en qué escalón ---------- */
+.p18 .sumcell {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.p18 .sumbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* La barra es lo que hace comparable la columna de un vistazo: diez largos
+   se leen de golpe, diez números no. */
+.p18 .summeter {
+  width: 64px;
+  height: 6px;
+  flex: none;
+  border-radius: 3px;
+  background: rgba(16, 24, 22, 0.1);
+  overflow: hidden;
+}
+.p18 .summeter > i {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: 3px;
+  background: var(--ink-3);
+  transition: width 0.5s var(--ease);
+}
+.p18 .summeter.m-prep > i {
+  background: var(--warn);
+}
+.p18 .summeter.m-rev > i {
+  background: var(--rev);
+}
+.p18 .summeter.m-ok > i {
+  background: var(--ok);
+}
+.p18 .sumpct {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.p18 .sumpct b {
+  font-size: var(--t-meta);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ---------- lo que acota la lista: especialidad + DNI ---------- */
+.p18 .filterbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* ---------- paginador ---------- */
+.p18 .pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+}
+.p18 .pager-c {
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+.p18 .pager-c b {
+  color: var(--ink);
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+.p18 .pager-b {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.p18 .pager-i {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  border: 1px solid transparent;
+  transition:
+    background 0.14s var(--ease),
+    border-color 0.14s var(--ease),
+    color 0.14s var(--ease);
+}
+.p18 .pager-i:hover:not([disabled]):not(.on) {
+  background: var(--wash);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.p18 .pager-i.on {
+  background: var(--acc-tint);
+  border-color: var(--acc);
+  color: var(--acc-2);
+  font-weight: 660;
+}
+.p18 .pager-i[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.p18 .pager-arrow {
+  color: var(--ink-3);
+}
+.p18 .pager-gap {
+  padding: 0 2px;
+  color: var(--ink-3);
+}
+.p18 .flip {
+  display: inline-flex;
+  transform: rotate(180deg);
+}
+
+/* ============================================================
+   HISTORIA CLÍNICA DE TRANSFERENCIA — las 2 hojas
+   ============================================================
+   Se dibuja como un documento y no como un formulario: fondo de
+   papel, bloques separados por filete y una tipografía que se lee
+   corrido. Es lo que un médico va a leer de punta a punta antes de
+   firmarlo, no una pantalla de campos para completar. */
+.p18 .sheet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  overflow: hidden;
+  max-width: 860px;
+}
+.p18 .sheet-s {
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+}
+.p18 .sheet-s:first-child {
+  border-top: 0;
+}
+/* Un bloque sin escribir se ve vacío a propósito: es trabajo pendiente,
+   no un detalle de maquetación. */
+.p18 .sheet-s.gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wash) 0 8px,
+    var(--paper) 8px 16px
+  );
+}
+.p18 .sheet-t {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+.p18 .sheet-b {
+  font-size: var(--t-body-lg);
+  line-height: 1.62;
+  color: var(--ink);
+  max-width: 72ch;
+}
+.p18 .sheet-b.empty {
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: var(--t-meta);
+}
+.p18 .sheet-hint {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin-bottom: 7px;
+}
+
+/* Lo que la IA no pudo confirmar. Va arriba del texto y con su propio
+   color: si hay que ir a buscarlo, nadie lo lee. */
+.p18 .checks {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--rev-tint);
+  color: var(--rev-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rev) 22%, transparent);
+}
+.p18 .checks-h {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: var(--t-meta);
+}
+.p18 .checks-h svg {
+  flex: none;
+}
+.p18 .checks-l {
+  margin-top: 9px;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+}
+.p18 .checks-l li {
+  padding-left: 16px;
+  position: relative;
+}
+.p18 .checks-l li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
+}
+
+/* La confirmación de la firma: el único paso irreversible de la pantalla,
+   así que se pone delante y dice quién firma. */
+.p18 .signbar {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--acc-tint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 26%, transparent);
+  font-size: var(--t-meta);
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 720px;
+}
+.p18 .signbar b {
+  font-weight: 660;
+}
+
+@media (max-width: 1000px) {
+  .p18 .clinic {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+  .p18 .rail {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    overflow-x: auto;
+  }
+  /* En horizontal el riel es una barra, pero la navegación NO desaparece:
+     esconderla dejaba al usuario adentro de una sección sin forma de salir.
+     Los grupos se vuelven una fila de chips scrolleable. */
+  .p18 .rail-brand .sub,
+  .p18 .rail-group-t,
+  .p18 .rail-who .who-txt {
+    display: none;
+  }
+  .p18 .rail-nav {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .p18 .rail-group {
+    flex-direction: row;
+    gap: 4px;
+  }
+  .p18 .rn {
+    width: auto;
+    min-height: 38px;
+    padding: 7px 11px;
+    white-space: nowrap;
+  }
+  .p18 .noti-pop {
+    width: min(300px, calc(100vw - 48px));
+  }
+  .p18 .rail-who {
+    margin-top: 0;
+    margin-left: auto;
+    padding: 4px;
+    background: none;
+  }
+  .p18 .main {
+    width: 100%;
+    border-radius: 18px;
+  }
+  .p18 .page-h {
+    padding: 22px 18px 20px;
+  }
+  .p18 .page-body {
+    padding: 0 18px 28px;
+  }
+  .p18 .tw {
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+  .p18 .search {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   REFERENCIAS Y CONTRARREFERENCIAS — la otra oficina
+   ============================================================ */
+
+/* Chips de estado que faltaban al sistema: el rojo y su variante. */
+.p18 .chip.crit {
+  background: var(--crit-tint);
+  color: var(--crit-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--crit) 26%, transparent);
+}
+.p18 .chip.late {
+  background: var(--crit-tint);
+  color: var(--crit-ink);
+}
+
+/* ---------- las cartas, agrupadas por momento del trabajo ---------- */
+.p18 .crgroup {
+  display: grid;
+  gap: 10px;
+  padding-top: 18px;
+}
+/* El título del grupo: punto de color, nombre y cuántas. */
+.p18 .crgroup-h {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+.p18 .crgroup-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+.p18 .crgroup-dot.crit {
+  background: var(--crit);
+}
+.p18 .crgroup-dot.warn {
+  background: var(--warn);
+}
+.p18 .crgroup-dot.ok {
+  background: var(--ok);
+}
+.p18 .crgroup-n {
+  min-width: 22px;
+  text-align: center;
+  padding: 2px 7px;
+  border-radius: 9px;
+  background: var(--wash-2);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.p18 .crlist {
+  display: grid;
+  gap: 12px;
+}
+/* El filete de la izquierda repite el estado del chip: se lee de lejos. */
+.p18 .crcard {
+  display: grid;
+  gap: 13px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-left-width: 5px;
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+}
+.p18 .crcard.st-none {
+  border-left-color: var(--crit);
+}
+.p18 .crcard.st-up {
+  border-left-color: var(--warn);
+}
+.p18 .crcard.st-sent {
+  border-left-color: var(--ok);
+}
+/* La enviada se apaga y se achica: es constancia, no tarea. */
+.p18 .crcard.done {
+  background: var(--wash);
+  box-shadow: none;
+  gap: 8px;
+  padding: 13px 20px;
+}
+.p18 .crcard-h {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.p18 .crcard-t {
+  font-size: var(--t-body-lg);
+  font-weight: 680;
+  letter-spacing: -0.014em;
+  line-height: 1.2;
+}
+/* A qué posta vuelve el caso: una línea con su pin. */
+.p18 .crcard-post {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--t-meta);
+  color: var(--ink-2);
+}
+.p18 .crcard-post b {
+  font-weight: 640;
+  color: var(--ink);
+}
+.p18 .crcard-sent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ok-ink);
+}
+/* La zona de trabajo, hundida: separa el hacer de los datos de arriba. */
+.p18 .crcard-work {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 13px;
+  background: var(--wash);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.p18 .crcard-work .filepick {
+  background: var(--paper);
+}
+.p18 .crcard-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.p18 .crcard-form .filepick {
+  flex: 1;
+  min-width: 260px;
+}
+.p18 .crcard-code {
+  width: 180px;
+  flex: none;
+}
+.p18 .crcard-code > span {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.p18 .crcard-code .inp {
+  height: 38px;
+  font-size: var(--t-meta);
+}
+
+/* ---------- elegir un archivo ---------- */
+.p18 .filepick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--line-2);
+  background: var(--wash);
+  transition:
+    border-color 0.14s var(--ease),
+    background 0.14s var(--ease);
+}
+.p18 .filepick.over {
+  border-color: var(--acc);
+  background: var(--acc-tint);
+}
+.p18 .filepick.off {
+  opacity: 0.6;
+}
+/* El input real sigue existiendo (teclado y lectores de pantalla lo usan);
+   lo que se ve es el label, que ya es el botón del sistema. */
+.p18 .filepick-in {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.p18 .filepick-in:focus-visible + label {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.p18 .filepick label {
+  cursor: pointer;
+}
+.p18 .filepick-t {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

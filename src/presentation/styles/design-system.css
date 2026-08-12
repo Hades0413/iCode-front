@@ -1,0 +1,671 @@
+/* ============================================================
+   PUENTE 18+ — sistema de diseño
+   Base: el prototipo navegable de la carpeta de diseño
+   (puente-18.src.html). El color solo significa dos cosas: en qué
+   tramo del recorrido está el paciente (teal = pediatría, ámbar =
+   la posta, índigo = adultos) o que algo va mal.
+
+   Este archivo tiene lo que comparten TODAS las pantallas: tokens,
+   resets y primitivas (botones, pills, chips, formularios, avisos).
+   Lo específico de cada pantalla va aparte — clinic.css para el
+   escritorio del especialista, auth.css para el ingreso.
+
+   Los tokens van en :root para que el <body> también pueda usarlos.
+   Los resets van scopeados en .p18: es el envoltorio que cada
+   pantalla se pone, y así no le imponen nada a nada de afuera.
+
+   Dos cambios pedidos sobre el prototipo original:
+   1. Escala tipográfica más grande. El prototipo apuntaba a densidad
+      máxima (9.5–13.5px) y se leía chico. Toda la tipografía sale de
+      los tokens --t-*, así que se sube o baja de un lugar.
+   2. Menos plano: elevación real en lo accionable, fondos por capas
+      en vez de todo blanco, y estados de hover/press/focus en todo
+      lo que se puede tocar.
+   ============================================================ */
+
+:root {
+  --paper: #ffffff;
+  --wash: #f3f6f5; /* neutro con sesgo verde, no gris genérico */
+  --wash-2: #e9eeec;
+  --line: #dde4e1;
+  --line-2: #c2cbc7;
+  --ink: #101816;
+  --ink-2: #44504c;
+  --ink-3: #6f7a75;
+
+  --ped: #046b5c;
+  --ped-2: #03544a;
+  --ped-tint: #e4f0ed;
+  --ped-tint-2: #cfe4df;
+  --adu: #3e3a8c;
+  --adu-2: #312e70;
+  --adu-tint: #ebeaf7;
+  --adu-tint-2: #d8d6ef;
+
+  --crit: #b3261e;
+  --crit-tint: #fbedeb;
+  --crit-ink: #7e1b15;
+  --warn: #8a5300;
+  --warn-tint: #faf1e1;
+  --warn-ink: #6b4100;
+  /* El escalón que le sigue al ámbar: "está escrito y te espera a ti".
+     Son dos estados distintos del mismo trabajo (en preparación → revisión)
+     y con un solo color el médico no puede separarlos de un vistazo. */
+  --rev: #b0480c;
+  --rev-tint: #fcefe6;
+  --rev-ink: #8a3607;
+  /* Verde de buena noticia: el único color del sistema que dice "esto salió
+     bien". Sin él, un tablero de salud queda hablando solo de problemas. */
+  --ok: #0f7a52;
+  --ok-tint: #e2f3ea;
+  --ok-ink: #0a5c3d;
+  --sweep: #f7faf9;
+
+  --m-ped: #0e8c77;
+  --m-adu: #5b54cc;
+
+  /* El riel es un panel flotante de color vivo, no un fondo casi negro: es
+     un hospital de niños y es lo primero que se ve. El degradado va de teal
+     (pediatría) a índigo (adultos): el riel ES el puente, en vertical.
+     Los tonos están elegidos para que el texto blanco encima pase AA
+     (≥ 4.5:1) incluso en el punto más claro del degradado. */
+  --rail-2: #098069; /* teal vivo, arriba */
+  --rail: #06695a; /* teal medio, el cuerpo */
+  --rail-mid: #1e5175; /* la mitad del puente */
+  --rail-3: #3b3aa0; /* índigo, abajo */
+  --rail-adu: #322e78;
+  --rail-adu-2: #454096;
+
+  /* Badges del riel. Van sobre el teal, así que son claros y con tinta
+     oscura: un badge oscuro sobre fondo oscuro no se lee. */
+  --badge-ok: #58e0ac;
+  --badge-ok-ink: #04432f;
+  --badge-warn: #ffca61;
+  --badge-warn-ink: #4d3200;
+  --badge-crit: #ff8b7e;
+  --badge-crit-ink: #5c1a13;
+
+  --sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --mono:
+    ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Mono',
+    'Roboto Mono', monospace;
+
+  /* ---------- escala tipográfica ----------
+     Un solo lugar para el tamaño de todo. Los nombres dicen el rol, no
+     el tamaño, para poder reafinar sin renombrar nada. */
+  --t-micro: 11px; /* etiquetas mono, encabezados de tabla */
+  --t-small: 12.5px; /* notas al pie, texto secundario */
+  --t-meta: 13.5px; /* metadatos, sub-líneas */
+  --t-body: 14.5px; /* celdas de tabla, texto general */
+  --t-body-lg: 15.5px; /* lo que hay que leer sí o sí */
+  --t-title: 15.5px; /* títulos de sección */
+  --t-page: 30px; /* título de pantalla */
+  --t-kpi: 40px; /* el número de un KPI */
+
+  --sh-1: 0 1px 2px rgba(16, 24, 22, 0.06);
+  --sh-2:
+    0 2px 4px rgba(16, 24, 22, 0.04), 0 8px 20px -8px rgba(16, 24, 22, 0.14);
+  --sh-3:
+    0 4px 8px rgba(16, 24, 22, 0.06), 0 18px 40px -14px rgba(16, 24, 22, 0.22);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* El escritorio clínico es claro y punto: no hereda el dark mode del login. */
+}
+
+/* El envoltorio de cualquier pantalla del producto. */
+.p18 {
+  color-scheme: light;
+  background: var(--wash);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+/* --acc = el lado del puente en el que está esta pantalla. */
+.p18[data-role='esp'] {
+  --acc: var(--ped);
+  --acc-2: var(--ped-2);
+  --acc-tint: var(--ped-tint);
+}
+.p18[data-role='adu'] {
+  --acc: var(--adu);
+  --acc-2: var(--adu-2);
+  --acc-tint: var(--adu-tint);
+}
+
+/* ---------- resets locales ----------
+   Solo hacia adentro de .p18: nada de esto se le impone al documento. */
+.p18 *,
+.p18 *::before,
+.p18 *::after {
+  box-sizing: border-box;
+}
+.p18 h1,
+.p18 h2,
+.p18 h3,
+.p18 h4,
+.p18 p,
+.p18 ul,
+.p18 ol,
+.p18 dl,
+.p18 dd,
+.p18 dt {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+.p18 ul,
+.p18 ol {
+  list-style: none;
+}
+.p18 h1,
+.p18 h2,
+.p18 h3 {
+  text-wrap: balance;
+}
+.p18 button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.p18 input {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  width: auto;
+}
+.p18 label {
+  display: inline-flex;
+  margin: 0;
+  font-size: inherit;
+  color: inherit;
+}
+.p18 :focus-visible {
+  outline: 2px solid var(--acc, var(--adu));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.p18 ::selection {
+  background: var(--ped-tint-2);
+}
+
+/* ---------- primitivas tipográficas ---------- */
+.p18 .eyebrow {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.p18 .mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.p18 .dim {
+  color: var(--ink-3);
+}
+.p18 .mini {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
+/* ---------- botones ---------- */
+.p18 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 9px;
+  font-size: var(--t-meta);
+  font-weight: 560;
+  letter-spacing: -0.005em;
+  border: 1px solid var(--line-2);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--sh-1);
+  transition:
+    background 0.14s var(--ease),
+    border-color 0.14s var(--ease),
+    box-shadow 0.14s var(--ease),
+    transform 0.1s var(--ease);
+  white-space: nowrap;
+}
+.p18 .btn:hover {
+  border-color: var(--ink-3);
+  box-shadow: var(--sh-2);
+  transform: translateY(-1px);
+}
+.p18 .btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.p18 .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.p18 .btn-pri {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+.p18 .btn-pri:hover {
+  background: var(--acc-2);
+  border-color: var(--acc-2);
+}
+.p18 .btn-sm {
+  height: 30px;
+  padding: 0 11px;
+  font-size: var(--t-small);
+  border-radius: 7px;
+}
+
+/* ---------- estados del recorrido ---------- */
+.p18 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 11px 0 9px;
+  border-radius: 13px;
+  font-size: var(--t-small);
+  font-weight: 560;
+  white-space: nowrap;
+  background: var(--wash-2);
+  color: var(--ink-2);
+}
+.p18 .pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  flex: none;
+}
+.p18 .pill.s-pend {
+  background: var(--wash-2);
+  color: var(--ink-2);
+}
+.p18 .pill.s-prep {
+  background: var(--ped-tint);
+  color: var(--ped-2);
+}
+.p18 .pill.s-prep .dot {
+  background: var(--ped);
+}
+/* La posta es el tramo intermedio: ni pediatría ni el hospital todavía. */
+.p18 .pill.s-posta {
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+  box-shadow: inset 0 0 0 1px rgba(138, 83, 0, 0.18);
+}
+.p18 .pill.s-posta .dot {
+  background: var(--warn);
+}
+.p18 .pill.s-gestion {
+  background: var(--paper);
+  color: var(--adu-2);
+  box-shadow: inset 0 0 0 1px var(--adu-tint-2);
+}
+.p18 .pill.s-gestion .dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--adu);
+}
+.p18 .pill.s-cita {
+  background: var(--adu-tint);
+  color: var(--adu-2);
+}
+.p18 .pill.s-cita .dot {
+  background: var(--adu);
+}
+.p18 .pill.s-aten {
+  background: var(--adu);
+  color: #fff;
+  box-shadow: var(--sh-1);
+}
+.p18 .pill.s-aten .dot {
+  background: #fff;
+}
+.p18 .pill.s-perd {
+  background: var(--crit-tint);
+  color: var(--crit);
+  box-shadow: inset 0 0 0 1px rgba(179, 38, 30, 0.18);
+}
+.p18 .pill.s-perd .dot {
+  background: var(--crit);
+}
+.p18 .pill.s-rein {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.p18 .pill.s-rein .dot {
+  background: var(--warn);
+}
+
+.p18 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 23px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--wash-2);
+  color: var(--ink-3);
+}
+.p18 .chip.ok {
+  background: var(--ped-tint);
+  color: var(--ped-2);
+}
+.p18 .chip.draft {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.p18 .chip.review {
+  background: var(--rev-tint);
+  color: var(--rev-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rev) 26%, transparent);
+}
+.p18 .chip.none {
+  background: transparent;
+  color: var(--ink-3);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+/* El punto de color: es lo que se lee de lejos en una lista de treinta
+   filas, cuando el texto del chip todavía no se distingue. */
+.p18 .chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+/* ---------- formularios ---------- */
+.p18 .fg {
+  display: grid;
+  gap: 7px;
+}
+.p18 .fg > label {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.p18 .inp {
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--line-2);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--t-body-lg);
+  width: 100%;
+  transition:
+    border-color 0.14s var(--ease),
+    box-shadow 0.14s var(--ease);
+}
+.p18 .inp::placeholder {
+  color: var(--ink-3);
+}
+.p18 .inp:focus {
+  outline: 0;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+/* Texto largo: el mismo campo que .inp pero para párrafos (los bloques de
+   la historia clínica). Los resets de .p18 no tocan textarea, así que la
+   tipografía se pide explícita — un textarea hereda la del navegador. */
+.p18 .ta {
+  display: block;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line-2);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  resize: vertical;
+  transition:
+    border-color 0.14s var(--ease),
+    box-shadow 0.14s var(--ease);
+}
+.p18 .ta:focus {
+  outline: 0;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+.p18 .ta[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.p18 .btn-block {
+  width: 100%;
+  justify-content: center;
+}
+.p18 .btn-lg {
+  height: 48px;
+  padding: 0 22px;
+  font-size: var(--t-body-lg);
+  border-radius: 11px;
+}
+.p18 .spin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: spin 0.6s linear infinite;
+  flex: none;
+}
+.p18 .btn:not(.btn-pri) .spin {
+  border-color: var(--line-2);
+  border-top-color: var(--ink-2);
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* ---------- carga, vacío y error ---------- */
+.p18 .empty-s {
+  padding: 44px 0;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: var(--t-body);
+}
+.p18 .skel {
+  padding: 8px 0;
+}
+.p18 .skel i {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 11px;
+  background: linear-gradient(
+    90deg,
+    var(--wash-2) 25%,
+    var(--sweep) 50%,
+    var(--wash-2) 75%
+  );
+  background-size: 280px 100%;
+  animation: sweep 1.15s linear infinite;
+}
+@keyframes sweep {
+  from {
+    background-position: -140px 0;
+  }
+  to {
+    background-position: 140px 0;
+  }
+}
+.p18 .warnrow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--crit-tint);
+  color: var(--crit-ink);
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  box-shadow: inset 0 0 0 1px rgba(179, 38, 30, 0.16);
+}
+.p18 .warnrow b {
+  font-weight: 650;
+}
+.p18 .notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--wash);
+  font-size: var(--t-meta);
+  line-height: 1.55;
+  color: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+/* Buena noticia y advertencia: el mismo bloque, con el color que le toca. */
+.p18 .notice.n-ok {
+  background: var(--ok-tint);
+  color: var(--ok-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 24%, transparent);
+}
+.p18 .notice.n-warn {
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 24%, transparent);
+}
+.p18 .notice svg {
+  flex: none;
+  margin-top: 2px;
+}
+.p18 .notice b {
+  font-weight: 650;
+}
+
+/* ---------- avisos (toast) ---------- */
+.p18 .toasts {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: grid;
+  gap: 10px;
+  width: min(460px, calc(100vw - 32px));
+}
+.p18 .toast {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 11px;
+  padding: 14px 16px;
+  box-shadow: var(--sh-3);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: toastin 0.34s var(--ease);
+}
+.p18 .toast.t-err {
+  background: var(--crit-ink);
+}
+@keyframes toastin {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.p18 .toast .tmk {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+}
+.p18 .toast .tt {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.p18 .toast .td {
+  font-size: var(--t-small);
+  color: rgba(255, 255, 255, 0.66);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* ---------- utilidades ---------- */
+.p18 .stackv {
+  display: grid;
+  gap: 12px;
+}
+.p18 .stackv-s {
+  display: grid;
+  gap: 7px;
+}
+.p18 .row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.p18 .wrapmax {
+  max-width: 720px;
+}
+.p18 .enter {
+  animation: enter 0.24s var(--ease);
+}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p18 *,
+  .p18 *::before,
+  .p18 *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

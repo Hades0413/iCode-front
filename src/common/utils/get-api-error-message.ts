@@ -5,9 +5,18 @@ interface BackendErrorBody {
   message?: string;
 }
 
+/**
+ * El status HTTP, cuando lo hay. Sirve para distinguir "no tienes permiso"
+ * (403) de "se cayó algo" (5xx) sin que presentation tenga que importar
+ * axios y enterarse del transporte.
+ */
+export function getApiErrorStatus(error: unknown): number | null {
+  return error instanceof AxiosError ? (error.response?.status ?? null) : null;
+}
+
 export function getApiErrorMessage(
   error: unknown,
-  fallback = 'Ocurrió un error inesperado. Probá de nuevo.',
+  fallback = 'Ocurrió un error inesperado. Prueba de nuevo.',
 ): string {
   if (error instanceof AxiosError) {
     const body = error.response?.data as BackendErrorBody | undefined;

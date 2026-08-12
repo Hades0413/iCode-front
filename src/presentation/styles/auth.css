@@ -1,0 +1,385 @@
+/* ============================================================
+   INGRESO — la puerta de entrada.
+   Los tokens, resets y primitivas están en design-system.css.
+
+   Dos paneles: a la izquierda el panel oscuro con la marca y el
+   recorrido (el mismo tono del riel del escritorio clínico, para que
+   se lea como el mismo producto); a la derecha el formulario.
+   ============================================================ */
+
+.p18.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100svh;
+}
+
+/* ---------- panel de marca: la foto ----------
+   El Puente Villena Rey de Miraflores, que es literalmente lo que nombra el
+   producto: un puente que la gente cruza. La foto va de fondo y encima un
+   degradado teal → índigo —los dos lados del puente, los mismos del riel—
+   que además es lo que le da al texto blanco el contraste para leerse; sin
+   él, un cielo claro se come el titular. */
+.p18 .auth-aside {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  padding: 40px 44px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background-image: url('../../assets/puente-villena-rey.jpg');
+  background-size: cover;
+  background-position: 62% center;
+}
+.p18 .auth-aside::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      170deg,
+      rgba(6, 105, 90, 0.58) 0%,
+      rgba(6, 105, 90, 0.42) 30%,
+      rgba(12, 45, 78, 0.78) 68%,
+      rgba(35, 32, 105, 0.92) 100%
+    ),
+    /* Un refuerzo abajo, que es donde vive el texto. */
+    linear-gradient(0deg, rgba(9, 20, 38, 0.55) 0%, transparent 45%);
+  pointer-events: none;
+}
+.p18 .auth-aside > * {
+  position: relative;
+}
+
+.p18 .auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: var(--t-body-lg);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 12px rgba(6, 30, 26, 0.4);
+}
+.p18 .auth-brand .glyph {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--m-ped), var(--m-adu));
+  box-shadow: 0 3px 12px rgba(6, 30, 26, 0.5);
+}
+.p18 .auth-brand .sub {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* El titular usa el ancho del panel en vez de quedarse en una columna
+   angosta. El tope va en el propio h2 y en **em**, no en el contenedor: un
+   `ch` sobre el bloque se mide con la tipografía chica del panel, así que
+   22ch daban 160 px y el titular de 52 px se partía palabra por palabra. En
+   em, el tope crece y se achica junto con la letra. */
+.p18 .auth-pitch {
+  margin-top: auto;
+  max-width: 100%;
+}
+.p18 .auth-pitch h2 {
+  max-width: 13em;
+  font-size: clamp(30px, 3.6vw, 46px);
+  font-weight: 680;
+  letter-spacing: -0.032em;
+  line-height: 1.08;
+  text-wrap: balance;
+  text-shadow: 0 2px 18px rgba(6, 30, 26, 0.45);
+}
+.p18 .auth-pitch p {
+  margin-top: 16px;
+  max-width: 34em;
+  font-size: var(--t-body-lg);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 10px rgba(6, 30, 26, 0.5);
+}
+
+/* ---------- el recorrido, en tres pasos ---------- */
+.p18 .auth-flow {
+  display: grid;
+  gap: 0;
+}
+.p18 .auth-flow-track {
+  position: relative;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  margin: 0 6px 14px;
+}
+.p18 .auth-flow-track > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--m-ped), #1f5478 55%, var(--m-adu));
+}
+.p18 .auth-flow-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.p18 .auth-flow-steps li {
+  position: relative;
+  padding-top: 2px;
+}
+.p18 .auth-flow-steps .sn {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+}
+.p18 .auth-flow-steps .st {
+  font-size: var(--t-meta);
+  font-weight: 560;
+  margin-top: 5px;
+  line-height: 1.35;
+}
+.p18 .auth-flow-steps .sd {
+  font-size: var(--t-small);
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.p18 .auth-credit {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.4);
+}
+.p18 .auth-credit {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+.p18 .auth-foot {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ---------- panel del formulario ---------- */
+.p18 .auth-panel {
+  display: grid;
+  place-items: center;
+  padding: 44px 40px;
+  background: var(--paper);
+}
+.p18 .auth-form {
+  width: min(400px, 100%);
+  display: grid;
+  gap: 18px;
+}
+.p18 .auth-t {
+  font-size: var(--t-page);
+  font-weight: 670;
+  letter-spacing: -0.026em;
+  line-height: 1.15;
+}
+.p18 .auth-lead {
+  font-size: var(--t-meta);
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.p18 .auth-error {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--crit-tint);
+  color: var(--crit-ink);
+  font-size: var(--t-meta);
+  line-height: 1.45;
+  box-shadow: inset 0 0 0 1px rgba(179, 38, 30, 0.16);
+}
+.p18 .auth-error svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Atajos del prototipo: entrar como otro usuario del seed sin tipear. */
+.p18 .auth-demo {
+  display: grid;
+  gap: 10px;
+  padding: 14px 15px;
+  border-radius: 11px;
+  background: var(--acc-tint);
+  color: var(--acc-2);
+  font-size: var(--t-meta);
+  line-height: 1.5;
+}
+.p18 .auth-demo b {
+  font-weight: 650;
+}
+.p18 .auth-demo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.p18 .auth-demo-row .lbl {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.p18 .auth-as {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--acc-2);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  transition:
+    transform 0.12s var(--ease),
+    box-shadow 0.14s var(--ease);
+}
+.p18 .auth-as:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sh-2);
+}
+.p18 .auth-as:active {
+  transform: translateY(0);
+}
+.p18 .auth-as[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .p18.auth {
+    grid-template-columns: 1fr;
+  }
+  .p18 .auth-aside {
+    padding: 26px 22px 24px;
+    gap: 22px;
+  }
+  /* En vertical el panel es una banda con la foto arriba del formulario: se
+     queda la marca y el titular —que es lo que explica de qué se trata— y se
+     va el resto, que ahí solo empuja el ingreso hacia abajo. */
+  .p18 .auth-aside {
+    min-height: 210px;
+  }
+  .p18 .auth-flow,
+  .p18 .auth-foot {
+    display: none;
+  }
+  .p18 .auth-pitch h2 {
+    font-size: 26px;
+  }
+  .p18 .auth-pitch p {
+    display: none;
+  }
+  .p18 .auth-panel {
+    padding: 32px 22px 48px;
+    place-items: start center;
+  }
+}
+
+/* ============================================================
+   ELEGIR PERFIL — con qué oficina se entra
+   ============================================================
+   Son dos trabajos distintos sobre los mismos pacientes, así que la
+   pregunta va antes que las credenciales: cada opción es una tarjeta
+   grande y clickeable, no un <select> escondido en el formulario. */
+.p18 .choice {
+  display: grid;
+  gap: 10px;
+}
+.p18 .choice-i {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 15px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line-2);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  text-align: left;
+  transition:
+    border-color 0.14s var(--ease),
+    box-shadow 0.16s var(--ease),
+    transform 0.12s var(--ease);
+}
+.p18 .choice-i:hover:not([disabled]) {
+  border-color: var(--acc);
+  box-shadow: var(--sh-2);
+  transform: translateY(-1px);
+}
+.p18 .choice-i:active:not([disabled]) {
+  transform: translateY(0);
+  box-shadow: var(--sh-1);
+}
+.p18 .choice-i[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.p18 .choice-g {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--acc-tint);
+  color: var(--acc-2);
+}
+.p18 .choice-t {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.p18 .choice-t b {
+  font-size: var(--t-body-lg);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+}
+.p18 .choice-a {
+  flex: none;
+  color: var(--ink-3);
+  display: inline-flex;
+}
+
+/* El separador entre elegir perfil y escribir credenciales. */
+.p18 .auth-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-3);
+  font-size: var(--t-small);
+}
+.p18 .auth-or::before,
+.p18 .auth-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}

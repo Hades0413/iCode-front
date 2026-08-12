@@ -1,0 +1,969 @@
+/* ============================================================
+   MI RECORRIDO — la app del paciente y de quien lo acompaña.
+   Los tokens y las primitivas están en design-system.css.
+
+   Está escrita **para el celular primero**: acá no hay nadie
+   sentado frente a una pantalla de escritorio. La abre un chico de
+   18 parado en la puerta de un hospital, o su mamá en el micro. De
+   ahí salen todas las decisiones de este archivo:
+
+   - Una sola columna. Nada de tablas ni de menús laterales.
+   - Todo lo que se toca mide 48 px o más de alto (el pulgar no
+     tiene la puntería del mouse).
+   - Texto base de 16 px: menos que eso, iOS hace zoom solo al
+     enfocar un campo y descoloca la pantalla.
+   - Respeta el notch y la barra de gestos (env(safe-area-*)).
+   - En pantallas grandes NO se estira: se centra en una columna y,
+     a partir de 960 px, se acomoda en dos.
+   ============================================================ */
+
+/* La variable que mueve el círculo de la barra de pestañas. Registrada para
+   que el navegador la pueda interpolar: así el círculo VIAJA de pestaña a
+   pestaña en vez de teletransportarse. Sin @property, salta y ya. */
+@property --jn-active {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.p18.jn {
+  /* Su propia paleta, más viva que la del hospital: esta app es de un chico
+     de 18, no de un consultorio. Violeta como acento (es el lado adulto del
+     puente, subido de tono), coral para lo pendiente, menta para lo logrado,
+     y un fondo lila que ya no es la sala de espera. */
+  --jn-pop: #7c3aed;
+  --jn-pop-2: #5b21b6;
+  --jn-tint: #f1eafe;
+  --jn-coral: #f43f5e;
+  --jn-mint: #10b981;
+  --jn-bg: #f3eefc;
+  /* El violeta profundo de la barra de pestañas: oscuro a propósito, porque
+     flota sobre tarjetas blancas y una barra blanca se fundía con ellas. */
+  --jn-deep: #372a8c;
+  --jn-deep-2: #251a66;
+  /* Los componentes del sistema (botones, checks, medidores) se recolorean
+     solos: leen --acc, y aquí --acc es el violeta vivo. */
+  --acc: var(--jn-pop);
+  --acc-2: var(--jn-pop-2);
+  --acc-tint: var(--jn-tint);
+
+  background: var(--jn-bg);
+  min-height: 100svh;
+  font-size: 16px;
+}
+
+/* ---------- encabezado fino y pegado ---------- */
+.p18 .jn-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e8def9;
+  padding-top: env(safe-area-inset-top);
+}
+.p18 .jn-head-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.p18 .jn-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 660;
+  letter-spacing: -0.012em;
+}
+.p18 .jn-glyph {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--m-ped), var(--m-adu));
+}
+.p18 .jn-user {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.p18 .jn-out {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+.p18 .jn-out:hover {
+  background: var(--wash-2);
+  color: var(--ink);
+}
+
+/* ---------- el cuerpo: una columna ---------- */
+.p18 .jn-main {
+  /* El hueco de abajo es para la barra de pestañas, que es fija. */
+  padding: 0 0 calc(118px + env(safe-area-inset-bottom));
+}
+.p18 .jn-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  max-width: 620px;
+  margin: 0 auto;
+  align-content: start;
+}
+
+.p18 .jn-card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 20px 18px;
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  border: 1px solid var(--line);
+}
+.p18 .jn-card-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.p18 .jn-t {
+  font-size: 19px;
+  font-weight: 670;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+}
+.p18 .jn-sub {
+  font-size: 15px;
+  font-weight: 640;
+  margin-top: 4px;
+}
+.p18 .jn-kicker {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.p18 .jn-lead {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.p18 .jn-note {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+.p18 .jn-tech {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+}
+.p18 .jn-count {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.p18 .jn-count.ok {
+  color: var(--jn-mint);
+  font-weight: 700;
+}
+.p18 .jn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- la cita: lo primero y lo más grande ---------- */
+.p18 .jn-appt {
+  background: linear-gradient(160deg, #7c3aed 0%, #4338ca 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--sh-2);
+}
+.p18 .jn-appt .jn-kicker {
+  color: rgba(255, 255, 255, 0.66);
+}
+.p18 .jn-appt.past {
+  background: linear-gradient(165deg, var(--ink-2) 0%, var(--ink) 100%);
+}
+.p18 .jn-appt-none {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+  box-shadow: var(--sh-1);
+}
+.p18 .jn-appt-none .jn-kicker {
+  color: var(--ink-3);
+}
+.p18 .jn-date {
+  font-size: clamp(24px, 6.4vw, 30px);
+  font-weight: 680;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.p18 .jn-big {
+  font-size: 22px;
+  font-weight: 670;
+  letter-spacing: -0.02em;
+}
+.p18 .jn-hour {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.82);
+}
+.p18 .jn-hour b {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+/* El mensaje que importa de verdad: cálido pero serio, en ámbar sobre el
+   violeta de la tarjeta para que no se lea como un detalle más. */
+.p18 .jn-vital {
+  background: linear-gradient(
+    140deg,
+    rgba(255, 205, 100, 0.28),
+    rgba(255, 255, 255, 0.12)
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 214, 130, 0.45);
+}
+.p18 .jn-vital b {
+  color: #ffd980;
+}
+
+/* El dato que evita la mitad de las citas perdidas, en su propia caja. */
+.p18 .jn-arrive {
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.p18 .jn-arrive b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.p18 .jn-facts {
+  display: grid;
+  gap: 10px;
+  margin-top: 2px;
+}
+.p18 .jn-facts dt {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.p18 .jn-facts dd {
+  font-size: 14.5px;
+  line-height: 1.45;
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+}
+.p18 .jn-facts svg {
+  flex: none;
+  margin-top: 4px;
+}
+.p18 .jn-appt .jn-note {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- la preparación ---------- */
+.p18 .jn-meter {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wash-2);
+  overflow: hidden;
+}
+.p18 .jn-meter > i {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: 4px;
+  background: var(--acc);
+  transition: width 0.5s var(--ease);
+}
+.p18 .jn-list {
+  display: grid;
+  gap: 8px;
+}
+/* Cada ítem es una fila grande: se marca con el pulgar, sin apuntar. */
+.p18 .jn-item {
+  display: flex;
+  gap: 13px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 14px;
+  border-radius: 15px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  text-align: left;
+  align-items: flex-start;
+  transition:
+    border-color 0.14s var(--ease),
+    background 0.14s var(--ease);
+}
+.p18 button.jn-item:active {
+  background: var(--wash);
+}
+.p18 .jn-item.on {
+  background: var(--acc-tint);
+  border-color: color-mix(in srgb, var(--acc) 34%, transparent);
+}
+.p18 .jn-item.flat {
+  cursor: default;
+}
+.p18 .jn-box {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 9px;
+  border: 2px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.p18 .jn-item.on .jn-box {
+  background: var(--acc);
+  border-color: var(--acc);
+}
+.p18 .jn-item-t {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.p18 .jn-item-t b {
+  font-size: 15.5px;
+  font-weight: 640;
+  line-height: 1.3;
+}
+.p18 .jn-item.on .jn-item-t b {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--acc) 50%, transparent);
+}
+.p18 .jn-item-t span {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
+/* ---------- tratamiento ---------- */
+.p18 .jn-allergy {
+  display: flex;
+  gap: 12px;
+  padding: 14px 15px;
+  border-radius: 14px;
+  background: var(--crit-tint);
+  color: var(--crit-ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--crit) 22%, transparent);
+}
+.p18 .jn-allergy svg {
+  flex: none;
+  margin-top: 3px;
+}
+.p18 .jn-allergy p {
+  margin-top: 3px;
+}
+.p18 .jn-meds {
+  display: grid;
+  gap: 12px;
+}
+.p18 .jn-meds li {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+.p18 .jn-pill {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--acc-tint);
+  color: var(--acc-2);
+  font-weight: 700;
+  font-size: 16px;
+}
+.p18 .jn-meds b {
+  font-size: 15.5px;
+  font-weight: 640;
+  display: block;
+}
+.p18 .jn-dose {
+  display: block;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--acc-2);
+  margin: 2px 0 4px;
+}
+.p18 .jn-meds p {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* ---------- contactos ---------- */
+.p18 .jn-contacts {
+  display: grid;
+  gap: 14px;
+}
+.p18 .jn-contacts li {
+  display: grid;
+  gap: 2px;
+}
+.p18 .jn-contacts b {
+  font-size: 15.5px;
+  font-weight: 640;
+}
+.p18 .jn-contacts span:not(.jn-kicker) {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+/* El teléfono se llama de un toque: en una urgencia nadie copia un número. */
+.p18 .jn-tel {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14.5px;
+  color: var(--acc-2);
+  font-weight: 560;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
+  align-self: start;
+}
+
+/* ---------- guía ---------- */
+.p18 .jn-guide {
+  display: grid;
+  gap: 2px;
+}
+.p18 .jn-guide details {
+  border-top: 1px solid var(--line);
+}
+.p18 .jn-guide details:first-child {
+  border-top: 0;
+}
+.p18 .jn-guide summary {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 8px 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.p18 .jn-guide summary::-webkit-details-marker {
+  display: none;
+}
+.p18 .jn-guide summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+.p18 .jn-guide details[open] summary::after {
+  content: '–';
+}
+.p18 .jn-guide p {
+  padding-bottom: 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* ---------- mensaje del tutor ---------- */
+.p18 .jn-msg {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 15px 16px;
+  border-radius: 18px;
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 26%, transparent);
+  animation: enter 0.24s var(--ease);
+}
+.p18 .jn-msg p {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.p18 .jn-msg .jn-kicker {
+  color: color-mix(in srgb, var(--warn-ink) 75%, transparent);
+}
+.p18 .jn-msg-x {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--warn-ink);
+}
+
+/* ---------- accesos y formulario ---------- */
+.p18 .jn-who {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+.p18 .jn-avatar {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--acc-tint);
+  color: var(--acc-2);
+  font-weight: 700;
+  font-size: 17px;
+}
+.p18 .jn-who b {
+  font-size: 15.5px;
+  font-weight: 640;
+  display: block;
+  margin-bottom: 3px;
+}
+.p18 .jn-ta {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line-2);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  /* 16 px o iOS hace zoom solo al enfocar. */
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.p18 .jn-ta:focus {
+  outline: 0;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+
+/* ---------- botones grandes ---------- */
+.p18 .jn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line-2);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15.5px;
+  font-weight: 600;
+  transition:
+    background 0.14s var(--ease),
+    border-color 0.14s var(--ease);
+}
+.p18 .jn-btn:active {
+  background: var(--wash);
+}
+.p18 .jn-btn-pri {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+.p18 .jn-btn-pri:active {
+  background: var(--acc-2);
+}
+.p18 .jn-btn[disabled] {
+  opacity: 0.5;
+}
+
+/* ---------- acceso revocado ---------- */
+.p18 .jn-revoked {
+  text-align: center;
+  justify-items: center;
+  padding: 34px 22px;
+  margin-top: 18px;
+}
+.p18 .jn-revoked-i {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--wash-2);
+  color: var(--ink-3);
+}
+
+.p18 .jn-foot {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  padding: 6px 0 4px;
+}
+
+/* ============================================================
+   Pantallas grandes: la app no se estira, se acomoda.
+   ============================================================ */
+@media (min-width: 700px) {
+  .p18 .jn-body {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+  .p18 .jn-card {
+    padding: 24px 22px;
+  }
+  .p18 .jn-btn {
+    width: auto;
+    min-width: 240px;
+  }
+}
+
+/* A partir de acá entran dos columnas: la cita y lo que hay que preparar
+   quedan a la izquierda —que es el trabajo— y la información de consulta a
+   la derecha. En el celular esto no existe: ahí el orden es el de la
+   urgencia, de arriba abajo. */
+@media (min-width: 980px) {
+  .p18 .jn-body {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: start;
+    max-width: 1040px;
+  }
+  .p18 .jn-msg {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ============================================================
+   LA BARRA DE PESTAÑAS — fija abajo, al alcance del pulgar
+   ============================================================
+   El ícono activo flota en un círculo que "muerde" la barra: la
+   mordida es una máscara radial y el círculo, un absoluto; los dos
+   leen la misma --jn-x, así que viajan juntos cuando cambia la
+   pestaña. */
+.p18 .jn-nav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+.p18 .jn-nav-in {
+  position: relative;
+  max-width: 520px;
+  margin: 0 auto;
+  pointer-events: auto;
+  /* El centro de la pestaña activa, en % del ancho de la barra. */
+  --jn-x: calc((var(--jn-active) + 0.5) * 100% / var(--jn-tabs));
+  transition: --jn-active 0.45s var(--ease);
+}
+.p18 .jn-nav-bar {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 9px 8px 7px;
+  border-radius: 26px;
+  /* Oscura sobre fondo claro: la barra tiene que leerse encima de cualquier
+     tarjeta que pase por debajo, y blanca sobre blanco desaparecía. */
+  background: linear-gradient(165deg, var(--jn-deep) 0%, var(--jn-deep-2) 100%);
+  box-shadow:
+    0 14px 34px -12px rgba(37, 26, 102, 0.55),
+    0 3px 10px rgba(37, 26, 102, 0.22);
+  -webkit-mask-image: radial-gradient(
+    circle 34px at var(--jn-x) -12px,
+    transparent 96%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    circle 34px at var(--jn-x) -12px,
+    transparent 96%,
+    #000 100%
+  );
+}
+/* El círculo flotante. El anillo del color del fondo simula el aire entre el
+   círculo y la barra, que es lo que hace que la mordida se lea. */
+.p18 .jn-fab {
+  position: absolute;
+  top: -26px;
+  left: var(--jn-x);
+  transform: translateX(-50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  /* Más claro que la barra: el círculo tiene que saltar sobre el violeta
+     profundo, no camuflarse en él. */
+  background: linear-gradient(
+    140deg,
+    #a678ff 0%,
+    var(--jn-pop) 55%,
+    #6d28d9 100%
+  );
+  box-shadow:
+    0 10px 22px -6px rgba(109, 40, 217, 0.6),
+    0 0 0 6px var(--jn-bg);
+  z-index: 1;
+  pointer-events: none;
+}
+/* El ícono nuevo entra con un rebote: la key del componente lo remonta. */
+.p18 .jn-fab-i {
+  display: inline-flex;
+  animation: jn-pop 0.42s var(--ease);
+}
+@keyframes jn-pop {
+  0% {
+    transform: scale(0.3) rotate(-18deg);
+    opacity: 0;
+  }
+  62% {
+    transform: scale(1.18) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.p18 .jn-tab {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-height: 54px;
+  padding-top: 7px;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.p18 .jn-tab-i {
+  position: relative;
+  display: inline-flex;
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.25s var(--ease);
+}
+/* El ícono de la pestaña activa "se fue" al círculo de arriba. */
+.p18 .jn-tab.on .jn-tab-i {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.5);
+}
+.p18 .jn-tab-l {
+  font-size: 12px;
+  font-weight: 640;
+  letter-spacing: 0.01em;
+}
+.p18 .jn-tab.on {
+  color: #fff;
+}
+.p18 .jn-tab.on .jn-tab-l {
+  font-weight: 720;
+}
+/* Lo pendiente, contado en coral sobre el ícono. */
+.p18 .jn-badge {
+  position: absolute;
+  top: -7px;
+  right: -11px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--jn-coral);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--jn-deep);
+}
+
+/* Cada pestaña entra deslizándose un poco: dice "cambiaste de lugar" sin
+   marear. La key del panel fuerza el remonte. */
+.p18 .jn-panel {
+  animation: jn-in 0.32s var(--ease);
+}
+@keyframes jn-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ============================================================
+   EL HERO — el saludo y el puente con él cruzándolo
+   ============================================================ */
+.p18 .jn-hero {
+  overflow: hidden;
+  background:
+    radial-gradient(circle 200px at 108% -20%, #ede4fe 0%, transparent 70%),
+    radial-gradient(circle 160px at -14% 108%, #ffe9ee 0%, transparent 70%),
+    var(--paper);
+  border-color: #e7dcfa;
+}
+.p18 .jn-hello {
+  font-size: 15px;
+  font-weight: 740;
+  color: var(--jn-pop);
+  letter-spacing: 0.01em;
+}
+.p18 .jn-hero-t {
+  font-size: clamp(28px, 7.6vw, 34px);
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+.p18 .jn-hero-s {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.p18 .jn-hero-m {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--jn-tint);
+}
+
+/* ---------- el puente ---------- */
+.p18 .jn-bridge {
+  width: 100%;
+  max-width: 360px;
+  justify-self: center;
+  margin: 4px 0 -2px;
+}
+.p18 .jn-bridge-b {
+  fill: #f3ecfe;
+  stroke: var(--jn-pop);
+  stroke-width: 1.8;
+}
+.p18 .jn-bridge-x {
+  stroke: var(--jn-pop);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  fill: none;
+}
+/* Lo que falta del cruce, punteado. pathLength=1: los guiones son fracciones. */
+.p18 .jn-bridge-rest {
+  stroke: #dccdf7;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.001 0.035;
+  fill: none;
+}
+/* Lo caminado: crece con cada paso marcado, con su animación. */
+.p18 .jn-bridge-done {
+  stroke: var(--jn-pop);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: var(--t, 0) 1;
+  transition: stroke-dasharray 0.7s var(--ease);
+  fill: none;
+}
+/* Él. El halo respira para decir "este eres tú, ahora". */
+.p18 .jn-bridge-me {
+  transition: transform 0.7s var(--ease);
+}
+.p18 .jn-bridge-halo {
+  fill: color-mix(in srgb, var(--jn-pop) 26%, transparent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jn-breathe 2.2s ease-in-out infinite;
+}
+.p18 .jn-bridge-dot {
+  fill: var(--jn-pop);
+  stroke: #fff;
+  stroke-width: 2.2;
+}
+@keyframes jn-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.55);
+    opacity: 0.3;
+  }
+}
+
+/* ============================================================
+   EL CONFETI — completar la preparación es un logro
+   ============================================================ */
+.p18 .jn-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+.p18 .jn-confetti i {
+  position: absolute;
+  top: -14px;
+  left: calc((var(--i) + 0.5) * 100% / 16);
+  width: 8px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--jn-pop);
+  opacity: 0;
+  animation: jn-fall 2.1s ease-in forwards;
+  animation-delay: calc(var(--i) * 50ms);
+}
+.p18 .jn-confetti i:nth-child(4n + 1) {
+  background: var(--jn-coral);
+}
+.p18 .jn-confetti i:nth-child(4n + 2) {
+  background: #f59e0b;
+}
+.p18 .jn-confetti i:nth-child(4n + 3) {
+  background: var(--jn-mint);
+}
+@keyframes jn-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(340px) rotate(560deg);
+  }
+}
