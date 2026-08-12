@@ -38,7 +38,10 @@ export interface DemoProfile {
 
 const PROFILES: readonly DemoProfile[] = [
   {
-    userName: 'medico',
+    // Usuarios reales del seed de iCode-back (con sufijo numérico, ver
+    // PUENTE18_FRONTEND_INTEGRATION.md sección 1) — nunca "medico" ni
+    // "referencias" sueltos, que solo existían en el mock viejo.
+    userName: 'pediatra1',
     role: 'Especialista de pediatría',
     claim: 'Soy el médico',
     detail:
@@ -46,21 +49,21 @@ const PROFILES: readonly DemoProfile[] = [
     glyph: 'clinic',
   },
   {
-    userName: 'referencias',
+    userName: 'referencias1',
     role: 'Referencias y contrarreferencias',
     claim: 'Soy del área de referencias',
     detail: 'Aviso a la posta 2 meses antes y mando la carta cuando cumplen 18',
     glyph: 'referrals',
   },
   {
-    userName: 'paciente',
+    userName: 'paciente1',
     role: 'Paciente',
     claim: 'Soy el paciente',
     detail: 'Veo mi cita, mi tratamiento y lo que tengo que preparar',
     glyph: 'patient',
   },
   {
-    userName: 'tutor',
+    userName: 'tutor1',
     role: 'Madre, padre o tutor',
     claim: 'Acompaño a un paciente',
     detail: 'Veo su recorrido y puedo recordarle lo que le falta',
