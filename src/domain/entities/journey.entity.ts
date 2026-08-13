@@ -125,7 +125,8 @@ export interface TransitionJourney {
   /** Quién armó el resumen y sigue disponible para dudas. */
   attendingDoctor: string;
   specialty: string;
-  guardian: JourneyGuardian;
+  /** null si no tiene ningún tutor activo (ej. ya cumplió 18 y el suyo quedó desactivado). */
+  guardian: JourneyGuardian | null;
   /** Mensaje pendiente del tutor, si hay. */
   pendingMessage: JourneyMessage | null;
 }

@@ -17,10 +17,22 @@ export function GuardianAccessCard({
   isBusy,
   onChange,
 }: Readonly<{
-  guardian: JourneyGuardian;
+  guardian: JourneyGuardian | null;
   isBusy: boolean;
   onChange: (hasAccess: boolean) => void;
 }>) {
+  if (!guardian) {
+    return (
+      <section className="jn-card">
+        <h2 className="jn-t">Quién ve tu información</h2>
+        <p className="jn-note">
+          No tienes ningún tutor activo registrado — nadie más ve tu
+          recorrido.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="jn-card">
       <h2 className="jn-t">Quién ve tu información</h2>
