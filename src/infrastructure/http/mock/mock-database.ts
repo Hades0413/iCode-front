@@ -41,7 +41,12 @@ export interface MockSession {
  * (domain/rules/permissions.ts) — el mismo que consulta la UI para no
  * ofrecer acciones que el servidor va a rechazar.
  *
- * El único dato tomado del README de iCode-back es "admin / Passw0rd1!".
+ * Usernames y permisos por rol calcados de
+ * iCode-back/src/infrastructure/database/migrations/1786325858482-SeedTransitionData.ts
+ * (sección "ROLE -> PERMISSION" y "USER -> ROLE") — no inventados: si acá
+ * dice otra cosa que el seed real, es este archivo el que está desactualizado.
+ * "admin" es la única excepción documentada en el README de iCode-back
+ * ("admin / Passw0rd1!"); el resto sale de ese seed puntual.
  */
 const USERS: readonly MockUserRow[] = [
   {
@@ -62,19 +67,24 @@ const USERS: readonly MockUserRow[] = [
       PERMISSIONS.referralsRead,
       PERMISSIONS.healthPostNotify,
       PERMISSIONS.counterReferralManage,
+      PERMISSIONS.journeyRead,
+      PERMISSIONS.checklistWrite,
+      PERMISSIONS.guardianRemind,
+      PERMISSIONS.guardianAccessManage,
     ],
   },
   {
     id: 5,
-    userName: 'medico',
+    userName: 'pediatra1',
     password: 'Passw0rd1!',
-    email: 'medico@puente18.pe',
+    email: 'pediatra1@example.com',
     firstName: 'Álvaro',
     lastName: 'Solís',
     isActive: true,
-    // El especialista: prepara y firma la historia clínica, y puede
-    // reclamarle al área. No habla con la posta — eso no es suyo. Solo ve
-    // pacientes de SU especialidad: el recorte lo hace el servidor.
+    // El especialista (rol ESPECIALISTA_PEDIATRIA): prepara y firma la
+    // historia clínica, y puede reclamarle al área. No habla con la posta
+    // — eso no es suyo. Solo ve pacientes de SU especialidad: el recorte
+    // lo hace el servidor.
     permissions: [
       PERMISSIONS.patientsCohortRead,
       PERMISSIONS.patientsRead,
@@ -86,14 +96,15 @@ const USERS: readonly MockUserRow[] = [
   },
   {
     id: 6,
-    userName: 'referencias',
+    userName: 'referencias1',
     password: 'Passw0rd1!',
-    email: 'referencias@puente18.pe',
-    firstName: 'Lucía',
-    lastName: 'Bermúdez',
+    email: 'referencias1@example.com',
+    firstName: 'Referencias',
+    lastName: 'Ficticio Uno',
     isActive: true,
-    // El área de Referencias y Contrarreferencias: avisa a la posta y manda
-    // la carta. Ve los pacientes, pero no toca la historia clínica.
+    // El área de Referencias y Contrarreferencias (rol AREA_REFERENCIAS):
+    // avisa a la posta y manda la carta. Ve los pacientes, pero no toca la
+    // historia clínica.
     permissions: [
       PERMISSIONS.patientsRead,
       PERMISSIONS.referralsRead,
@@ -109,25 +120,24 @@ const USERS: readonly MockUserRow[] = [
     firstName: 'Beto',
     lastName: 'Quispe',
     isActive: true,
-    // Ve el tablero pero no puede firmar ni reclamarle al área: sirve para
-    // comprobar que las acciones no aparecen sin permiso (y que el servidor
-    // igual las rechazaría con 403).
-    permissions: [
-      PERMISSIONS.patientsCohortRead,
-      PERMISSIONS.patientsRead,
-      PERMISSIONS.reportsRead,
-    ],
+    // Ve el tablero y el panel pero no puede firmar ni reclamarle al área:
+    // sirve para comprobar que las acciones no aparecen sin permiso (y que
+    // el servidor igual las rechazaría con 403). El rol OPER real NUNCA
+    // tuvo "PATIENT_READ" puntual (ese es del dominio de consentimiento,
+    // no del tablero) — solo el de cohorte + el panel.
+    permissions: [PERMISSIONS.patientsCohortRead, PERMISSIONS.reportsRead],
   },
   {
     id: 7,
-    userName: 'paciente',
+    userName: 'paciente1',
     password: 'Passw0rd1!',
     email: null,
     firstName: 'T.',
     lastName: 'D.',
     isActive: true,
-    // El dueño de la información: ve su recorrido, marca su preparación y
-    // decide quién puede verlo. No entra a ninguna pantalla del hospital.
+    // El dueño de la información (rol PACIENTE_TITULAR): ve su recorrido,
+    // marca su preparación y decide quién puede verlo. No entra a ninguna
+    // pantalla del hospital.
     permissions: [
       PERMISSIONS.journeyRead,
       PERMISSIONS.checklistWrite,
@@ -136,14 +146,15 @@ const USERS: readonly MockUserRow[] = [
   },
   {
     id: 8,
-    userName: 'tutor',
+    userName: 'tutor1',
     password: 'Passw0rd1!',
     email: 'rosa@example.pe',
     firstName: 'Rosa',
     lastName: 'Delgado',
     isActive: true,
-    // Quien acompaña: ve lo mismo mientras el paciente le dé acceso, y lo
-    // único que puede hacer es recordarle. No marca su checklist.
+    // Quien acompaña (rol ACOMPANANTE): ve lo mismo mientras el paciente le
+    // dé acceso, y lo único que puede hacer es recordarle. No marca su
+    // checklist.
     permissions: [PERMISSIONS.journeyRead, PERMISSIONS.guardianRemind],
   },
   {
@@ -154,19 +165,27 @@ const USERS: readonly MockUserRow[] = [
     firstName: 'Carla',
     lastName: 'Núñez',
     isActive: true,
-    // Loguea bien pero el servidor le niega la cohorte con un 403: sirve
-    // para ver que la pantalla maneja "sin permiso" sin romperse.
+    // Loguea bien pero no tiene ningún UserRole en el seed real: sirve
+    // para ver que la pantalla maneja "sin permiso" (403) sin romperse.
     permissions: [],
   },
   {
     id: 4,
-    userName: 'inactivo',
+    userName: 'inactivo1',
     password: 'Passw0rd1!',
-    email: 'inactivo@puente18.pe',
-    firstName: 'Dante',
-    lastName: 'Flores',
+    email: 'inactivo1@example.com',
+    firstName: 'Especialista',
+    lastName: 'Desactivado Ficticio',
     isActive: false,
-    permissions: [PERMISSIONS.patientsRead],
+    // El caso "loguea con la contraseña correcta pero el servidor igual
+    // contesta 401" (State=false invalida la sesión sin esperar logout).
+    permissions: [
+      PERMISSIONS.patientsCohortRead,
+      PERMISSIONS.patientsRead,
+      PERMISSIONS.patientsWrite,
+      PERMISSIONS.reportsRead,
+      PERMISSIONS.referralAreaNotify,
+    ],
   },
 ];
 
