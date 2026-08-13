@@ -238,8 +238,11 @@ function currentJourney(): TransitionJourney {
       done: store.checked[item.id] ?? item.done,
     })),
     guardian: {
-      ...JOURNEY.guardian,
-      hasAccess: store.guardianAccess ?? JOURNEY.guardian.hasAccess,
+      // El mock siempre tiene un tutor de ejemplo — el "| null" del tipo
+      // real es para el caso (ya adulto, sin tutor activo) que este JSON
+      // fijo no representa.
+      ...JOURNEY.guardian!,
+      hasAccess: store.guardianAccess ?? JOURNEY.guardian!.hasAccess,
     },
     pendingMessage: store.messages.at(-1) ?? null,
   };
@@ -252,9 +255,10 @@ function currentJourney(): TransitionJourney {
  */
 export function journeyFor(role: JourneyViewerRole): JourneyAccess {
   const journey = currentJourney();
-  const viewer = viewerFor(role, journey.guardian.relationship);
+  // Igual que en currentJourney(): este mock siempre construye un tutor.
+  const viewer = viewerFor(role, journey.guardian!.relationship);
 
-  if (role === 'GUARDIAN' && !journey.guardian.hasAccess) {
+  if (role === 'GUARDIAN' && !journey.guardian!.hasAccess) {
     return {
       access: 'REVOKED',
       viewer,
