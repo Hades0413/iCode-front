@@ -16,7 +16,13 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS dev
 COPY . .
 EXPOSE 5173
-CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]
+# "pnpm run dev -- --host 0.0.0.0" NO funciona acá: pnpm reenvía el "--"
+# tal cual a Vite, que lo interpreta como fin-de-flags y termina
+# ignorando "--host" (comprobado: el server queda escuchando solo en el
+# loopback del contenedor, "Network: use --host to expose" en el log
+# pese al flag). Por eso "--host" vive en el script "dev" del
+# package.json, no acá.
+CMD ["pnpm", "run", "dev"]
 
 # ---- build: compila con Vite -> dist/ (assets estáticos) ----
 FROM deps AS build

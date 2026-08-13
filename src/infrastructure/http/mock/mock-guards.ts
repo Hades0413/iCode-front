@@ -4,6 +4,7 @@ import {
   revokeSession,
   type MockUserRow,
 } from './mock-database';
+import { readMockSessionCookie } from './mock-cookies';
 import { mockError, type MockRequest, type MockResponse } from './mock-http';
 
 /**
@@ -25,6 +26,18 @@ export function readBearerToken(authorization: string | null): string | null {
   return scheme?.toLowerCase() === 'bearer' && token ? token : null;
 }
 
+/**
+ * El token puede llegar por header Authorization (así probás el mock con
+ * curl/Postman sin cookies) o por la cookie simulada que pone
+ * auth.handlers.ts en el login — mismo orden de prioridad que
+ * SessionAuthGuard en iCode-back. En el navegador, con api-client.ts
+ * actual, siempre va a ser la cookie: nada arma el header desde que
+ * AuthService dejó de guardar el token.
+ */
+export function readSessionToken(request: MockRequest): string | null {
+  return readBearerToken(request.authorization) ?? readMockSessionCookie();
+}
+
 /** O el usuario de la sesión, o el error que hay que devolver. */
 export type GuardResult = { user: MockUserRow } | { error: MockResponse };
 
@@ -36,7 +49,7 @@ export type GuardResult = { user: MockUserRow } | { error: MockResponse };
  * que ese camino se pueda probar sin backend.
  */
 export function requireSession(request: MockRequest): GuardResult {
-  const token = readBearerToken(request.authorization);
+  const token = readSessionToken(request);
   const session = token ? findValidSession(token) : null;
   if (!session) {
     return { error: mockError(401, 'Sesión inválida o expirada.') };

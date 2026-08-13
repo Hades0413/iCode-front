@@ -6,7 +6,8 @@ import {
   revokeSession,
   toUserProfile,
 } from './mock-database';
-import { readBearerToken, requireSession } from './mock-guards';
+import { readSessionToken, requireSession } from './mock-guards';
+import { setMockSessionCookie, clearMockSessionCookie } from './mock-cookies';
 import { mockError, type MockHandler, type MockRoute } from './mock-http';
 
 const login: MockHandler = (request) => {
@@ -27,6 +28,11 @@ const login: MockHandler = (request) => {
   }
 
   const session = createSession(user.id);
+  // Simula lo que hace iCode-back con res.cookie(SESSION_COOKIE_NAME, ...):
+  // sin esto, el GET /auth/me que AuthService.login() dispara justo
+  // después no tiene de dónde sacar la sesión (el front ya no guarda el
+  // token en ningún lado, ver api-client.ts).
+  setMockSessionCookie(session.token, session.expiresAt);
   const body: LoginResponse = {
     accessToken: session.token,
     tokenType: 'Bearer',
@@ -38,10 +44,11 @@ const login: MockHandler = (request) => {
 const logout: MockHandler = (request) => {
   // Sin authenticated(): un logout con token ya inválido no es un error
   // para el cliente, la sesión igual queda cerrada (idempotente).
-  const token = readBearerToken(request.authorization);
+  const token = readSessionToken(request);
   if (token) {
     revokeSession(token);
   }
+  clearMockSessionCookie();
   return { status: 204 };
 };
 
