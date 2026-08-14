@@ -26,6 +26,7 @@ import type {
   PostNotice,
   ReferralAlert,
 } from './referral.entity';
+import type { ReferralReviewStatus } from './referral-review.entity';
 
 /** Los 5 primeros son el recorrido, en orden. Los 2 últimos son desvíos. */
 export type TransitionState =
@@ -149,6 +150,12 @@ export interface Patient {
   referralAlerts: ReferralAlert[];
   /** En qué anda su carta de contrarreferencia (el documento vive aparte). */
   counterReferralStatus: CounterReferralStatus;
+  /**
+   * Qué dijo el destino sobre la historia clínica de transferencia ya
+   * firmada — NONE = todavía no la revisó (el documento en sí vive en
+   * referral-review.entity.ts).
+   */
+  referralReviewStatus: ReferralReviewStatus;
   /** Avance del checklist de preparación del propio paciente, 0..1. null si no aplica. */
   checklistProgress: number | null;
 }

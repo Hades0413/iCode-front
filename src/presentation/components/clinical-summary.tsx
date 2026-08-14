@@ -14,14 +14,16 @@ import {
 } from '../../domain/rules/clinical-summary.rules';
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
-import { SignIcon, SparkIcon } from './icons';
+import { formatFileSize } from '../../common/utils/format-file-size';
+import { PaperclipIcon, SignIcon, SparkIcon, TemplateIcon } from './icons';
+import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
 import { Section } from './ui/section';
 import { LoadingRows } from './ui/states';
 import type { LoadError } from '../hooks/use-async-resource';
 
 /** Qué acción está en vuelo, para deshabilitar solo esa. */
-export type SummaryBusy = 'generate' | 'save' | 'approve' | null;
+export type SummaryBusy = 'generate' | 'template' | 'upload' | 'save' | 'approve' | null;
 
 /**
  * La historia clínica de transferencia dentro de la ficha del paciente: las
@@ -51,6 +53,8 @@ export function ClinicalSummaryPanel({
   signerName,
   busy,
   onGenerate,
+  onStartTemplate,
+  onUploadDocument,
   onSave,
   onApprove,
   onRetry,
@@ -65,6 +69,10 @@ export function ClinicalSummaryPanel({
   signerName: string;
   busy: SummaryBusy;
   onGenerate: () => void;
+  /** "Llenar la plantilla": arranca un borrador en blanco, a mano. */
+  onStartTemplate: () => void;
+  /** "Subir el documento": ya viene redactado, solo se adjunta. */
+  onUploadDocument: (file: File) => void;
   /**
    * Devuelve si el guardado salió bien. Importa: si el servidor falla, el
    * panel se queda en modo edición con el texto que el médico escribió — un
@@ -120,8 +128,10 @@ export function ClinicalSummaryPanel({
           patient={patient}
           blocked={blocked}
           canWrite={canWrite}
-          isGenerating={busy === 'generate'}
+          busy={busy}
           onGenerate={onGenerate}
+          onStartTemplate={onStartTemplate}
+          onUploadDocument={onUploadDocument}
         />
       ) : (
         <div className="stackv">
@@ -270,20 +280,26 @@ export function ClinicalSummaryPanel({
   );
 }
 
-/** Todavía no hay documento: o no le toca, o hay que generarlo. */
+/** Todavía no hay documento: o no le toca, o hay que elegir cómo empezarlo. */
 function EmptySummary({
   patient,
   blocked,
   canWrite,
-  isGenerating,
+  busy,
   onGenerate,
+  onStartTemplate,
+  onUploadDocument,
 }: Readonly<{
   patient: Patient;
   blocked: string | null;
   canWrite: boolean;
-  isGenerating: boolean;
+  busy: SummaryBusy;
   onGenerate: () => void;
+  onStartTemplate: () => void;
+  onUploadDocument: (file: File) => void;
 }>) {
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+
   if (blocked) {
     return (
       <Notice tone="locked" className="wrapmax">
@@ -302,21 +318,76 @@ function EmptySummary({
       </Notice>
 
       {canWrite && canGenerateSummary(patient) ? (
-        <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn btn-pri btn-lg"
-            disabled={isGenerating}
-            onClick={onGenerate}
-          >
-            {isGenerating ? <i className="spin" /> : <SparkIcon />}
-            {isGenerating ? 'Generando el borrador…' : 'Generar con IA'}
-          </button>
-          <span className="mini wrapmax">
-            La IA arma un borrador con lo que ya está en la ficha y marca lo que
-            no pudo confirmar. Después lo revisas, lo corriges y lo firmas tú:
-            nada sale del INSN sin la firma de un médico.
-          </span>
+        <div className="cardrow">
+          <div className="startcard">
+            <div className="startcard-h">
+              <SparkIcon />
+              <h3>Generar con IA</h3>
+            </div>
+            <p className="mini">
+              Arma un borrador con lo que ya está en la ficha y marca lo que no
+              pudo confirmar. Después lo revisas, lo corriges y lo firmas tú.
+            </p>
+            <button
+              type="button"
+              className="btn btn-pri"
+              disabled={busy !== null}
+              onClick={onGenerate}
+            >
+              {busy === 'generate' ? <i className="spin" /> : <SparkIcon />}
+              {busy === 'generate' ? 'Generando…' : 'Generar con IA'}
+            </button>
+          </div>
+
+          <div className="startcard">
+            <div className="startcard-h">
+              <TemplateIcon />
+              <h3>Llenar la plantilla</h3>
+            </div>
+            <p className="mini">
+              Empieza las 2 hojas en blanco y las completas vos mismo, sección
+              por sección — sin que la IA proponga nada.
+            </p>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy !== null}
+              onClick={onStartTemplate}
+            >
+              {busy === 'template' ? <i className="spin" /> : <TemplateIcon />}
+              {busy === 'template' ? 'Creando…' : 'Empezar en blanco'}
+            </button>
+          </div>
+
+          <div className="startcard">
+            <div className="startcard-h">
+              <PaperclipIcon />
+              <h3>Subir el documento</h3>
+            </div>
+            <p className="mini">
+              Si la historia ya está redactada en otro sistema, adjuntala en
+              PDF o Word y transcribila a las secciones desde acá.
+            </p>
+            <FilePicker
+              label="Elegir el documento"
+              accept=".pdf,.doc,.docx"
+              hint="PDF o Word, hasta 10 MB"
+              file={uploadFile}
+              onSelect={setUploadFile}
+              disabled={busy !== null}
+            />
+            <button
+              type="button"
+              className="btn"
+              disabled={busy !== null || !uploadFile}
+              onClick={() => {
+                if (uploadFile) onUploadDocument(uploadFile);
+              }}
+            >
+              {busy === 'upload' ? <i className="spin" /> : null}
+              {busy === 'upload' ? 'Subiendo…' : 'Subir documento'}
+            </button>
+          </div>
         </div>
       ) : (
         <Notice tone="locked" className="wrapmax">
@@ -348,14 +419,24 @@ function SummaryHeader({ summary }: Readonly<{ summary: ClinicalSummary }>) {
   }
 
   return (
-    <Notice tone="warn" className="wrapmax">
-      <b>Esto es un borrador, no una historia clínica.</b> Lo generó{' '}
-      {summary.draftedBy.name} el {formatShortDate(summary.draftedAt)} con los
-      datos de la ficha
-      {summary.editedAt &&
-        `, y ${summary.editedBy} lo corrigió el ${formatShortDate(summary.editedAt)}`}
-      . No vale para nadie hasta que un médico lo lea y lo firme.
-    </Notice>
+    <div className="stackv">
+      <Notice tone="warn" className="wrapmax">
+        <b>Esto es un borrador, no una historia clínica.</b> Lo generó{' '}
+        {summary.draftedBy.name} el {formatShortDate(summary.draftedAt)} con
+        los datos de la ficha
+        {summary.editedAt &&
+          `, y ${summary.editedBy} lo corrigió el ${formatShortDate(summary.editedAt)}`}
+        . No vale para nadie hasta que un médico lo lea y lo firme.
+      </Notice>
+      {summary.sourceDocument && (
+        <Notice tone="info" className="wrapmax">
+          Viene de un documento subido: <b>{summary.sourceDocument.fileName}</b>{' '}
+          <span className="mini">
+            · {formatFileSize(summary.sourceDocument.fileSize)}
+          </span>
+        </Notice>
+      )}
+    </div>
   );
 }
 

@@ -143,4 +143,53 @@ export class PatientService {
     }
     return this.patientRepository.approveClinicalSummary(patient.id);
   }
+
+  /**
+   * "Llenar la plantilla": arranca un borrador en blanco, a mano, sin IA.
+   * Misma precondición que generar — es otra forma de empezar, no otro
+   * momento del ciclo de vida.
+   */
+  async startClinicalSummaryTemplate(
+    patient: Patient,
+    current: ClinicalSummary | null = null,
+  ): Promise<ClinicalSummaryResult> {
+    const allowed = current
+      ? canRegenerateSummary(patient, current)
+      : canGenerateSummary(patient);
+    if (!allowed) {
+      throw new ClinicalSummaryNotAllowedError(
+        summaryBlockedReason(patient) ??
+          (current?.editedAt
+            ? 'El borrador tiene correcciones tuyas: reiniciarlo las perdería.'
+            : 'Este paciente ya tiene su historia clínica empezada.'),
+      );
+    }
+    return this.patientRepository.startClinicalSummaryTemplate(patient.id);
+  }
+
+  /**
+   * "Subir el documento": la historia ya viene redactada aparte, solo se
+   * adjunta. Misma precondición que generar/plantilla.
+   */
+  async uploadClinicalSummaryDocument(
+    patient: Patient,
+    file: File,
+    current: ClinicalSummary | null = null,
+  ): Promise<ClinicalSummaryResult> {
+    const allowed = current
+      ? canRegenerateSummary(patient, current)
+      : canGenerateSummary(patient);
+    if (!allowed) {
+      throw new ClinicalSummaryNotAllowedError(
+        summaryBlockedReason(patient) ??
+          (current?.editedAt
+            ? 'El borrador tiene correcciones tuyas: reemplazarlo las perdería.'
+            : 'Este paciente ya tiene su historia clínica empezada.'),
+      );
+    }
+    return this.patientRepository.uploadClinicalSummaryDocument(
+      patient.id,
+      file,
+    );
+  }
 }

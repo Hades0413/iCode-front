@@ -145,6 +145,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -172,6 +173,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-07-18T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: 0.4,
   },
   {
@@ -209,6 +211,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
       },
     ],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -235,6 +238,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-07-27T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -260,6 +264,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -286,6 +291,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-07-30T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -311,6 +317,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -336,6 +343,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -361,6 +369,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -386,6 +395,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -411,6 +421,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
   {
@@ -437,6 +448,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: null,
   },
 ];
@@ -590,6 +602,7 @@ function buildCase(spec: CaseSpec): PatientRow {
         : [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
+    referralReviewStatus: 'NONE',
     checklistProgress: spec.checklist ?? null,
   };
 }
@@ -1317,6 +1330,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-04-11T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'SENT',
+    referralReviewStatus: 'NONE',
     checklistProgress: 1,
   },
   {
@@ -1354,6 +1368,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-05-20T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'SENT',
+    referralReviewStatus: 'NONE',
     checklistProgress: 1,
   },
   {
@@ -1391,6 +1406,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-04-08T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'SENT',
+    referralReviewStatus: 'NONE',
     checklistProgress: 1,
   },
   {
@@ -1429,6 +1445,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-04-20T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'SENT',
+    referralReviewStatus: 'NONE',
     checklistProgress: 0.3,
   },
   {
@@ -1467,6 +1484,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-02-10T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'UPLOADED',
+    referralReviewStatus: 'NONE',
     checklistProgress: 0.6,
   },
 ];
@@ -1547,6 +1565,7 @@ function extraPostTransition(count: number): PatientRow[] {
       ],
       referralAlerts: [],
       counterReferralStatus: 'SENT' as const,
+      referralReviewStatus: 'NONE',
       checklistProgress: state === 'LOST_TO_FOLLOW_UP' ? 0.3 : 1,
     };
   });

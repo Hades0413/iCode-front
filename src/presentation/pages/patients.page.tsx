@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { patientService } from '../../composition-root';
+import { referralReviewService } from '../../composition-root';
 import type { Patient } from '../../domain/entities/patient.entity';
 import {
   DEFAULT_COHORT_FILTER,
@@ -13,9 +13,10 @@ import {
   type CohortFilterKey,
   type CohortSort,
 } from '../../domain/rules/cohort.rules';
-import { PERMISSIONS, hasPermission } from '../../domain/rules/permissions';
+import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatLongDate } from '../../common/utils/format-date';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
+import { saveBlob } from '../../common/utils/save-blob';
 import { CohortFilterBar } from '../components/cohort-filter-bar';
 import { CohortStats } from '../components/cohort-stats';
 import { PatientsTable } from '../components/patients-table';
@@ -24,7 +25,6 @@ import { PageHeader, PageHeaderStat } from '../components/ui/page-header';
 import { Pagination } from '../components/ui/pagination';
 import { Section } from '../components/ui/section';
 import { LoadErrorState, LoadingRows } from '../components/ui/states';
-import { useAuth } from '../hooks/use-auth';
 import { useCohort } from '../hooks/use-cohort';
 import { useToasts } from '../hooks/use-toasts';
 
@@ -45,18 +45,16 @@ const PAGE_SIZE = 10;
  * paciente sale de esta lista y pasa al panel de seguimiento.
  *
  * La pantalla es **la lista y nada más**: los cortes con sus conteos arriba
- * (que son navegación, no contenido) y la cohorte completa abajo. El trabajo
- * del día se hace desde la propia fila — generar la historia clínica con IA,
- * abrirla para revisarla y firmarla, o avisarle a la posta — sin un resumen
- * de tareas aparte que repita lo que la tabla ya muestra.
+ * (que son navegación, no contenido) y la cohorte completa abajo. Cada fila
+ * abre la ficha del paciente, que es donde se genera/completa la historia
+ * clínica y se firma; la única acción que vive en la fila es "Ver PDF" de
+ * una observación, porque no tiene sentido abrir la ficha entera para eso.
  */
 export function PatientsPage() {
-  const { patients, isLoading, error, reload, applyPatient } = useCohort();
-  const { user } = useAuth();
+  const { patients, isLoading, error, reload } = useCohort();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { toasts, push } = useToasts();
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   // Sin ?filtro, el tablero abre por el trabajo pendiente (ver
   // DEFAULT_COHORT_FILTER), no por la cohorte entera.
@@ -84,7 +82,6 @@ export function PatientsPage() {
   );
   const pageRows = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const summary = cohortSummary(patients);
-  const canWrite = hasPermission(user, PERMISSIONS.patientsWrite);
 
   function updateParams(
     changes: Record<string, string | null>,
@@ -137,30 +134,20 @@ export function PatientsPage() {
     navigate(`/pacientes/${patient.id}`);
   }
 
-  /**
-   * El borrador con IA desde la fila. Genera y nada más: lleva al médico un
-   * paso, no cinco — revisar y firmar se hacen en la ficha, leyendo.
-   */
-  async function generateOne(patient: Patient) {
-    setGeneratingId(patient.id);
+  /** "Ver PDF" de una observación, directo desde la fila de la tabla. */
+  async function viewReferralReviewDocument(patient: Patient) {
     try {
-      const { patient: updated } =
-        await patientService.generateClinicalSummary(patient);
-      applyPatient(updated);
-      push({
-        tone: 'ok',
-        title: `Borrador listo para ${patient.initials}`,
-        detail:
-          'Abre su ficha para revisarlo y firmarlo. Hasta que no lo firmes, no vale.',
-      });
+      const blob =
+        await referralReviewService.downloadReferralReviewDocument(
+          patient.id,
+        );
+      saveBlob(blob, `observacion-${patient.initials}.pdf`);
     } catch (err) {
       push({
         tone: 'err',
-        title: 'No se pudo generar el borrador',
+        title: 'No se pudo descargar el PDF',
         detail: getApiErrorMessage(err),
       });
-    } finally {
-      setGeneratingId(null);
     }
   }
 
@@ -218,9 +205,7 @@ export function PatientsPage() {
                   changeView({ orden: key === 'meses' ? null : key })
                 }
                 onOpen={openPatient}
-                onGenerateSummary={generateOne}
-                generatingId={generatingId}
-                canWrite={canWrite}
+                onViewReferralReviewDocument={viewReferralReviewDocument}
               />
               <Pagination
                 page={page}

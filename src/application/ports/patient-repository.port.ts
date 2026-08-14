@@ -61,4 +61,18 @@ export interface PatientRepositoryPort {
 
   /** La firma: el borrador pasa a ser un documento clínico. */
   approveClinicalSummary(patientId: string): Promise<ClinicalSummaryResult>;
+
+  /** "Llenar la plantilla": arranca un borrador en blanco, a mano, sin IA. */
+  startClinicalSummaryTemplate(
+    patientId: string,
+  ): Promise<ClinicalSummaryResult>;
+
+  /**
+   * "Subir el documento": la historia ya viene redactada aparte, solo se
+   * adjunta (PDF o Word).
+   */
+  uploadClinicalSummaryDocument(
+    patientId: string,
+    file: File,
+  ): Promise<ClinicalSummaryResult>;
 }

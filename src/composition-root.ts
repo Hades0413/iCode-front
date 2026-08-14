@@ -2,10 +2,14 @@ import { AuthService } from './application/services/auth.service';
 import { PatientService } from './application/services/patient.service';
 import { JourneyService } from './application/services/journey.service';
 import { ReferralService } from './application/services/referral.service';
+import { ReferralReviewService } from './application/services/referral-review.service';
+import { PatientAttachmentService } from './application/services/patient-attachment.service';
 import { authRepository } from './infrastructure/repositories/auth.repository';
 import { patientRepository } from './infrastructure/repositories/patient.repository';
 import { journeyRepository } from './infrastructure/repositories/journey.repository';
 import { referralRepository } from './infrastructure/repositories/referral.repository';
+import { referralReviewRepository } from './infrastructure/repositories/referral-review.repository';
+import { patientAttachmentRepository } from './infrastructure/repositories/patient-attachment.repository';
 
 /**
  * Composition root: el único lugar de todo el front donde se "inyectan" las
@@ -21,4 +25,10 @@ import { referralRepository } from './infrastructure/repositories/referral.repos
 export const authService = new AuthService(authRepository);
 export const patientService = new PatientService(patientRepository);
 export const referralService = new ReferralService(referralRepository);
+export const referralReviewService = new ReferralReviewService(
+  referralReviewRepository,
+);
+export const patientAttachmentService = new PatientAttachmentService(
+  patientAttachmentRepository,
+);
 export const journeyService = new JourneyService(journeyRepository);

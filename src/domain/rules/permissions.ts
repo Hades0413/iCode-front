@@ -42,6 +42,8 @@ export const PERMISSIONS = {
   healthPostNotify: 'HEALTH_POST_NOTIFY',
   /** Subir la carta de contrarreferencia y enviarla a la posta. */
   counterReferralManage: 'COUNTER_REFERRAL_MANAGE',
+  /** Registrar si el destino aceptó, rechazó u observó la historia clínica. */
+  referralReviewManage: 'REFERRAL_REVIEW_MANAGE',
 
   /* --- el paciente y quien lo acompaña --- */
   /** Ver el propio recorrido (o el de quien acompaña). */

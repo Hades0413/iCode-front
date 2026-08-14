@@ -266,6 +266,7 @@ function draftFor(
     editedAt: null,
     approvedBy: null,
     approvedAt: null,
+    sourceDocument: null,
   };
 }
 

@@ -123,6 +123,28 @@ class HttpPatientRepository implements PatientRepositoryPort {
     );
     return data;
   }
+
+  async startClinicalSummaryTemplate(
+    patientId: string,
+  ): Promise<ClinicalSummaryResult> {
+    const { data } = await apiClient.post<ClinicalSummaryResult>(
+      `${summaryUrl(patientId)}/template`,
+    );
+    return data;
+  }
+
+  async uploadClinicalSummaryDocument(
+    patientId: string,
+    file: File,
+  ): Promise<ClinicalSummaryResult> {
+    const body = new FormData();
+    body.append('file', file);
+    const { data } = await apiClient.post<ClinicalSummaryResult>(
+      `${summaryUrl(patientId)}/document`,
+      body,
+    );
+    return data;
+  }
 }
 
 export const patientRepository = new HttpPatientRepository();

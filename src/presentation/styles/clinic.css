@@ -1578,6 +1578,63 @@
   font-size: var(--t-meta);
 }
 
+/* ---------- las 3 formas de empezar la historia clínica ---------- */
+.p18 .cardrow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.p18 .startcard {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+}
+.p18 .startcard-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.p18 .startcard-h h3 {
+  font-size: var(--t-body-lg);
+  font-weight: 680;
+  letter-spacing: -0.014em;
+}
+.p18 .startcard .filepick {
+  background: var(--wash);
+}
+
+/* ---------- exámenes y documentos ---------- */
+.p18 .attlist {
+  display: grid;
+  gap: 8px;
+}
+.p18 .attitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.p18 .attitem-t {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.p18 .attitem-t b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---------- elegir un archivo ---------- */
 .p18 .filepick {
   display: flex;

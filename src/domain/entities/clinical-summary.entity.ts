@@ -60,4 +60,9 @@ export interface ClinicalSummary {
   /** Quién firmó. Siempre una persona. */
   approvedBy: string | null;
   approvedAt: string | null;
+  /**
+   * El archivo original, cuando el borrador vino de "Subir el documento" en
+   * vez de generarse (IA o plantilla en blanco). null en los otros dos casos.
+   */
+  sourceDocument: { fileName: string; fileSize: number } | null;
 }

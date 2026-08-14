@@ -454,6 +454,80 @@ export function ExitIcon() {
   );
 }
 
+/** Adjuntar: un clip de papel. Usado para "subir el documento" y adjuntos. */
+export function PaperclipIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4.2 7.4l4.4-4.4a2.2 2.2 0 013.1 3.1l-5.6 5.6a3.6 3.6 0 01-5.1-5.1l5.2-5.2"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Descargar: una flecha hacia una bandeja. Usado para "ver PDF". */
+export function DownloadIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M7 1.6v7.2M4.2 6.2L7 9l2.8-2.8"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 10.4v1.4a1 1 0 001 1h8a1 1 0 001-1v-1.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** Una plantilla en blanco: una hoja con líneas. Usado por "Llenar la plantilla". */
+export function TemplateIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 1.6h5.4L11 4.2v8.2a1 1 0 01-1 1H3a1 1 0 01-1-1v-9.8a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4.4 7h5.2M4.4 9.4h5.2M4.4 11.8h3.2"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function LockIcon() {
   return (
     <svg
