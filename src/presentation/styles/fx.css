@@ -1,0 +1,127 @@
+/* ============================================================
+   PUENTE 18+ — efectos de marca (components/ui/brand-fx.tsx)
+
+   1. CTA burst: partículas líquidas al hacer click en un botón
+      primario. Adaptación del GooeyNav de reactbits con la paleta
+      del logo y su filtro metaball.
+   2. KPI glow: borde iluminado que sigue al cursor en las tarjetas
+      de número (.kpi y .stat). Adaptación del BorderGlow de
+      reactbits, en claro.
+
+   Solo se anima transform/opacity y las variables del glow: nada
+   que dispare layout.
+   ============================================================ */
+
+/* ---------- 1. el estallido de los CTA ---------- */
+
+.fxb-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1300;
+}
+
+.fxb {
+  position: absolute;
+  /* Tamaño REAL, no un punto: la región de un filtro SVG se calcula sobre
+     el bounding box del elemento, y sobre una caja de 0×0 el filtro pinta
+     exactamente nada. 260px cubre el vuelo máximo (~105px de radio) más el
+     blur del goo. El margen lo re-centra sobre el botón. */
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  /* El goo funde las partículas al nacer (todas juntas en el centro) y las
+     deja separarse como gotas, igual que el logo. */
+  filter: url(#fxb-goo);
+}
+
+.fxb i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--s);
+  height: var(--s);
+  margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  border-radius: 50%;
+  background: var(--c);
+  transform: translate(0, 0) scale(0);
+  animation: fxb-p var(--t) cubic-bezier(0.15, 0.75, 0.25, 1) var(--d)
+    forwards;
+}
+
+/* Vuela lejos rápido, respira, y el líquido se reabsorbe hacia el botón. */
+@keyframes fxb-p {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  28% {
+    transform: translate(var(--sx), var(--sy)) scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--ex), var(--ey)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* ---------- 2. el borde iluminado de los KPIs ---------- */
+
+/* Un anillo de 2 px enmascarado (solo se pinta el borde) con un foco de
+   marca centrado en el cursor (--gx/--gy los pone brand-fx.tsx). Apagado
+   por defecto; el hover lo enciende. */
+.p18 .kpi::before,
+.p18 .stat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: radial-gradient(
+    170px circle at var(--gx, 50%) var(--gy, 50%),
+    #2b62d9 0%,
+    #14bb9a 38%,
+    rgba(43, 98, 217, 0.18) 62%,
+    transparent 78%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.22s var(--ease);
+  pointer-events: none;
+}
+
+.p18 .kpi:hover::before,
+.p18 .stat:hover::before {
+  opacity: 1;
+}
+
+/* El halo exterior que acompaña al anillo: la tarjeta levanta con luz de
+   marca, no solo con sombra gris. */
+.p18 .kpi:hover,
+.p18 .stat:hover {
+  box-shadow:
+    var(--sh-2),
+    0 14px 34px -14px rgba(43, 98, 217, 0.35);
+}
+
+/* ---------- menos movimiento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Las partículas ya no se generan (lo corta brand-fx.tsx); esto es el
+     cinturón por si alguna quedó en vuelo. El glow no parpadea ni se mueve
+     solo —sigue al cursor del propio usuario— así que se queda. */
+  .fxb i {
+    animation: none;
+    opacity: 0;
+  }
+}

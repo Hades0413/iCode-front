@@ -25,11 +25,11 @@ const PAGE_SIZE = 7;
 /**
  * Los que **ya cumplieron 18** y por lo tanto salieron de la lista del
  * especialista. Aquí la pregunta es otra — no "¿está listo para pasar?" sino
- * "¿llegó al otro lado y sigue su tratamiento?".
+ * "¿llegó al otro lado?".
  *
- * Tiene su propia tabla (FollowUpTable): quién es, su edad, a qué hospital lo
- * derivó la posta y si sigue en tratamiento. Las tarjetas van sin onClick
- * porque aquí no hay nada que accionar — el caso ya no es del pediatra.
+ * Tiene su propia tabla (FollowUpTable): quién es, si tiene cita de adultos,
+ * cuándo es y si acudió. Las tarjetas van sin onClick porque aquí no hay nada
+ * que accionar — el caso ya no es del pediatra.
  */
 export function FollowUpPage() {
   const navigate = useNavigate();
@@ -141,7 +141,10 @@ export function FollowUpPage() {
             </Section>
 
             <Section>
-              <Notice className="wrapmax">
+              {/* Sin wrapmax: la nota de obra cruza todo el ancho de la
+                  tarjeta — recortada a media pantalla parecía un error de
+                  layout, no una decisión. */}
+              <Notice>
                 Faltan los gráficos: cuántos llegan por cada hospital, cómo
                 viene mes a mes y cuánto tarda cada posta en conseguir la fecha.
                 Es la próxima pantalla. Datos de prueba.

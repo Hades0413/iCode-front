@@ -5,14 +5,24 @@ import {
   rowUrgency,
   timeToEighteen,
 } from '../../domain/rules/transition.rules';
-import { ChevronIcon, DownloadIcon } from './icons';
-import { SummaryProgress } from './summary-chip';
+import { ChevronIcon, DownloadIcon, TemplateIcon } from './icons';
+import styles from './patients-table.module.css';
 
 const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
   NONE: 'chip none',
   ACCEPTED: 'chip ok',
   OBSERVED: 'chip review',
   REJECTED: 'chip crit',
+};
+
+const URGENT_ROW_CLASS: Record<'crit' | 'warn', string> = {
+  crit: styles['patients-table-urgent-critical'],
+  warn: styles['patients-table-urgent-warning'],
+};
+
+const TIME_LEFT_URGENCY_CLASS: Record<'crit' | 'warn', string> = {
+  crit: styles['patients-table-time-left-critical'],
+  warn: styles['patients-table-time-left-warning'],
 };
 
 /**
@@ -23,7 +33,9 @@ const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
  *
  * Las columnas son lo que el médico decide mirando la lista: quién es, cuánto
  * falta, su diagnóstico, en qué está su **historia clínica** (abrirla para
- * generarla o revisarla) y qué dijo el destino sobre ella ("Referencia").
+ * generarla o revisarla) y qué dijo el destino sobre ella
+ * ("Revisión del destino" — "Referencia" quedaba ambiguo: no queda claro si
+ * habla del documento o de un veredicto sobre él).
  * Todo lo demás vive en la ficha, que es donde se mira un caso puntual.
  */
 export function PatientsTable({
@@ -41,20 +53,22 @@ export function PatientsTable({
   onViewReferralReviewDocument: (patient: Patient) => void;
 }>) {
   return (
-    <div className="tw">
-      <table className="dt">
+    <div className={styles['patients-table-wrapper']}>
+      <table className={styles['patients-table']}>
         <thead>
           <tr>
             <th style={{ paddingLeft: 18 }}>Paciente</th>
             <th className="s">
               <button type="button" onClick={() => onSortChange('meses')}>
                 Cumple 18 en
-                <span className="arw">{sort === 'meses' ? '↑' : ''}</span>
+                <span className={styles['patients-table-sort-arrow']}>
+                  {sort === 'meses' ? '↑' : ''}
+                </span>
               </button>
             </th>
             <th>Diagnóstico</th>
             <th>Resumen de historia clínica</th>
-            <th>Referencia</th>
+            <th>Revisión del destino</th>
           </tr>
         </thead>
         <tbody>
@@ -97,19 +111,25 @@ function PatientRow({
 
   return (
     <tr
-      className={urgency ? `u-${urgency}` : ''}
+      className={urgency ? URGENT_ROW_CLASS[urgency] : ''}
       onClick={() => onOpen(patient)}
     >
-      <td className="stripe">
-        <div className="ini">{patient.initials}</div>
+      <td className={styles['patients-table-stripe-cell']}>
+        <div className={styles['patients-table-initials']}>
+          {patient.initials}
+        </div>
         {/* El DNI va a la vista porque es por lo que se busca: si tipeas uno
             y la fila no lo muestra, no hay forma de confirmar que es él. */}
-        <div className="hc">
+        <div className={styles['patients-table-hint']}>
           {patient.medicalRecord} · DNI {patient.dni}
         </div>
       </td>
       <td>
-        <div className={`ttl ${time.urgency ?? ''}`}>
+        <div
+          className={`${styles['patients-table-time-left']} ${
+            time.urgency ? TIME_LEFT_URGENCY_CLASS[time.urgency] : ''
+          }`}
+        >
           {time.isCountdown ? (
             <b>{time.text}</b>
           ) : (
@@ -118,16 +138,18 @@ function PatientRow({
             </span>
           )}
         </div>
-        <div className="hc">{patient.age}</div>
+        <div className={styles['patients-table-hint']}>{patient.age}</div>
       </td>
       <td>
-        <div className="dxc" title={patient.diagnosis}>
+        <div
+          className={styles['patients-table-diagnosis']}
+          title={patient.diagnosis}
+        >
           {patient.diagnosis}
         </div>
       </td>
       <td>
-        <div className="rowact">
-          <SummaryProgress patient={patient} />
+        <div className={styles['patients-table-row-actions']}>
           <button
             type="button"
             className="btn btn-sm"
@@ -137,35 +159,43 @@ function PatientRow({
             }}
             title={`Abrir la historia clínica de transferencia de ${patient.initials}`}
           >
+            {!isSummaryEmpty && <TemplateIcon />}
             {isSummaryEmpty ? 'Vacía' : 'Ver'}
           </button>
         </div>
       </td>
       <td>
-        <div className="rowact">
-          <span
-            className={REFERRAL_CHIP_CLASS[patient.referralReviewStatus]}
-            title="Qué dijo el destino sobre la historia clínica ya firmada"
-          >
-            <i className="dot" />
-            {REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus]}
-          </span>
-          {patient.referralReviewStatus === 'OBSERVED' && (
+        <div className={styles['patients-table-row-actions']}>
+          {patient.referralReviewStatus === 'OBSERVED' ? (
             <button
               type="button"
-              className="btn btn-sm"
+              className={`${REFERRAL_CHIP_CLASS.OBSERVED} ${styles['patients-table-referral-observed']}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onViewReferralReviewDocument(patient);
               }}
               title={`Ver el PDF de la observación de ${patient.initials}`}
             >
-              <DownloadIcon /> Ver PDF
+              <i className="dot" />
+              {REFERRAL_REVIEW_STATUS_LABELS.OBSERVED} ·{' '}
+              <span className={styles['patients-table-referral-pdf']}>
+                <DownloadIcon /> Ver PDF
+              </span>
             </button>
+          ) : (
+            <span
+              className={REFERRAL_CHIP_CLASS[patient.referralReviewStatus]}
+              title="Qué dijo el destino sobre la historia clínica ya firmada"
+            >
+              {patient.referralReviewStatus !== 'NONE' && (
+                <i className="dot" />
+              )}
+              {REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus]}
+            </span>
           )}
           <button
             type="button"
-            className="go"
+            className={styles['patients-table-row-open-icon']}
             aria-label={`Abrir la ficha de ${patient.initials}`}
           >
             <ChevronIcon />

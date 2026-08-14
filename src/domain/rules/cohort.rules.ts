@@ -1,6 +1,9 @@
 import type { Patient } from '../entities/patient.entity';
+import type { ReferralReviewStatus } from '../entities/referral-review.entity';
 import {
+  ENABLED_MONTHS_BEFORE_18,
   TRANSITION_STATES,
+  isInTutelage,
   isTransitionEnabled,
   needsApprovedSummary,
 } from './transition.rules';
@@ -36,12 +39,23 @@ export interface CohortFilter {
  * estados del caso, no trabajo del especialista, y ya se leen en la columna
  * de estado de cada fila.
  */
+/**
+ * "Cumplen 18 pronto" = **entraron en la ventana de los 3 meses** y todavía no
+ * cumplieron. Se define una sola vez y sale de ENABLED_MONTHS_BEFORE_18 porque
+ * la usan el filtro, el conteo del KPI y el texto de la tarjeta: si cada uno
+ * lleva su propio número, la tarjeta termina prometiendo un recorte que la
+ * lista no hace.
+ */
+export function isTurning18Soon(patient: Patient): boolean {
+  return isInTutelage(patient) && isTransitionEnabled(patient);
+}
+
 export const COHORT_FILTERS: readonly CohortFilter[] = [
   { key: 'todos', label: 'Todos', matches: () => true },
   {
     key: 'proximos',
     label: 'Cumplen 18 pronto',
-    matches: (p) => p.monthsToEighteen > 0 && p.monthsToEighteen <= 3,
+    matches: isTurning18Soon,
   },
   {
     key: 'accion',
@@ -51,13 +65,12 @@ export const COHORT_FILTERS: readonly CohortFilter[] = [
 ];
 
 /**
- * Con qué corte abre el tablero. No es "todos" a propósito: antes de los 18
- * el trabajo del especialista es la historia clínica, así que la lista arranca
- * mostrando **lo que le falta hacer** y no la cohorte entera. Los demás cortes
- * (incluido "Todos") siguen a un click en la barra y en el riel — filtrar por
- * defecto es ordenar el trabajo, no esconder pacientes.
+ * Con qué corte abre el tablero. Es "todos": el especialista tiene que poder
+ * ver el estado de cada paciente de su cohorte, no solo a los que les falta
+ * la historia clínica — el resto de los cortes son navegación sobre eso, no
+ * un filtro que esconde pacientes de entrada.
  */
-export const DEFAULT_COHORT_FILTER: CohortFilterKey = 'accion';
+export const DEFAULT_COHORT_FILTER: CohortFilterKey = 'todos';
 
 export function isCohortFilterKey(value: string): value is CohortFilterKey {
   return COHORT_FILTERS.some((filter) => filter.key === value);
@@ -71,6 +84,27 @@ export type CohortSort = 'meses' | 'estado';
 
 export function isCohortSort(value: string): value is CohortSort {
   return value === 'meses' || value === 'estado';
+}
+
+/**
+ * Corte por "revisión del destino" (ver referral-review.rules.ts): qué dijo
+ * la posta/hospital sobre la historia clínica ya firmada de cada paciente.
+ * Va aparte de CohortFilterKey porque es otro eje — un especialista puede
+ * querer, por ejemplo, "Sin historia clínica" + "Rechazada" a la vez, y los
+ * cortes de arriba son excluyentes entre sí.
+ */
+export type ReferralStatusFilter = ReferralReviewStatus | 'ALL';
+
+export function isReferralStatusFilter(
+  value: string,
+): value is ReferralStatusFilter {
+  return (
+    value === 'ALL' ||
+    value === 'NONE' ||
+    value === 'ACCEPTED' ||
+    value === 'REJECTED' ||
+    value === 'OBSERVED'
+  );
 }
 
 /** Solo los dígitos: así "12.345.678" y "12345678" son el mismo DNI. */
@@ -116,6 +150,8 @@ export interface CohortView {
   /** El DNI que se está tipeando. Vacío = sin buscar. */
   query: string;
   sort: CohortSort;
+  /** "ALL" = sin recorte por revisión del destino. */
+  referralStatus: ReferralStatusFilter;
 }
 
 /*
@@ -135,6 +171,11 @@ export function selectCohort(
   return patients
     .filter((patient) => (filter ? filter.matches(patient) : true))
     .filter((patient) => (query ? matchesDni(patient, query) : true))
+    .filter((patient) =>
+      view.referralStatus === 'ALL'
+        ? true
+        : patient.referralReviewStatus === view.referralStatus,
+    )
     .sort((a, b) =>
       view.sort === 'estado'
         ? TRANSITION_STATES.indexOf(a.state) -
@@ -148,9 +189,7 @@ export function selectCohort(
 export function cohortSummary(patients: readonly Patient[]) {
   return {
     total: patients.length,
-    turning18Soon: patients.filter(
-      (p) => p.monthsToEighteen > 0 && p.monthsToEighteen <= 3,
-    ).length,
+    turning18Soon: patients.filter(isTurning18Soon).length,
     withoutApprovedSummary: patients.filter(needsApprovedSummary).length,
     /** De esos, los que ni borrador tienen: hay que generarlo. */
     withoutSummary: patients.filter(
@@ -189,6 +228,10 @@ export interface CohortKpi {
   severity: KpiSeverity;
   /** De qué está hecho el número. Vacío = no se descompone. */
   parts: KpiPart[];
+}
+
+function monthsText(n: number): string {
+  return `${n} ${n === 1 ? 'mes' : 'meses'}`;
 }
 
 /**
@@ -233,23 +276,31 @@ export function cohortKpis(patients: readonly Patient[]): CohortKpi[] {
       label: 'Cumplen 18 pronto',
       value: s.turning18Soon,
       total: s.total,
+      // La línea dice el CORTE que hace la tarjeta (la ventana entera), y
+      // recién después el más próximo. Al revés — "el más próximo cumple en 1
+      // mes" solo — se lee como si la lista fuera de un mes, y abrirla con
+      // pacientes de tres parece un filtro roto.
       hint:
         s.turning18Soon > 0
           ? Number.isFinite(nextBirthday)
-            ? `su historia ya se puede crear · el más próximo cumple en ${nextBirthday === 1 ? '1 mes' : `${nextBirthday} meses`}`
-            : 'en 3 meses o menos: su historia ya se puede crear'
-          : 'nadie cumple 18 en los próximos 3 meses',
+            ? `en ${ENABLED_MONTHS_BEFORE_18} meses o menos: su historia ya se puede crear · el más próximo, en ${monthsText(nextBirthday)}`
+            : `en ${ENABLED_MONTHS_BEFORE_18} meses o menos: su historia ya se puede crear`
+          : `nadie cumple 18 en los próximos ${ENABLED_MONTHS_BEFORE_18} meses`,
       severity: s.turning18Soon > 0 ? 'warn' : 'neutral',
       parts: [],
     },
     {
       key: 'accion',
-      label: 'Sin historia clínica',
+      // "firmada" no es un detalle: sin esa palabra la tarjeta promete
+      // pacientes en cero y la lista abre con borradores al 85 % — que es
+      // justamente lo que cuenta, porque una historia sin firma no vale.
+      // Además es la misma etiqueta que el filtro y el título de la lista.
+      label: cohortFilterLabel('accion'),
       value: s.withoutApprovedSummary,
       total: s.total,
       hint:
         s.withoutApprovedSummary > 0
-          ? 'se firma 1 día antes del cumpleaños: la campanita avisa'
+          ? 'incluye los borradores sin firmar · se firma 1 día antes del cumpleaños'
           : 'todos tienen su historia clínica firmada',
       severity: s.withoutApprovedSummary > 0 ? 'crit' : 'ok',
       parts: [

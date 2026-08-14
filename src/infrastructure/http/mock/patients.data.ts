@@ -145,7 +145,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'ACCEPTED',
     checklistProgress: null,
   },
   {
@@ -173,7 +173,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-07-18T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'OBSERVED',
     checklistProgress: 0.4,
   },
   {
@@ -211,7 +211,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
       },
     ],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'REJECTED',
     checklistProgress: null,
   },
   {
@@ -1219,6 +1219,7 @@ function freeInitials(count: number, offset = 0): string[] {
     ...MORE_CASES.map((spec) =>
       spec.initials.toLowerCase().replaceAll('.', ''),
     ),
+    'nl',
     'hs',
     'nc',
     'jl',
@@ -1293,6 +1294,36 @@ const EXTRA_IN_TUTELAGE: readonly PatientRow[] = extraCases(50).map(buildCase);
    ============================================================ */
 
 const POST_TRANSITION: readonly PatientRow[] = [
+  {
+    // El post-18 SIN cita: cumplió hace poco y la posta todavía no le
+    // consigue fecha. Existe para que el panel muestre el caso "sin cita"
+    // (las columnas de cita van con raya) y no solo los que ya la tienen.
+    id: 'nl',
+    initials: 'N.L.',
+    dni: '73418205',
+    medicalRecord: 'HC-176103',
+    sex: 'F',
+    age: '18a 0m',
+    monthsToEighteen: 0,
+    turnedEighteenAt: '2026-08-02T00:00',
+    diagnosis: 'Linfoma no Hodgkin, en vigilancia',
+    specialty: 'Oncología pediátrica',
+    attendingDoctor: 'Dr. Álvaro Solís',
+    district: 'Villa El Salvador',
+    state: 'APPOINTMENT_IN_PROCESS',
+    summaryStatus: 'APPROVED',
+    healthPost: POSTS.ves,
+    referredToPostAt: '2026-06-02T09:00',
+    hospitalReferral: null,
+    appointment: null,
+    lastAction: 'Cumplió 18 · 2 ago',
+    daysWaitingOnPost: 10,
+    postNotices: [{ sentAt: '2026-06-02T09:00', sentBy: REFERRAL_AREA_STAFF }],
+    referralAlerts: [],
+    counterReferralStatus: 'SENT',
+    referralReviewStatus: 'NONE',
+    checklistProgress: 0.8,
+  },
   {
     // El post-18 del oncólogo: sin él, el panel "Ya cumplieron 18" del
     // usuario `medico` quedaba vacío y parecía roto.

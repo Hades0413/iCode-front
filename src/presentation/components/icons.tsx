@@ -502,6 +502,35 @@ export function DownloadIcon() {
   );
 }
 
+/**
+ * Una hoja escrita, con la esquina doblada. Marca que detrás del control hay
+ * un DOCUMENTO que leer y no un estado: el resumen que se abre en la ficha,
+ * el oficio con el que el destino observó la referencia.
+ *
+ * Es el "file-text" del prototipo de diseño, portado a inline como el resto
+ * del set — por eso el viewBox de 24 y el trazo de 2, que es la geometría con
+ * la que está dibujado allá.
+ */
+export function DocIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M15 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7z" />
+      <path d="M14 2v4a2 2 0 002 2h4" />
+      <path d="M10 9H8M16 13H8M16 17H8" />
+    </svg>
+  );
+}
+
 /** Una plantilla en blanco: una hoja con líneas. Usado por "Llenar la plantilla". */
 export function TemplateIcon() {
   return (
