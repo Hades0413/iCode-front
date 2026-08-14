@@ -145,6 +145,33 @@ tr.patients-table-urgent-warning:hover .patients-table-stripe-cell::before {
   white-space: nowrap;
 }
 
+/* Columna centrada: cabecera y celdas alineadas al medio (diagnóstico,
+   resumen y referencia — las de estado se leen mejor bajo su título). */
+.patients-table-centered {
+  text-align: center;
+}
+.patients-table-centered .patients-table-row-actions {
+  justify-content: center;
+}
+.patients-table-centered .patients-table-diagnosis {
+  margin-inline: auto;
+}
+
+/* El chip "Observada" es un botón: hay un PDF que leer ahí adentro. */
+.patients-table-chip-doc {
+  cursor: pointer;
+  transition:
+    box-shadow 0.14s var(--ease),
+    transform 0.1s var(--ease);
+}
+.patients-table-chip-doc:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 20, 32, 0.18);
+}
+.patients-table-chip-doc svg {
+  flex: none;
+}
+
 .patients-table-time-left {
   font-family: var(--mono);
   font-size: var(--t-meta);

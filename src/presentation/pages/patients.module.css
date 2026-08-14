@@ -1,0 +1,75 @@
+/* ============================================================
+   MIS PACIENTES (rol médico) — el tema del prototipo del diseñador
+   (iCode-design), acotado a esta pantalla.
+
+   Es SOLO una lista de custom properties. Se declaran en la tarjeta de
+   contenido de esta vista y las heredan sus hijos, así que las reglas
+   que ya viven en design-system.css y clinic.css (.stat, table.dt,
+   .chip, .btn…) se repintan sin tocarse y sin que ninguna otra pantalla
+   se entere. El riel y el resto del escritorio siguen con la paleta
+   teal del front.
+
+   Si algún día el tema del diseñador pasa a ser el de TODO el producto,
+   este archivo desaparece y sus valores vuelven al :root de
+   design-system.css, que es de donde salieron.
+   ============================================================ */
+
+.patients-theme {
+  /* Neutros con sesgo azul, no verde: es el gris del prototipo. */
+  --wash: #eef2fa;
+  --wash-2: #e2e8f4;
+  --line: #d9e1ee;
+  --line-2: #bcc7db;
+  --ink: #0f1420;
+  --ink-2: #414b60;
+  --ink-3: #6b7488;
+
+  /* Colores de DATO: en qué tramo del puente está el paciente. */
+  --ped: #057263;
+  --ped-2: #045a4e;
+  --ped-tint: #dff2ee;
+  --ped-tint-2: #c8e8e0;
+  --adu: #1e46b0;
+  --adu-2: #17368c;
+  --adu-tint: #e8eefb;
+  --adu-tint-2: #d4e0f7;
+
+  --crit: #b8232c;
+  --crit-tint: #fdecee;
+  --crit-ink: #851a20;
+  --sweep: #f7f9fd;
+
+  --m-ped: #12ab8d;
+  --m-adu: #2e6fe0;
+
+  /* EL acento del producto: el azul de la gota grande del logo. En el
+     prototipo tiñe por igual el consultorio y la app del paciente para
+     que todo se lea como un solo producto — por eso aquí --acc apunta a
+     la marca y no a --ped, que queda como color de dato. */
+  --brand: #2b62d9;
+  --brand-2: #1d43ae;
+  --brand-tint: #e8eefb;
+  --acc: var(--brand);
+  --acc-2: var(--brand-2);
+  --acc-tint: var(--brand-tint);
+
+  /* Las sombras también son azules: una sombra gris sobre un neutro
+     azulado se ve sucia. */
+  --sh-1: 0 1px 2px rgba(15, 20, 32, 0.06);
+  --sh-2:
+    0 2px 4px rgba(15, 20, 32, 0.04), 0 8px 20px -8px rgba(15, 20, 32, 0.14);
+  --sh-3:
+    0 4px 8px rgba(15, 20, 32, 0.06), 0 18px 40px -14px rgba(15, 20, 32, 0.22);
+
+  /* Poppins: geométrica y redonda, de la misma familia visual que el
+     logo líquido. Se autohospeda en main.tsx; el resto de la pila es el
+     paracaídas mientras carga o si un peso falta.
+
+     El font-family se vuelve a declarar a propósito: .p18 ya resolvió
+     var(--sans) con la pila vieja y lo que heredan los hijos es esa
+     lista ya resuelta, no la variable. */
+  --sans:
+    'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--sans);
+}
