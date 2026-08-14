@@ -89,6 +89,28 @@
   color: #fff;
   background: linear-gradient(135deg, var(--m-ped), var(--m-adu));
 }
+.p18 .jn-card-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.p18 .jn-card-title::before {
+  content: '';
+  flex: none;
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--acc);
+}
+.p18 .jn-field + .jn-field {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.p18 .cp-avatar-grad {
+  background: linear-gradient(135deg, var(--m-ped), var(--m-adu));
+  color: #fff;
+  font-weight: 700;
+}
 .p18 .jn-brand-sub {
   color: var(--ink-3);
   font-weight: 500;

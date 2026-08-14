@@ -3,6 +3,7 @@ import type {
   ClinicalSummarySection,
 } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
+import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import type { ClinicalSummaryResult } from '../dto/clinical-summary-result.dto';
 
 /**
@@ -30,6 +31,21 @@ export interface PatientRepositoryPort {
   getClinicalSummaryByConsultationCode(
     code: string,
   ): Promise<ClinicalSummary | null>;
+
+  /**
+   * El encabezado del "pase de consulta" (iniciales, edad, especialidad,
+   * diagnóstico) — mismo código que la historia clínica, recurso separado.
+   */
+  getPatientByConsultationCode(code: string): Promise<Patient | null>;
+
+  /**
+   * "Registrar esta atención": el médico confirma que la consulta de hoy
+   * pasó. Devuelve la ficha actualizada (nuevo estado, nueva cita).
+   */
+  registerConsultationVisit(
+    code: string,
+    report: AppointmentReport,
+  ): Promise<Patient>;
 
   /**
    * Le pide a la IA el borrador de las 2 hojas. Queda en DRAFT: generar no

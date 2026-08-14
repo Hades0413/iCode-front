@@ -3,6 +3,7 @@ import type {
   ClinicalSummarySection,
 } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
+import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import type { ClinicalSummaryResult } from '../../application/dto/clinical-summary-result.dto';
 import type { PatientRepositoryPort } from '../../application/ports/patient-repository.port';
 import { getApiErrorStatus } from '../../common/utils/get-api-error-message';
@@ -61,6 +62,31 @@ class HttpPatientRepository implements PatientRepositoryPort {
       }
       throw error;
     }
+  }
+
+  async getPatientByConsultationCode(code: string): Promise<Patient | null> {
+    try {
+      const { data } = await apiClient.get<Patient>(
+        `/patients/consultation/${encodeURIComponent(code)}`,
+      );
+      return data;
+    } catch (error) {
+      if (getApiErrorStatus(error) === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async registerConsultationVisit(
+    code: string,
+    report: AppointmentReport,
+  ): Promise<Patient> {
+    const { data } = await apiClient.post<Patient>(
+      `/patients/consultation/${encodeURIComponent(code)}/visit`,
+      report,
+    );
+    return data;
   }
 
   async generateClinicalSummary(

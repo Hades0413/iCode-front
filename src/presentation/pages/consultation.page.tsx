@@ -1,38 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { patientService } from '../../composition-root';
 import type { ClinicalSummary } from '../../domain/entities/clinical-summary.entity';
+import type { Patient } from '../../domain/entities/patient.entity';
+import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import { formatShortDate } from '../../common/utils/format-date';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
-import { CameraIcon } from '../components/icons';
+import { useAuth } from '../hooks/use-auth';
+import { useToasts } from '../hooks/use-toasts';
 import { Notice } from '../components/ui/notice';
-
-/**
- * Detección de QR nativa del navegador — sin librería nueva. Es una API
- * experimental (Chrome/Edge de escritorio y Android; ni Firefox ni Safari
- * la tienen todavía), por eso todo lo que la usa comprueba primero
- * `scanSupported` y el botón de cámara desaparece si no está.
- */
-interface BarcodeDetectorResult {
-  rawValue: string;
-}
-interface BarcodeDetectorLike {
-  detect(source: CanvasImageSource): Promise<BarcodeDetectorResult[]>;
-}
-interface BarcodeDetectorConstructor {
-  new (options: { formats: string[] }): BarcodeDetectorLike;
-}
-declare global {
-  interface Window {
-    BarcodeDetector?: BarcodeDetectorConstructor;
-  }
-}
-
-const scanSupported =
-  typeof window !== 'undefined' && 'BarcodeDetector' in window;
+import { Toasts } from '../components/toasts';
+import { ConsultationScanner } from '../components/consultation-scanner';
 
 /** Deja solo lo que un código puede tener: sin espacios, sin el "·" de lectura, en mayúsculas. */
 function normalizeCode(raw: string): string {
-  return raw.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
+  return raw
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 6);
 }
 
 /**
@@ -41,10 +25,9 @@ function normalizeCode(raw: string): string {
  * de 6 caracteres que esa persona genera en su propia app — nunca a partir
  * de su documento dicho en voz alta.
  *
- * Dos caminos al mismo recurso (GET /patients/consultation/:code/clinical-summary,
- * el mismo permiso PATIENT_READ que ya protegía la ficha por id): escanear el
- * QR con la cámara, o escribir el código a mano. El QR es un atajo, no el
- * único camino — por eso el código también se puede dictar y tipear.
+ * Dos caminos al mismo código (GET /patients/consultation/:code y su
+ * .../clinical-summary, el mismo permiso PATIENT_READ que ya protegía la
+ * ficha por id): escanear el QR con la cámara, o escribirlo a mano.
  */
 export function ConsultationPage() {
   const [code, setCode] = useState('');
@@ -52,25 +35,8 @@ export function ConsultationPage() {
     'idle',
   );
   const [error, setError] = useState<string | null>(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
   const [summary, setSummary] = useState<ClinicalSummary | null>(null);
-
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const cancelledRef = useRef(false);
-
-  function stopScan() {
-    cancelledRef.current = true;
-    setIsScanning(false);
-    for (const track of streamRef.current?.getTracks() ?? []) {
-      track.stop();
-    }
-    streamRef.current = null;
-  }
-
-  // Apaga la cámara si la persona se va de la pantalla con el escaneo abierto.
-  useEffect(() => stopScan, []);
 
   async function open(rawCode: string) {
     const normalized = normalizeCode(rawCode);
@@ -79,17 +45,17 @@ export function ConsultationPage() {
     }
     setStatus('loading');
     setError(null);
-    setSummary(null);
     try {
-      const result =
-        await patientService.getClinicalSummaryByConsultationCode(
-          normalized,
-        );
-      if (!result) {
+      const [patientResult, summaryResult] = await Promise.all([
+        patientService.getPatientByConsultationCode(normalized),
+        patientService.getClinicalSummaryByConsultationCode(normalized),
+      ]);
+      if (!patientResult || !summaryResult) {
         setStatus('notfound');
         return;
       }
-      setSummary(result);
+      setPatient(patientResult);
+      setSummary(summaryResult);
       setStatus('idle');
     } catch (err) {
       setStatus('idle');
@@ -97,66 +63,24 @@ export function ConsultationPage() {
     }
   }
 
-  async function startScan() {
-    setScanError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      });
-      streamRef.current = stream;
-      cancelledRef.current = false;
-      setIsScanning(true);
-    } catch {
-      setScanError(
-        'No se pudo abrir la cámara — revisá los permisos del navegador.',
-      );
-    }
-  }
-
-  // Arranca a leer frames recién cuando el <video> ya está montado y tiene
-  // la cámara enchufada — por eso va en su propio efecto, atado a isScanning.
-  useEffect(() => {
-    const video = videoRef.current;
-    const stream = streamRef.current;
-    const Detector = window.BarcodeDetector;
-    if (!isScanning || !video || !stream || !Detector) {
-      return;
-    }
-    video.srcObject = stream;
-    void video.play();
-    const detector = new Detector({ formats: ['qr_code'] });
-
-    async function tick() {
-      if (cancelledRef.current || !video) {
-        return;
-      }
-      try {
-        const codes = await detector.detect(video);
-        const value = codes[0]?.rawValue?.trim();
-        if (value) {
-          stopScan();
-          setCode(normalizeCode(value));
-          await open(value);
-          return;
-        }
-      } catch {
-        // Un frame que no se pudo leer no es el final — sigue probando.
-      }
-      requestAnimationFrame(() => void tick());
-    }
-    void tick();
-     
-  }, [isScanning]);
-
   function reset() {
+    setPatient(null);
     setSummary(null);
     setStatus('idle');
     setError(null);
     setCode('');
   }
 
-  if (summary) {
-    return <ConsultationSummaryView summary={summary} onReset={reset} />;
+  if (patient && summary) {
+    return (
+      <ConsultationSummaryView
+        code={code}
+        patient={patient}
+        summary={summary}
+        onPatientUpdate={setPatient}
+        onReset={reset}
+      />
+    );
   }
 
   return (
@@ -168,43 +92,12 @@ export function ConsultationPage() {
           de consulta. Vas a ver su resumen de historia clínica de
           transferencia.
         </p>
-
-        {isScanning ? (
-          <div className="stackv">
-            <video
-              ref={videoRef}
-              className="jn-qr-wrap"
-              style={{ width: '100%', maxWidth: 320, borderRadius: 16 }}
-              muted
-              playsInline
-            />
-            <button type="button" className="jn-btn" onClick={stopScan}>
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          scanSupported && (
-            <button
-              type="button"
-              className="jn-btn jn-btn-pri"
-              onClick={() => void startScan()}
-            >
-              <CameraIcon />
-              Escanear el QR con la cámara
-            </button>
-          )
-        )}
-        {scanError && (
-          <Notice tone="crit" className="wrapmax">
-            {scanError}
-          </Notice>
-        )}
-        {!scanSupported && !isScanning && (
-          <p className="jn-note">
-            Tu navegador no soporta escanear directo desde acá — usá el
-            código de abajo.
-          </p>
-        )}
+        <ConsultationScanner
+          onDetected={(value) => {
+            setCode(normalizeCode(value));
+            void open(value);
+          }}
+        />
       </section>
 
       <section className="jn-card">
@@ -251,37 +144,48 @@ export function ConsultationPage() {
   );
 }
 
-/** El resumen en modo lectura: nada de botones de editar ni de firmar — acá el médico solo mira. */
+/** El resumen en modo lectura + el formulario para registrar la atención de hoy. */
 function ConsultationSummaryView({
+  code,
+  patient,
   summary,
+  onPatientUpdate,
   onReset,
-}: Readonly<{ summary: ClinicalSummary; onReset: () => void }>) {
+}: Readonly<{
+  code: string;
+  patient: Patient;
+  summary: ClinicalSummary;
+  onPatientUpdate: (patient: Patient) => void;
+  onReset: () => void;
+}>) {
   return (
     <div className="jn-body">
       <section className="jn-card">
-        <h2 className="jn-t">Resumen de historia clínica</h2>
+        <div className="jn-who">
+          <span className="jn-avatar cp-avatar-grad" aria-hidden="true">
+            {patient.initials}
+          </span>
+          <div>
+            <b>{patient.initials}</b>
+            <div className="jn-note">
+              {patient.medicalRecord} · {patient.age} · {patient.specialty}
+            </div>
+          </div>
+        </div>
+        <div className="jn-sub">{patient.diagnosis}</div>
+        <p className="jn-note">
+          Del INSN lo sigue {patient.attendingDoctor}, disponible para dudas
+          del traspaso.
+        </p>
+      </section>
 
-        {summary.status === 'APPROVED' ? (
-          <Notice tone="ok" className="wrapmax">
-            <b>
-              Firmada por {summary.approvedBy ?? 'un médico del INSN'}
-              {summary.approvedAt &&
-                ` el ${formatShortDate(summary.approvedAt)}`}
-              .
-            </b>
-          </Notice>
-        ) : (
-          <Notice tone="warn" className="wrapmax">
-            <b>Esto sigue siendo un borrador</b> — cruzó los 18 sin que nadie
-            lo firmara todavía.
-          </Notice>
-        )}
-
+      <section className="jn-card">
+        <h2 className="jn-card-title jn-t">Resumen de historia clínica</h2>
         <div className="stackv">
           {summary.sections.map((section) => (
-            <div key={section.id}>
-              <div className="jn-sub">{section.title}</div>
-              <p className="jn-note">
+            <div className="jn-field" key={section.id}>
+              <div className="jn-kicker">{section.title}</div>
+              <p className="jn-lead">
                 {section.body.trim() === ''
                   ? `Sin escribir — ${section.hint}`
                   : section.body}
@@ -289,11 +193,175 @@ function ConsultationSummaryView({
             </div>
           ))}
         </div>
-
-        <button type="button" className="jn-btn" onClick={onReset}>
-          Ver a otro paciente
-        </button>
+        {summary.status === 'APPROVED' ? (
+          <Notice tone="ok" className="wrapmax">
+            Firmada por {summary.approvedBy ?? 'un médico del INSN'}
+            {summary.approvedAt &&
+              ` el ${formatShortDate(summary.approvedAt)}`}
+            .
+          </Notice>
+        ) : (
+          <Notice tone="warn" className="wrapmax">
+            Esto sigue siendo un borrador — cruzó los 18 sin que nadie lo
+            firmara todavía.
+          </Notice>
+        )}
       </section>
+
+      <RegisterVisitCard
+        code={code}
+        specialty={patient.specialty}
+        onRegistered={onPatientUpdate}
+      />
+
+      <button type="button" className="jn-btn" onClick={onReset}>
+        Ver a otro paciente
+      </button>
     </div>
   );
 }
+
+/**
+ * "Registrar esta atención": lo que hace que el hospital de origen y el
+ * propio paciente queden al día de dónde sigue su tratamiento — llena la
+ * cita si no la tenía y pasa el caso a FIRST_CARE_DONE (ver
+ * PatientTransitionService.registerConsultationVisit). Siempre pisa lo que
+ * hubiera antes: la atención de hoy es la que importa.
+ */
+function RegisterVisitCard({
+  code,
+  specialty,
+  onRegistered,
+}: Readonly<{
+  code: string;
+  specialty: string;
+  onRegistered: (patient: Patient) => void;
+}>) {
+  const { user } = useAuth();
+  const { toasts, push } = useToasts();
+  const doctorName = user ? `${user.firstName} ${user.lastName}` : '';
+
+  const [hospital, setHospital] = useState('');
+  const [doctor, setDoctor] = useState(
+    doctorName ? `${doctorName} — ${specialty}` : '',
+  );
+  const [date, setDate] = useState(() => toDateInputValue(new Date()));
+  const [time, setTime] = useState(() => toTimeInputValue(new Date()));
+  const [isSending, setIsSending] = useState(false);
+
+  const isComplete =
+    hospital.trim() !== '' && doctor.trim() !== '' && date !== '' && time !== '';
+
+  async function submit() {
+    if (!isComplete) {
+      return;
+    }
+    const report: AppointmentReport = { hospital, doctor, date, time };
+    setIsSending(true);
+    try {
+      const updated = await patientService.registerConsultationVisit(
+        code,
+        report,
+      );
+      onRegistered(updated);
+      push({
+        tone: 'ok',
+        title: 'Atención registrada',
+        detail: 'El hospital de origen y el paciente quedan al día.',
+      });
+    } catch (err) {
+      push({
+        tone: 'err',
+        title: 'No se pudo registrar',
+        detail: getApiErrorMessage(err),
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  return (
+    <section className="jn-card">
+      <h2 className="jn-card-title jn-t">Registrar esta atención</h2>
+      <p className="jn-lead">
+        Con esto el hospital de origen y el propio paciente quedan al día de
+        dónde sigue su tratamiento. Si el paciente no había registrado su
+        cita, esto la llena en automático.
+      </p>
+
+      <div className="fg">
+        <label htmlFor="rv-hospital">Hospital</label>
+        <input
+          id="rv-hospital"
+          className="inp"
+          placeholder="Ej.: Hospital Sergio Bernales"
+          value={hospital}
+          disabled={isSending}
+          onChange={(event) => setHospital(event.target.value)}
+        />
+      </div>
+
+      <div className="fg">
+        <label htmlFor="rv-doctor">Doctor que atiende</label>
+        <input
+          id="rv-doctor"
+          className="inp"
+          value={doctor}
+          disabled={isSending}
+          onChange={(event) => setDoctor(event.target.value)}
+        />
+      </div>
+
+      <div className="jn-field-row">
+        <div className="fg">
+          <label htmlFor="rv-date">Fecha</label>
+          <input
+            id="rv-date"
+            type="date"
+            className="inp"
+            value={date}
+            disabled={isSending}
+            onChange={(event) => setDate(event.target.value)}
+          />
+        </div>
+        <div className="fg">
+          <label htmlFor="rv-time">Hora</label>
+          <input
+            id="rv-time"
+            type="time"
+            className="inp"
+            value={time}
+            disabled={isSending}
+            onChange={(event) => setTime(event.target.value)}
+          />
+        </div>
+      </div>
+
+      <button
+        type="button"
+        className="jn-btn jn-btn-pri"
+        disabled={!isComplete || isSending}
+        onClick={() => void submit()}
+      >
+        {isSending ? <i className="spin" /> : null}
+        {isSending ? 'Registrando…' : 'Registrar atención'}
+      </button>
+
+      <Toasts toasts={toasts} />
+    </section>
+  );
+}
+
+function toDateInputValue(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function toTimeInputValue(date: Date): string {
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${min}`;
+}
+

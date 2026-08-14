@@ -3,6 +3,7 @@ import type {
   ClinicalSummarySection,
 } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
+import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import {
   canApproveSummary,
   canGenerateSummary,
@@ -65,6 +66,19 @@ export class PatientService {
     code: string,
   ): Promise<ClinicalSummary | null> {
     return this.patientRepository.getClinicalSummaryByConsultationCode(code);
+  }
+
+  /** El encabezado del "pase de consulta" — mismo código, otro recurso. */
+  async getPatientByConsultationCode(code: string): Promise<Patient | null> {
+    return this.patientRepository.getPatientByConsultationCode(code);
+  }
+
+  /** "Registrar esta atención": confirma la consulta de hoy. */
+  async registerConsultationVisit(
+    code: string,
+    report: AppointmentReport,
+  ): Promise<Patient> {
+    return this.patientRepository.registerConsultationVisit(code, report);
   }
 
   /**
