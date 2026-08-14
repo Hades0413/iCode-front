@@ -55,6 +55,19 @@ export class PatientService {
   }
 
   /**
+   * El "pase de consulta": el médico escanea (o tipea) el código de 6
+   * caracteres que el paciente generó en su app, sin pedirle el documento en
+   * voz alta. null = el código no existe o ya venció — no se distingue el
+   * motivo, ni acá ni en el servidor, para no darle pistas a quien prueba
+   * códigos al azar.
+   */
+  async getClinicalSummaryByConsultationCode(
+    code: string,
+  ): Promise<ClinicalSummary | null> {
+    return this.patientRepository.getClinicalSummaryByConsultationCode(code);
+  }
+
+  /**
    * Le pide a la IA el borrador. Lo que vuelve es un DRAFT y nada más: el
    * caso de uso "generar" no aprueba nada, y no existe ningún camino en el
    * front que genere y firme de golpe — la revisión de un médico es el punto

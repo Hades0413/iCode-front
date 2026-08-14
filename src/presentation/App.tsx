@@ -12,6 +12,8 @@ import { ReferralNoticesPage } from './pages/referral-notices.page';
 import { CounterReferralsPage } from './pages/counter-referrals.page';
 import { JourneyLayout } from './layouts/journey-layout';
 import { JourneyPage } from './pages/journey.page';
+import { ConsultationLayout } from './layouts/consultation-layout';
+import { ConsultationPage } from './pages/consultation.page';
 import { HomeRedirect } from './routes/home-redirect';
 
 export function App() {
@@ -71,6 +73,23 @@ export function App() {
             }
           >
             <Route path="/mi-recorrido" element={<JourneyPage />} />
+          </Route>
+
+          {/*
+            El "pase de consulta": el médico del hospital de adultos que
+            resuelve el código único de "Mi recorrido". Tampoco lleva
+            CohortProvider — este médico no tiene PATIENT_COHORT_READ, no
+            hay una cohorte que cargar (ver workspace-sections.ts sobre por
+            qué su landing es esta ruta y no /pacientes).
+          */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <ConsultationLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/consulta" element={<ConsultationPage />} />
           </Route>
 
           {/* A dónde entra cada uno depende de sus permisos, no de una ruta

@@ -89,6 +89,27 @@
   color: #fff;
   background: linear-gradient(135deg, var(--m-ped), var(--m-adu));
 }
+.p18 .jn-brand-sub {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.p18 .jn-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.p18 .jn-divider::before,
+.p18 .jn-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
 .p18 .jn-user {
   margin-left: auto;
   font-size: 13.5px;

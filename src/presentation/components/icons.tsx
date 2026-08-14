@@ -32,6 +32,32 @@ export function BridgeGlyph() {
   );
 }
 
+export function CameraIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M2 5.6c0-.66.54-1.2 1.2-1.2h1.4l.7-1.2c.2-.34.56-.55.96-.55h3.48c.4 0 .76.21.96.55l.7 1.2h1.4c.66 0 1.2.54 1.2 1.2v6.8c0 .66-.54 1.2-1.2 1.2H3.2c-.66 0-1.2-.54-1.2-1.2z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="8"
+        cy="9"
+        r="2.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
 export function ChevronIcon() {
   return (
     <svg

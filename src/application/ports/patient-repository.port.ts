@@ -21,6 +21,17 @@ export interface PatientRepositoryPort {
   getClinicalSummary(patientId: string): Promise<ClinicalSummary | null>;
 
   /**
+   * El "pase de consulta": resuelve el código único que el paciente generó en
+   * su app y devuelve su historia clínica de transferencia — para el médico
+   * que lo atiende sin que tenga que decir su documento en voz alta. null =
+   * el código no existe o ya venció (indistinguible a propósito, igual que
+   * el servidor).
+   */
+  getClinicalSummaryByConsultationCode(
+    code: string,
+  ): Promise<ClinicalSummary | null>;
+
+  /**
    * Le pide a la IA el borrador de las 2 hojas. Queda en DRAFT: generar no
    * es firmar.
    */

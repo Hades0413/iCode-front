@@ -95,7 +95,19 @@ export function workspaceLabel(user: AuthenticatedUser | null): string | null {
 /**
  * A dónde entra este usuario. No es siempre `/pacientes`: quien trabaja en
  * referencias tiene que caer en su bandeja, no en una pantalla que no le toca.
+ *
+ * "Pase de consulta" (`/consulta`) no es una `WorkspaceSection` más: no es
+ * una cohorte propia con su tablero, es una sola acción (resolver un código),
+ * así que no compite por el primer lugar del riel — solo es el destino de
+ * alguien que tiene `PATIENT_READ` puntual pero ninguna cohorte que ver
+ * (ej. el médico del hospital de adultos, sin `PATIENT_COHORT_READ`).
  */
 export function landingRoute(user: AuthenticatedUser | null): string {
-  return visibleSections(user).at(0)?.to ?? '/pacientes';
+  const section = visibleSections(user).at(0);
+  if (section) {
+    return section.to;
+  }
+  return hasPermission(user, PERMISSIONS.patientsRead)
+    ? '/consulta'
+    : '/pacientes';
 }

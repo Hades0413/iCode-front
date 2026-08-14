@@ -47,6 +47,22 @@ class HttpPatientRepository implements PatientRepositoryPort {
     }
   }
 
+  async getClinicalSummaryByConsultationCode(
+    code: string,
+  ): Promise<ClinicalSummary | null> {
+    try {
+      const { data } = await apiClient.get<ClinicalSummary>(
+        `/patients/consultation/${encodeURIComponent(code)}/clinical-summary`,
+      );
+      return data;
+    } catch (error) {
+      if (getApiErrorStatus(error) === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
   async generateClinicalSummary(
     patientId: string,
   ): Promise<ClinicalSummaryResult> {

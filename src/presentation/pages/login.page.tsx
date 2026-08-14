@@ -29,6 +29,10 @@ import '../styles/auth.css';
 const OTHER_DEMO_USERS = [
   { userName: 'operador', hint: 'solo lectura: no firma ni avisa' },
   { userName: 'sinpermisos', hint: 'recibe 403 en la lista' },
+  {
+    userName: 'internista2',
+    hint: 'médico de adultos: pase de consulta por código',
+  },
 ];
 
 export function LoginPage() {
