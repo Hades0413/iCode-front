@@ -1,0 +1,168 @@
+/* ============================================================
+   PATIENTS TABLE — estilos propios de este componente.
+   Copiado desde clinic.css (sección "tabla") como punto de partida para
+   poder rediseñarlo sin tocar el archivo compartido ni afectar a
+   follow-up-table.tsx / referral/notice-queue-table.tsx, que siguen
+   usando esas mismas reglas desde clinic.css.
+   ============================================================ */
+
+.patients-table-wrapper {
+  overflow-x: auto;
+  margin: 0 -32px;
+  padding: 0 32px;
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;
+}
+.patients-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-2);
+  font-weight: 700;
+  background: var(--acc-tint);
+  border-bottom: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line));
+  white-space: nowrap;
+}
+.patients-table th:first-child {
+  border-radius: 12px 0 0 0;
+}
+.patients-table th:last-child {
+  border-radius: 0 12px 0 0;
+}
+.patients-table th button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.14s;
+}
+.patients-table th button:hover {
+  opacity: 0.7;
+}
+.patients-table th .patients-table-sort-arrow {
+  font-size: var(--t-meta);
+  line-height: 1;
+}
+.patients-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body);
+  vertical-align: middle;
+  background: var(--paper);
+  transition: background 0.12s;
+}
+.patients-table tbody tr {
+  cursor: pointer;
+}
+.patients-table tbody tr:hover td {
+  background: var(--acc-tint);
+}
+.patients-table tbody tr:hover .patients-table-row-open-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+.patients-table tbody tr:hover .patients-table-row-actions {
+  opacity: 1;
+}
+
+.patients-table-row-open-icon {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: 0.16s var(--ease);
+  color: var(--ink-3);
+  display: inline-flex;
+}
+.patients-table-row-open-icon:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.patients-table-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  opacity: 0.6;
+  transition: opacity 0.16s var(--ease);
+}
+.patients-table-row-actions:focus-within {
+  opacity: 1;
+}
+
+.patients-table-stripe-cell {
+  position: relative;
+  padding-left: 18px;
+}
+.patients-table-stripe-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: width 0.16s var(--ease);
+}
+tr.patients-table-urgent-critical .patients-table-stripe-cell::before {
+  background: var(--crit);
+}
+tr.patients-table-urgent-warning .patients-table-stripe-cell::before {
+  background: var(--warn);
+}
+tr.patients-table-urgent-critical:hover .patients-table-stripe-cell::before,
+tr.patients-table-urgent-warning:hover .patients-table-stripe-cell::before {
+  width: 6px;
+}
+
+.patients-table-initials {
+  font-weight: 660;
+  font-size: var(--t-body-lg);
+  letter-spacing: -0.01em;
+}
+
+.patients-table-hint {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.patients-table-diagnosis {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.patients-table-time-left {
+  font-family: var(--mono);
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+}
+.patients-table-time-left b {
+  font-weight: 700;
+}
+.patients-table-time-left-critical {
+  color: var(--crit);
+}
+.patients-table-time-left-warning {
+  color: var(--warn);
+}
+
+@media (max-width: 1000px) {
+  .patients-table-wrapper {
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+}
