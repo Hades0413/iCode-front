@@ -1,7 +1,9 @@
 import type { Patient } from '../entities/patient.entity';
 import type { ReferralReviewStatus } from '../entities/referral-review.entity';
 import {
+  ENABLED_MONTHS_BEFORE_18,
   TRANSITION_STATES,
+  isInTutelage,
   isTransitionEnabled,
   needsApprovedSummary,
 } from './transition.rules';
@@ -37,12 +39,23 @@ export interface CohortFilter {
  * estados del caso, no trabajo del especialista, y ya se leen en la columna
  * de estado de cada fila.
  */
+/**
+ * "Cumplen 18 pronto" = **entraron en la ventana de los 3 meses** y todavía no
+ * cumplieron. Se define una sola vez y sale de ENABLED_MONTHS_BEFORE_18 porque
+ * la usan el filtro, el conteo del KPI y el texto de la tarjeta: si cada uno
+ * lleva su propio número, la tarjeta termina prometiendo un recorte que la
+ * lista no hace.
+ */
+export function isTurning18Soon(patient: Patient): boolean {
+  return isInTutelage(patient) && isTransitionEnabled(patient);
+}
+
 export const COHORT_FILTERS: readonly CohortFilter[] = [
   { key: 'todos', label: 'Todos', matches: () => true },
   {
     key: 'proximos',
     label: 'Cumplen 18 pronto',
-    matches: (p) => p.monthsToEighteen > 0 && p.monthsToEighteen <= 3,
+    matches: isTurning18Soon,
   },
   {
     key: 'accion',
@@ -176,9 +189,7 @@ export function selectCohort(
 export function cohortSummary(patients: readonly Patient[]) {
   return {
     total: patients.length,
-    turning18Soon: patients.filter(
-      (p) => p.monthsToEighteen > 0 && p.monthsToEighteen <= 3,
-    ).length,
+    turning18Soon: patients.filter(isTurning18Soon).length,
     withoutApprovedSummary: patients.filter(needsApprovedSummary).length,
     /** De esos, los que ni borrador tienen: hay que generarlo. */
     withoutSummary: patients.filter(
@@ -217,6 +228,10 @@ export interface CohortKpi {
   severity: KpiSeverity;
   /** De qué está hecho el número. Vacío = no se descompone. */
   parts: KpiPart[];
+}
+
+function monthsText(n: number): string {
+  return `${n} ${n === 1 ? 'mes' : 'meses'}`;
 }
 
 /**
@@ -261,23 +276,31 @@ export function cohortKpis(patients: readonly Patient[]): CohortKpi[] {
       label: 'Cumplen 18 pronto',
       value: s.turning18Soon,
       total: s.total,
+      // La línea dice el CORTE que hace la tarjeta (la ventana entera), y
+      // recién después el más próximo. Al revés — "el más próximo cumple en 1
+      // mes" solo — se lee como si la lista fuera de un mes, y abrirla con
+      // pacientes de tres parece un filtro roto.
       hint:
         s.turning18Soon > 0
           ? Number.isFinite(nextBirthday)
-            ? `su historia ya se puede crear · el más próximo cumple en ${nextBirthday === 1 ? '1 mes' : `${nextBirthday} meses`}`
-            : 'en 3 meses o menos: su historia ya se puede crear'
-          : 'nadie cumple 18 en los próximos 3 meses',
+            ? `en ${ENABLED_MONTHS_BEFORE_18} meses o menos: su historia ya se puede crear · el más próximo, en ${monthsText(nextBirthday)}`
+            : `en ${ENABLED_MONTHS_BEFORE_18} meses o menos: su historia ya se puede crear`
+          : `nadie cumple 18 en los próximos ${ENABLED_MONTHS_BEFORE_18} meses`,
       severity: s.turning18Soon > 0 ? 'warn' : 'neutral',
       parts: [],
     },
     {
       key: 'accion',
-      label: 'Sin historia clínica',
+      // "firmada" no es un detalle: sin esa palabra la tarjeta promete
+      // pacientes en cero y la lista abre con borradores al 85 % — que es
+      // justamente lo que cuenta, porque una historia sin firma no vale.
+      // Además es la misma etiqueta que el filtro y el título de la lista.
+      label: cohortFilterLabel('accion'),
       value: s.withoutApprovedSummary,
       total: s.total,
       hint:
         s.withoutApprovedSummary > 0
-          ? 'se firma 1 día antes del cumpleaños: la campanita avisa'
+          ? 'incluye los borradores sin firmar · se firma 1 día antes del cumpleaños'
           : 'todos tienen su historia clínica firmada',
       severity: s.withoutApprovedSummary > 0 ? 'crit' : 'ok',
       parts: [

@@ -16,7 +16,7 @@ import {
  * necesita el nombre exacto.
  *
  * "Aún no arranca" no es un estado del resumen: es que al paciente todavía
- * le faltan más de 9 meses para los 18 y el proceso no empezó. Por eso va
+ * le faltan más de 3 meses para los 18 y el proceso no empezó. Por eso va
  * apagado y sin punto — no hay nada que hacer ahí.
  */
 const CHIP_CLASS: Record<SummaryStage, string> = {
