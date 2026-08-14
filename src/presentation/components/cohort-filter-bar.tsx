@@ -19,39 +19,48 @@ const REFERRAL_STATUS_OPTIONS: readonly ReferralReviewStatus[] = [
  * un selector de especialidades sería un control que siempre tiene una sola
  * opción real. Los cortes (todos · cumplen 18 pronto · sin historia clínica)
  * son las tarjetas de arriba.
+ *
+ * El selector de revisión es OPCIONAL porque esta barra la comparten cuatro
+ * pantallas y solo una tiene esa pregunta: "¿qué dijo el destino sobre la
+ * historia firmada?" solo significa algo en la lista del médico. Seguimiento,
+ * avisos y contrarreferencias buscan por DNI y nada más — pedirles el filtro
+ * sería obligarlas a conocer un concepto que no es suyo.
  */
 export function CohortFilterBar({
   query,
   onQueryChange,
-  referralStatus,
+  referralStatus = 'ALL',
   onReferralStatusChange,
 }: Readonly<{
   query: string;
   onQueryChange: (query: string) => void;
-  referralStatus: ReferralStatusFilter;
-  onReferralStatusChange: (value: ReferralStatusFilter) => void;
+  referralStatus?: ReferralStatusFilter;
+  /** Sin esto, la barra es solo la búsqueda por DNI. */
+  onReferralStatusChange?: (value: ReferralStatusFilter) => void;
 }>) {
   return (
     <div className="filterbar">
       <div className="filterbar-tools">
-        <label className="select-pill">
-          <select
-            value={referralStatus}
-            aria-label="Filtrar por revisión del destino"
-            onChange={(event) =>
-              onReferralStatusChange(
-                event.target.value as ReferralStatusFilter,
-              )
-            }
-          >
-            <option value="ALL">Revisión del destino: todas</option>
-            {REFERRAL_STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {REFERRAL_REVIEW_STATUS_LABELS[status]}
-              </option>
-            ))}
-          </select>
-        </label>
+        {onReferralStatusChange && (
+          <label className="select-pill">
+            <select
+              value={referralStatus}
+              aria-label="Filtrar por revisión del destino"
+              onChange={(event) =>
+                onReferralStatusChange(
+                  event.target.value as ReferralStatusFilter,
+                )
+              }
+            >
+              <option value="ALL">Revisión del destino: todas</option>
+              {REFERRAL_STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {REFERRAL_REVIEW_STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <SearchInput
           value={query}
           onChange={onQueryChange}
