@@ -1,0 +1,349 @@
+/* ============================================================
+   PUENTE 18+ — cortina de carga de vista
+   La marca líquida (components/brand/) respirando sobre un fondo
+   de aurora. Todo lo que se mueve está acá; los componentes solo
+   ponen clases.
+
+   Dos reglas de la casa:
+   1. Solo se animan transform, opacity y filter — nada que
+      dispare layout. La cortina aparece en CADA cambio de vista
+      y tiene que sentirse gratis.
+   2. prefers-reduced-motion apaga el líquido y deja un fundido
+      simple. El tiempo corto lo pone route-loader.tsx.
+   ============================================================ */
+
+.vl {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  /* La aurora del logo, en gigante y muy tenue: cálido arriba a la
+     izquierda, frío abajo a la derecha, sobre el mismo wash del producto
+     para que no se sienta "otra app". */
+  background:
+    radial-gradient(
+      520px 380px at 28% 24%,
+      rgba(246, 130, 60, 0.16),
+      transparent 62%
+    ),
+    radial-gradient(
+      640px 460px at 74% 74%,
+      rgba(30, 125, 224, 0.18),
+      transparent 64%
+    ),
+    radial-gradient(
+      420px 320px at 52% 50%,
+      rgba(43, 195, 162, 0.1),
+      transparent 60%
+    ),
+    var(--wash);
+  animation: vl-in 0.16s ease-out;
+}
+
+.vl.is-leaving {
+  animation: vl-out 0.46s var(--ease) forwards;
+  pointer-events: none;
+}
+
+@keyframes vl-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* La salida no es solo un fade: la escena sube un pelo y se desenfoca,
+   como si el líquido se evaporara hacia la vista que llega. */
+@keyframes vl-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.vl.is-leaving .vl-scene {
+  animation: vl-scene-out 0.46s var(--ease) forwards;
+}
+
+@keyframes vl-scene-out {
+  to {
+    transform: translateY(-14px) scale(1.04);
+    filter: blur(6px);
+    opacity: 0;
+  }
+}
+
+.vl-scene {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  animation: vl-scene-in 0.5s var(--ease) backwards;
+}
+
+@keyframes vl-scene-in {
+  from {
+    transform: translateY(10px) scale(0.92);
+    opacity: 0;
+  }
+}
+
+/* ---------- el halo detrás de la marca ---------- */
+
+.vl-halo {
+  position: absolute;
+  top: -8px;
+  width: 260px;
+  height: 190px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      45% 55% at 36% 52%,
+      rgba(246, 112, 63, 0.35),
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 65% at 64% 46%,
+      rgba(30, 143, 224, 0.38),
+      transparent 72%
+    );
+  filter: blur(26px);
+  animation: vl-halo 2.4s ease-in-out infinite;
+}
+
+@keyframes vl-halo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+}
+
+/* ---------- la marca líquida ---------- */
+
+/* Base de la marca donde sea que se monte (cortina, riel, encabezados):
+   un SVG en bloque que toma el ancho que le dé su contenedor. */
+.lm {
+  display: block;
+}
+
+.vl-mark {
+  width: 230px;
+  height: auto;
+  position: relative;
+}
+
+/* Las transformaciones de las gotas se miden desde su propio centro
+   (transform-box), no desde la esquina del SVG: sin esto, un scale las
+   dispara fuera del lienzo. */
+.lm-blob,
+.lm-drop {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.lm-drop {
+  transform: scale(0);
+}
+
+/* El ciclo respira así: reposo (el logo tal cual) → las gotas se estiran y
+   se sueltan → quedan gotitas huérfanas en el medio → todo vuelve y se
+   funde. Cálida y fría van en el mismo reloj pero en sentidos opuestos. */
+.lm-live .lm-blob-warm {
+  animation: lm-warm 2.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+.lm-live .lm-blob-cool {
+  animation: lm-cool 2.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@keyframes lm-warm {
+  0%,
+  12% {
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    /* Se resiste antes de soltarse: se estira hacia el cuello. */
+    transform: translateX(-6px) scale(1.12, 0.9);
+  }
+  52% {
+    transform: translateX(-34px) scale(0.94, 1.05);
+  }
+  64% {
+    transform: translateX(-30px) scale(1);
+  }
+  88%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes lm-cool {
+  0%,
+  12% {
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    transform: translateX(5px) scale(1.08, 0.94);
+  }
+  52% {
+    transform: translateX(26px) scale(0.96, 1.04);
+  }
+  64% {
+    transform: translateX(22px) scale(1);
+  }
+  88%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Las gotitas existen solo mientras el cuello está roto; el filtro gooey
+   hace que nazcan y se reabsorban como líquido y no como un pop. */
+.lm-live .lm-drop-a {
+  animation: lm-drop-a 2.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+.lm-live .lm-drop-b {
+  animation: lm-drop-b 2.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@keyframes lm-drop-a {
+  0%,
+  30% {
+    transform: scale(0);
+  }
+  48% {
+    transform: translateY(-3px) scale(1);
+  }
+  62% {
+    transform: translateY(2px) scale(0.85);
+  }
+  86%,
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes lm-drop-b {
+  0%,
+  36% {
+    transform: scale(0);
+  }
+  52% {
+    transform: translate(-4px, -10px) scale(1);
+  }
+  70% {
+    transform: translate(-2px, -2px) scale(0.6);
+  }
+  88%,
+  100% {
+    transform: scale(0);
+  }
+}
+
+/* ---------- nombre y leyenda ---------- */
+
+.vl-name {
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  /* El nombre lleva el mismo viaje de color del logo, barrido en bucle. */
+  background: linear-gradient(
+    90deg,
+    #f0454a,
+    #f6a23b,
+    #2bc3a2,
+    #1e8fe0,
+    #1a4fd6,
+    #f0454a
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: vl-sweep 3.2s linear infinite;
+}
+
+@keyframes vl-sweep {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+.vl-cap {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--sans);
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+
+.vl-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.vl-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: vl-dot 1.2s ease-in-out infinite;
+}
+
+.vl-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.vl-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes vl-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Solo para lectores de pantalla. */
+.vl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- menos movimiento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .vl-scene,
+  .vl.is-leaving .vl-scene,
+  .vl-halo,
+  .lm-live .lm-blob,
+  .lm-live .lm-drop,
+  .vl-name,
+  .vl-dots i {
+    animation: none;
+  }
+
+  /* El fundido de entrada/salida se queda: es lo mínimo para que la
+     cortina no aparezca ni se vaya de golpe. */
+}

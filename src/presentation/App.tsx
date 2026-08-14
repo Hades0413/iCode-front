@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/auth.context';
+import { RouteLoader } from './components/brand/route-loader';
+import { BrandFx } from './components/ui/brand-fx';
 import { CohortProvider } from './context/cohort.context';
 import { ProtectedRoute } from './routes/protected-route';
 import { ClinicLayout } from './layouts/clinic-layout';
@@ -20,6 +22,14 @@ export function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        {/* La cortina de marca: se muestra al primer ingreso y en cada
+            cambio de vista (pathname). Va como hermana de Routes y por
+            fuera de los layouts: la carga tapa el marco entero, no solo
+            el contenido. */}
+        <RouteLoader />
+        {/* Efectos globales de marca: estallido gooey en los CTA y borde
+            iluminado en los KPIs. Delegados, así toda pantalla los hereda. */}
+        <BrandFx />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
