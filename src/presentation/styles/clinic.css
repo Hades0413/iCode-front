@@ -522,28 +522,53 @@
   gap: 9px;
   align-content: start;
   padding: 18px 20px 17px;
-  border-radius: 18px;
+  /* El mismo radio que .kpi: las dos son la fila de números que abre una
+     pantalla del consultorio, ocupan el mismo lugar y se leen una después
+     de la otra al cambiar de sección — que redondearan distinto se notaba
+     como un desalineo, no como dos componentes. */
+  border-radius: 20px;
   border: 1px solid var(--line);
   background: var(--paper);
   box-shadow: var(--sh-1);
   text-align: left;
   overflow: hidden;
+  /* El color de esta tarjeta, declarado una sola vez: el de su severidad, y
+     el acento de la pantalla cuando no tiene ninguna. Lo lee el realce del
+     hover, así lo que se levanta al pasar por encima es del color que la
+     tarjeta ya venía diciendo con su filete y su fondo — un resalte gris
+     sobre una tarjeta roja se leía como si fuera otro componente. */
+  --card: var(--acc);
   transition:
     box-shadow 0.18s var(--ease),
     transform 0.18s var(--ease),
     border-color 0.18s var(--ease);
 }
+.p18 .stat.on {
+  border-color: var(--ink);
+  box-shadow: var(--sh-2);
+}
+/* Después de .on a propósito: la tarjeta activa también se levanta con su
+   color al pasar por encima. Antes ganaba el sombreado plano de .on y el
+   corte por defecto —la que abre la lista— era justo la única que no
+   respondía al hover. */
 .p18 .stat:hover {
   transform: translateY(-2px);
-  box-shadow: var(--sh-3);
+  /* La sombra grande va corta y densa, no difusa: a 40px de blur el color se
+     diluía tanto que la tarjeta roja levantaba el mismo gris que la verde. */
+  box-shadow:
+    0 2px 6px rgba(16, 24, 22, 0.07),
+    0 12px 24px -8px color-mix(in srgb, var(--card) 62%, transparent);
+}
+/* El borde es lo que de verdad se lee como "esta tarjeta es roja": el aro
+   toma el color puro. Va con :not(.on) para ganarle en especificidad al
+   border-color de [data-severity], que está más abajo, y para no borrarle
+   el aro de tinta a la tarjeta que ya está seleccionada. */
+.p18 .stat:hover:not(.on) {
+  border-color: var(--card);
 }
 .p18 .stat:active {
   transform: translateY(0);
   box-shadow: var(--sh-1);
-}
-.p18 .stat.on {
-  border-color: var(--ink);
-  box-shadow: var(--sh-2);
 }
 /* El filete de arriba dice de qué se trata el número sin leerlo. */
 .p18 .stat::after {
@@ -563,14 +588,17 @@
   background: var(--crit);
 }
 .p18 .stat[data-severity='ok'] {
+  --card: var(--ok);
   background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 58%);
   border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
 }
 .p18 .stat[data-severity='warn'] {
+  --card: var(--warn);
   background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 58%);
   border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
 }
 .p18 .stat[data-severity='crit'] {
+  --card: var(--crit);
   background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 58%);
   border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
 }
@@ -644,7 +672,10 @@
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: rgba(16, 24, 22, 0.09);
+  /* Riel del medidor con el gris azulado del prototipo. Va literal y no
+     por token porque es una transparencia sobre el papel; .stat solo se
+     dibuja en Mis pacientes, así que el cambio no sale de esa vista. */
+  background: rgba(15, 20, 32, 0.09);
   overflow: hidden;
 }
 .p18 .stat-m > i {
@@ -739,12 +770,15 @@
   align-items: flex-start;
   gap: 4px;
   padding: 17px 18px 16px;
-  border-radius: 16px;
+  /* Ver .stat: el radio de la fila de números es uno solo. */
+  border-radius: 20px;
   border: 1px solid var(--line);
   background: var(--paper);
   box-shadow: var(--sh-1);
   text-align: left;
   overflow: hidden;
+  /* Ver .stat: el color de la tarjeta, para el filete y el realce del hover. */
+  --card: var(--acc);
   transition:
     box-shadow 0.18s var(--ease),
     transform 0.18s var(--ease),
@@ -791,20 +825,29 @@
 }
 /* Fondo tintado según la severidad: color de verdad, no solo un filete. */
 .p18 .kpi[data-severity='ok'] {
+  --card: var(--ok);
   background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 62%);
   border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
 }
 .p18 .kpi[data-severity='warn'] {
+  --card: var(--warn);
   background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 62%);
   border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
 }
 .p18 .kpi[data-severity='crit'] {
+  --card: var(--crit);
   background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 62%);
   border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
 }
+/* Ver .stat: misma sombra corta y densa, mismo aro del color de la tarjeta. */
 .p18 button.kpi:hover {
   transform: translateY(-2px);
-  box-shadow: var(--sh-3);
+  box-shadow:
+    0 2px 6px rgba(16, 24, 22, 0.07),
+    0 12px 24px -8px color-mix(in srgb, var(--card) 62%, transparent);
+}
+.p18 button.kpi:hover:not(.on) {
+  border-color: var(--card);
 }
 .p18 button.kpi:active {
   transform: translateY(0);
