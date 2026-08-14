@@ -71,6 +71,8 @@ const USERS: readonly MockUserRow[] = [
       PERMISSIONS.checklistWrite,
       PERMISSIONS.guardianRemind,
       PERMISSIONS.guardianAccessManage,
+      PERMISSIONS.appointmentSelfReport,
+      PERMISSIONS.consultationCodeManage,
     ],
   },
   {
@@ -142,6 +144,8 @@ const USERS: readonly MockUserRow[] = [
       PERMISSIONS.journeyRead,
       PERMISSIONS.checklistWrite,
       PERMISSIONS.guardianAccessManage,
+      PERMISSIONS.appointmentSelfReport,
+      PERMISSIONS.consultationCodeManage,
     ],
   },
   {

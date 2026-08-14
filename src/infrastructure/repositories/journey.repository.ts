@@ -1,4 +1,7 @@
-import type { JourneyAccess } from '../../domain/entities/journey.entity';
+import type {
+  AppointmentReport,
+  JourneyAccess,
+} from '../../domain/entities/journey.entity';
 import type { JourneyRepositoryPort } from '../../application/ports/journey-repository.port';
 import { apiClient } from '../http/api-client';
 
@@ -46,6 +49,21 @@ class HttpJourneyRepository implements JourneyRepositoryPort {
   async dismissMessage(messageId: string): Promise<JourneyAccess> {
     const { data } = await apiClient.delete<JourneyAccess>(
       `/journey/messages/${encodeURIComponent(messageId)}`,
+    );
+    return data;
+  }
+
+  async reportAppointment(report: AppointmentReport): Promise<JourneyAccess> {
+    const { data } = await apiClient.put<JourneyAccess>(
+      '/journey/appointment',
+      report,
+    );
+    return data;
+  }
+
+  async generateConsultationCode(): Promise<JourneyAccess> {
+    const { data } = await apiClient.post<JourneyAccess>(
+      '/journey/consultation-code',
     );
     return data;
   }

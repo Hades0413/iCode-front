@@ -1,19 +1,24 @@
 import { useCallback, useState } from 'react';
 import { journeyService } from '../../composition-root';
 import type {
+  AppointmentReport,
   JourneyAccess,
   JourneyChecklistItem,
 } from '../../domain/entities/journey.entity';
 import {
   canManageAccess,
+  canManageConsultationCode,
   canRemindPatient,
+  canReportAppointment,
   canTickChecklist,
   pendingChecklist,
 } from '../../domain/rules/journey.rules';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
 import { HomeIcon, PulseIcon, StepsIcon, UserIcon } from '../components/icons';
 import { AppointmentCard } from '../components/journey/appointment-card';
+import { AppointmentReportCard } from '../components/journey/appointment-report-card';
 import { ChecklistCard } from '../components/journey/checklist-card';
+import { ConsultationCodeCard } from '../components/journey/consultation-code-card';
 import { ContactsCard } from '../components/journey/contacts-card';
 import { GuardianAccessCard } from '../components/journey/guardian-access-card';
 import { GuideCard } from '../components/journey/guide-card';
@@ -52,7 +57,12 @@ export function JourneyPage() {
   const [tab, setTab] = useState<TabKey>('hoy');
   const [busyItem, setBusyItem] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<
-    'remind' | 'access' | 'dismiss' | null
+    | 'remind'
+    | 'access'
+    | 'dismiss'
+    | 'reportAppointment'
+    | 'generateCode'
+    | null
   >(null);
 
   const load = useCallback(() => journeyService.getJourney(), []);
@@ -130,6 +140,24 @@ export function JourneyPage() {
     setBusyAction(null);
   }
 
+  async function reportAppointment(
+    report: AppointmentReport,
+  ): Promise<boolean> {
+    setBusyAction('reportAppointment');
+    const saved = await run(() => journeyService.reportAppointment(report));
+    setBusyAction(null);
+    return saved;
+  }
+
+  async function generateConsultationCode(): Promise<boolean> {
+    setBusyAction('generateCode');
+    const generated = await run(() =>
+      journeyService.generateConsultationCode(),
+    );
+    setBusyAction(null);
+    return generated;
+  }
+
   if (isLoading) {
     return (
       <div className="jn-body">
@@ -202,6 +230,20 @@ export function JourneyPage() {
               onGoSteps={() => goTo('pasos')}
             />
             <AppointmentCard journey={journey} today={new Date()} />
+            {!journey.appointment && canReportAppointment(viewer) && (
+              <AppointmentReportCard
+                isSending={busyAction === 'reportAppointment'}
+                onSubmit={reportAppointment}
+              />
+            )}
+            {canManageConsultationCode(viewer) && (
+              <ConsultationCodeCard
+                code={journey.consultationCode}
+                expiresAt={journey.consultationCodeExpiresAt}
+                isGenerating={busyAction === 'generateCode'}
+                onGenerate={generateConsultationCode}
+              />
+            )}
           </>
         )}
 

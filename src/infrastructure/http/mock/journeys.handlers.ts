@@ -5,7 +5,9 @@ import { mockError, type MockHandler, type MockRoute } from './mock-http';
 import {
   addMessage,
   dismissMessage,
+  generateConsultationCode,
   journeyFor,
+  reportAppointment,
   setChecklistItem,
   setGuardianAccess,
 } from './journeys.data';
@@ -119,10 +121,62 @@ const dismiss: MockHandler = (request) => {
   return { status: 200, data: journeyFor('OWNER') };
 };
 
+/** PUT /journey/appointment — el paciente registra una cita que consiguió por su cuenta. */
+const reportAppointmentHandler: MockHandler = (request) => {
+  const auth = requirePermission(request, PERMISSIONS.appointmentSelfReport);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
+  const body = request.body as
+    | { hospital?: unknown; date?: unknown; time?: unknown; doctor?: unknown }
+    | null;
+  if (
+    typeof body?.hospital !== 'string' ||
+    typeof body?.date !== 'string' ||
+    typeof body?.time !== 'string' ||
+    typeof body?.doctor !== 'string'
+  ) {
+    return mockError(400, 'Completa el hospital, la fecha, la hora y el doctor.');
+  }
+
+  const saved = reportAppointment({
+    hospital: body.hospital,
+    date: body.date,
+    time: body.time,
+    doctor: body.doctor,
+  });
+  if (!saved) {
+    return mockError(409, 'Ya tienes una cita registrada.');
+  }
+  return { status: 200, data: journeyFor('OWNER') };
+};
+
+/** POST /journey/consultation-code — genera (o regenera) el código único de consulta. */
+const generateCode: MockHandler = (request) => {
+  const auth = requirePermission(request, PERMISSIONS.consultationCodeManage);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
+  generateConsultationCode();
+  return { status: 201, data: journeyFor('OWNER') };
+};
+
 export const journeyRoutes: readonly MockRoute[] = [
   { method: 'GET', path: '/journey', handler: get },
   { method: 'PATCH', path: '/journey/checklist/:itemId', handler: tick },
   { method: 'POST', path: '/journey/reminders', handler: remind },
   { method: 'PUT', path: '/journey/guardian-access', handler: access },
   { method: 'DELETE', path: '/journey/messages/:messageId', handler: dismiss },
+  {
+    method: 'PUT',
+    path: '/journey/appointment',
+    handler: reportAppointmentHandler,
+  },
+  {
+    method: 'POST',
+    path: '/journey/consultation-code',
+    handler: generateCode,
+  },
 ];

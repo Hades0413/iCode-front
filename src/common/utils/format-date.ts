@@ -64,3 +64,12 @@ export function formatShortDate(iso: string): string {
 export function formatLongDate(date: Date): string {
   return `${date.getDate()} de ${MONTHS[date.getMonth()]} de ${date.getFullYear()}`;
 }
+
+/** "10:13 p. m." — 12 horas, con el punto y el espacio que usa Perú (Intl lo escribe distinto según runtime). */
+export function formatClockTime(date: Date): string {
+  const hour24 = date.getHours();
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const meridiem = hour24 < 12 ? 'a. m.' : 'p. m.';
+  return `${hour12}:${minute} ${meridiem}`;
+}

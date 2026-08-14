@@ -1,4 +1,5 @@
 import type {
+  AppointmentReport,
   JourneyAccess,
   JourneyViewer,
   JourneyViewerRole,
@@ -30,13 +31,25 @@ interface JourneyStore {
   guardianAccess: boolean | null;
   /** Mensajes del tutor que el paciente todavía no descartó. */
   messages: { id: string; text: string; sentAt: string; from: string }[];
+  /** La cita que el paciente registró por su cuenta, si hizo alguna. */
+  selfReportedAppointment: TransitionJourney['appointment'] | null;
+  /** El código único de consulta generado en esta demo, si hay uno. */
+  consultationCode: string | null;
+  /** Cuándo se generó, epoch ms — de acá se calcula si ya venció (dura 15 min), nunca se guarda un booleano aparte. */
+  consultationCodeGeneratedAt: number | null;
 }
 
 const EMPTY: JourneyStore = {
   checked: {},
   guardianAccess: null,
   messages: [],
+  selfReportedAppointment: null,
+  consultationCode: null,
+  consultationCodeGeneratedAt: null,
 };
+
+/** Mismo criterio que PatientTransitionService.isConsultationCodeValid del back real. */
+const CONSULTATION_CODE_TTL_MS = 15 * 60_000;
 
 function read(): JourneyStore {
   try {
@@ -199,6 +212,8 @@ const JOURNEY: TransitionJourney = {
     hasAccess: true,
   },
   pendingMessage: null,
+  consultationCode: null,
+  consultationCodeExpiresAt: null,
 };
 
 /* ============================================================
@@ -218,6 +233,8 @@ function viewerFor(role: JourneyViewerRole, guardian: string): JourneyViewer {
         canEditChecklist: true,
         canSendReminder: false,
         canManageGuardianAccess: true,
+        canReportAppointment: true,
+        canManageConsultationCode: true,
       }
     : {
         role,
@@ -225,6 +242,8 @@ function viewerFor(role: JourneyViewerRole, guardian: string): JourneyViewer {
         canEditChecklist: false,
         canSendReminder: true,
         canManageGuardianAccess: false,
+        canReportAppointment: false,
+        canManageConsultationCode: false,
       };
 }
 
@@ -245,6 +264,25 @@ function currentJourney(): TransitionJourney {
       hasAccess: store.guardianAccess ?? JOURNEY.guardian!.hasAccess,
     },
     pendingMessage: store.messages.at(-1) ?? null,
+    appointment: store.selfReportedAppointment ?? JOURNEY.appointment,
+    ...consultationCodeFields(store),
+  };
+}
+
+/** Vencido, se lee como si nunca se hubiera generado — mismo criterio que el back real. */
+function consultationCodeFields(
+  store: JourneyStore,
+): Pick<TransitionJourney, 'consultationCode' | 'consultationCodeExpiresAt'> {
+  if (!store.consultationCode || store.consultationCodeGeneratedAt === null) {
+    return { consultationCode: null, consultationCodeExpiresAt: null };
+  }
+  const expiresAt = store.consultationCodeGeneratedAt + CONSULTATION_CODE_TTL_MS;
+  if (expiresAt <= Date.now()) {
+    return { consultationCode: null, consultationCodeExpiresAt: null };
+  }
+  return {
+    consultationCode: store.consultationCode,
+    consultationCodeExpiresAt: new Date(expiresAt).toISOString(),
   };
 }
 
@@ -302,4 +340,37 @@ export function setGuardianAccess(hasAccess: boolean): void {
   const store = read();
   store.guardianAccess = hasAccess;
   write(store);
+}
+
+/** true = se guardó; false = ya había una (mismo criterio que el back real: no se pisa en silencio). */
+export function reportAppointment(report: AppointmentReport): boolean {
+  const store = read();
+  if (store.selfReportedAppointment ?? JOURNEY.appointment) {
+    return false;
+  }
+  store.selfReportedAppointment = {
+    hospital: report.hospital,
+    specialist: report.doctor,
+    date: `${report.date}T${report.time}:00`,
+    reason: 'Primera consulta en el hospital de adultos',
+    managedBy: 'Autoregistrada por el paciente',
+  };
+  write(store);
+  return true;
+}
+
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const CODE_LENGTH = 6;
+
+/** No necesita ser único de verdad en esta demo local: solo un paciente la usa. */
+export function generateConsultationCode(): string {
+  let code = '';
+  for (let i = 0; i < CODE_LENGTH; i++) {
+    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+  }
+  const store = read();
+  store.consultationCode = code;
+  store.consultationCodeGeneratedAt = Date.now();
+  write(store);
+  return code;
 }

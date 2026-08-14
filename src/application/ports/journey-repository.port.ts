@@ -1,4 +1,7 @@
-import type { JourneyAccess } from '../../domain/entities/journey.entity';
+import type {
+  AppointmentReport,
+  JourneyAccess,
+} from '../../domain/entities/journey.entity';
 
 /**
  * Lo que necesita la app del paciente y de quien lo acompaña.
@@ -23,4 +26,10 @@ export interface JourneyRepositoryPort {
 
   /** El paciente descarta un mensaje que ya leyó. */
   dismissMessage(messageId: string): Promise<JourneyAccess>;
+
+  /** El paciente registra una cita que consiguió por su cuenta. */
+  reportAppointment(report: AppointmentReport): Promise<JourneyAccess>;
+
+  /** El paciente genera (o regenera) su código único de consulta. */
+  generateConsultationCode(): Promise<JourneyAccess>;
 }

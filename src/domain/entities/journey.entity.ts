@@ -74,6 +74,20 @@ export interface JourneyViewer {
   canSendReminder: boolean;
   /** Solo el dueño decide quién ve su información. */
   canManageGuardianAccess: boolean;
+  /** Solo el dueño registra una cita que consiguió por su cuenta. */
+  canReportAppointment: boolean;
+  /** Solo el dueño genera su código único de consulta. */
+  canManageConsultationCode: boolean;
+}
+
+/** Lo que el paciente escribe cuando consiguió su cita por su cuenta. */
+export interface AppointmentReport {
+  hospital: string;
+  /** "YYYY-MM-DD". */
+  date: string;
+  /** "HH:mm". */
+  time: string;
+  doctor: string;
 }
 
 /** Un mensaje que el tutor le mandó y el paciente todavía no descartó. */
@@ -129,6 +143,10 @@ export interface TransitionJourney {
   guardian: JourneyGuardian | null;
   /** Mensaje pendiente del tutor, si hay. */
   pendingMessage: JourneyMessage | null;
+  /** El código único de consulta. null hasta que el paciente lo genera, o si el que tenía ya venció. */
+  consultationCode: string | null;
+  /** ISO 8601 — cuándo vence "consultationCode" (dura 15 minutos). Null si consultationCode es null. */
+  consultationCodeExpiresAt: string | null;
 }
 
 /**

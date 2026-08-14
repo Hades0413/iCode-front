@@ -138,6 +138,16 @@ export function canManageAccess(viewer: JourneyViewer): boolean {
   return viewer.role === 'OWNER' && viewer.canManageGuardianAccess;
 }
 
+/** Registrar una cita conseguida por su cuenta: solo el dueño, y solo si todavía no tiene una. */
+export function canReportAppointment(viewer: JourneyViewer): boolean {
+  return viewer.role === 'OWNER' && viewer.canReportAppointment;
+}
+
+/** Generar el código único de consulta: solo el dueño. */
+export function canManageConsultationCode(viewer: JourneyViewer): boolean {
+  return viewer.role === 'OWNER' && viewer.canManageConsultationCode;
+}
+
 /** Cómo se le habla a quien está mirando. */
 export function viewerGreeting(viewer: JourneyViewer): string {
   return viewer.role === 'OWNER' ? 'Tu recorrido' : 'El recorrido de';

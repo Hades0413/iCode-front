@@ -52,6 +52,10 @@ export const PERMISSIONS = {
   guardianRemind: 'GUARDIAN_REMIND',
   /** Dar y quitar el acceso del tutor. Solo el dueño de la info. */
   guardianAccessManage: 'GUARDIAN_ACCESS_MANAGE',
+  /** Registrar una cita conseguida por su cuenta. Solo el dueño de la info. */
+  appointmentSelfReport: 'APPOINTMENT_SELF_REPORT',
+  /** Generar el código único de consulta. Solo el dueño de la info. */
+  consultationCodeManage: 'CONSULTATION_CODE_MANAGE',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
