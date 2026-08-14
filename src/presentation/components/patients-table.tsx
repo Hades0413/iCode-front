@@ -5,9 +5,8 @@ import {
   rowUrgency,
   timeToEighteen,
 } from '../../domain/rules/transition.rules';
-import { ChevronIcon, DownloadIcon } from './icons';
+import { ChevronIcon, DownloadIcon, TemplateIcon } from './icons';
 import styles from './patients-table.module.css';
-import { SummaryProgress } from './summary-chip';
 
 const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
   NONE: 'chip none',
@@ -34,7 +33,9 @@ const TIME_LEFT_URGENCY_CLASS: Record<'crit' | 'warn', string> = {
  *
  * Las columnas son lo que el médico decide mirando la lista: quién es, cuánto
  * falta, su diagnóstico, en qué está su **historia clínica** (abrirla para
- * generarla o revisarla) y qué dijo el destino sobre ella ("Referencia").
+ * generarla o revisarla) y qué dijo el destino sobre ella
+ * ("Revisión del destino" — "Referencia" quedaba ambiguo: no queda claro si
+ * habla del documento o de un veredicto sobre él).
  * Todo lo demás vive en la ficha, que es donde se mira un caso puntual.
  */
 export function PatientsTable({
@@ -67,7 +68,7 @@ export function PatientsTable({
             </th>
             <th>Diagnóstico</th>
             <th>Resumen de historia clínica</th>
-            <th>Referencia</th>
+            <th>Revisión del destino</th>
           </tr>
         </thead>
         <tbody>
@@ -149,7 +150,6 @@ function PatientRow({
       </td>
       <td>
         <div className={styles['patients-table-row-actions']}>
-          <SummaryProgress patient={patient} />
           <button
             type="button"
             className="btn btn-sm"
@@ -159,31 +159,39 @@ function PatientRow({
             }}
             title={`Abrir la historia clínica de transferencia de ${patient.initials}`}
           >
+            {!isSummaryEmpty && <TemplateIcon />}
             {isSummaryEmpty ? 'Vacía' : 'Ver'}
           </button>
         </div>
       </td>
       <td>
         <div className={styles['patients-table-row-actions']}>
-          <span
-            className={REFERRAL_CHIP_CLASS[patient.referralReviewStatus]}
-            title="Qué dijo el destino sobre la historia clínica ya firmada"
-          >
-            <i className="dot" />
-            {REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus]}
-          </span>
-          {patient.referralReviewStatus === 'OBSERVED' && (
+          {patient.referralReviewStatus === 'OBSERVED' ? (
             <button
               type="button"
-              className="btn btn-sm"
+              className={`${REFERRAL_CHIP_CLASS.OBSERVED} ${styles['patients-table-referral-observed']}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onViewReferralReviewDocument(patient);
               }}
               title={`Ver el PDF de la observación de ${patient.initials}`}
             >
-              <DownloadIcon /> Ver PDF
+              <i className="dot" />
+              {REFERRAL_REVIEW_STATUS_LABELS.OBSERVED} ·{' '}
+              <span className={styles['patients-table-referral-pdf']}>
+                <DownloadIcon /> Ver PDF
+              </span>
             </button>
+          ) : (
+            <span
+              className={REFERRAL_CHIP_CLASS[patient.referralReviewStatus]}
+              title="Qué dijo el destino sobre la historia clínica ya firmada"
+            >
+              {patient.referralReviewStatus !== 'NONE' && (
+                <i className="dot" />
+              )}
+              {REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus]}
+            </span>
           )}
           <button
             type="button"

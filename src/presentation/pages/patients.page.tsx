@@ -9,9 +9,11 @@ import {
   cohortSummary,
   isCohortFilterKey,
   isCohortSort,
+  isReferralStatusFilter,
   selectCohort,
   type CohortFilterKey,
   type CohortSort,
+  type ReferralStatusFilter,
 } from '../../domain/rules/cohort.rules';
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatLongDate } from '../../common/utils/format-date';
@@ -56,8 +58,8 @@ export function PatientsPage() {
   const navigate = useNavigate();
   const { toasts, push } = useToasts();
 
-  // Sin ?filtro, el tablero abre por el trabajo pendiente (ver
-  // DEFAULT_COHORT_FILTER), no por la cohorte entera.
+  // Sin ?filtro, el tablero abre mostrando toda la cohorte (ver
+  // DEFAULT_COHORT_FILTER).
   const rawFilter = params.get('filtro') ?? DEFAULT_COHORT_FILTER;
   const rawSort = params.get('orden') ?? 'meses';
   const filter: CohortFilterKey = isCohortFilterKey(rawFilter)
@@ -65,10 +67,16 @@ export function PatientsPage() {
     : DEFAULT_COHORT_FILTER;
   const sort: CohortSort = isCohortSort(rawSort) ? rawSort : 'meses';
   const query = params.get('q') ?? '';
+  const rawReferralStatus = params.get('revision') ?? 'ALL';
+  const referralStatus: ReferralStatusFilter = isReferralStatusFilter(
+    rawReferralStatus,
+  )
+    ? rawReferralStatus
+    : 'ALL';
 
   const visible = useMemo(
-    () => selectCohort(patients, { filter, query, sort }),
-    [patients, filter, query, sort],
+    () => selectCohort(patients, { filter, query, sort, referralStatus }),
+    [patients, filter, query, sort, referralStatus],
   );
   const kpis = useMemo(() => cohortKpis(patients), [patients]);
 
@@ -110,6 +118,10 @@ export function PatientsPage() {
 
   function changeFilter(key: CohortFilterKey) {
     changeView({ filtro: key === DEFAULT_COHORT_FILTER ? null : key });
+  }
+
+  function changeReferralStatus(value: ReferralStatusFilter) {
+    changeView({ revision: value === 'ALL' ? null : value });
   }
 
   function goToPage(next: number) {
@@ -197,6 +209,8 @@ export function PatientsPage() {
                 onQueryChange={(value) =>
                   changeView({ q: value }, { replace: true })
                 }
+                referralStatus={referralStatus}
+                onReferralStatusChange={changeReferralStatus}
               />
               <PatientsTable
                 patients={pageRows}
@@ -218,15 +232,6 @@ export function PatientsPage() {
               />
 
               <p className="mini" style={{ paddingTop: 14 }}>
-                {filter === DEFAULT_COHORT_FILTER && (
-                  <>
-                    <b>La lista abre por lo que te falta hacer</b>: los{' '}
-                    {summary.withoutApprovedSummary} que todavía no tienen su
-                    historia clínica firmada. Los otros{' '}
-                    {summary.total - summary.withoutApprovedSummary} siguen ahí,
-                    en “Todos”.{' '}
-                  </>
-                )}
                 Cómo funciona: la historia clínica de transferencia se puede
                 hacer desde 9 meses antes de que el paciente cumpla 18 — la IA
                 arma el borrador y el médico lo revisa y lo firma. El caso se

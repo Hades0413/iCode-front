@@ -145,7 +145,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'ACCEPTED',
     checklistProgress: null,
   },
   {
@@ -173,7 +173,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
     postNotices: [{ sentAt: '2026-07-18T09:00', sentBy: REFERRAL_AREA_STAFF }],
     referralAlerts: [],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'OBSERVED',
     checklistProgress: 0.4,
   },
   {
@@ -211,7 +211,7 @@ const IN_TUTELAGE: readonly PatientRow[] = [
       },
     ],
     counterReferralStatus: 'NONE',
-    referralReviewStatus: 'NONE',
+    referralReviewStatus: 'REJECTED',
     checklistProgress: null,
   },
   {

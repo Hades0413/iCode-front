@@ -166,3 +166,26 @@ tr.patients-table-urgent-warning:hover .patients-table-stripe-cell::before {
     padding: 0 18px;
   }
 }
+
+/* El chip "Observada" pasa a ser un <button> clickeable (abre el PDF),
+   así que hay que sacarle el borde nativo que trae un <button>. */
+.patients-table-referral-observed {
+  border: none;
+  cursor: pointer;
+  transition:
+    box-shadow 0.14s var(--ease),
+    transform 0.14s var(--ease);
+}
+.patients-table-referral-observed:hover {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rev) 40%, transparent);
+  transform: translateY(-1px);
+}
+.patients-table-referral-observed:active {
+  transform: translateY(0);
+}
+
+.patients-table-referral-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

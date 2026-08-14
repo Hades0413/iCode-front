@@ -1,4 +1,5 @@
 import type { Patient } from '../entities/patient.entity';
+import type { ReferralReviewStatus } from '../entities/referral-review.entity';
 import {
   TRANSITION_STATES,
   isTransitionEnabled,
@@ -51,13 +52,12 @@ export const COHORT_FILTERS: readonly CohortFilter[] = [
 ];
 
 /**
- * Con qué corte abre el tablero. No es "todos" a propósito: antes de los 18
- * el trabajo del especialista es la historia clínica, así que la lista arranca
- * mostrando **lo que le falta hacer** y no la cohorte entera. Los demás cortes
- * (incluido "Todos") siguen a un click en la barra y en el riel — filtrar por
- * defecto es ordenar el trabajo, no esconder pacientes.
+ * Con qué corte abre el tablero. Es "todos": el especialista tiene que poder
+ * ver el estado de cada paciente de su cohorte, no solo a los que les falta
+ * la historia clínica — el resto de los cortes son navegación sobre eso, no
+ * un filtro que esconde pacientes de entrada.
  */
-export const DEFAULT_COHORT_FILTER: CohortFilterKey = 'accion';
+export const DEFAULT_COHORT_FILTER: CohortFilterKey = 'todos';
 
 export function isCohortFilterKey(value: string): value is CohortFilterKey {
   return COHORT_FILTERS.some((filter) => filter.key === value);
@@ -71,6 +71,27 @@ export type CohortSort = 'meses' | 'estado';
 
 export function isCohortSort(value: string): value is CohortSort {
   return value === 'meses' || value === 'estado';
+}
+
+/**
+ * Corte por "revisión del destino" (ver referral-review.rules.ts): qué dijo
+ * la posta/hospital sobre la historia clínica ya firmada de cada paciente.
+ * Va aparte de CohortFilterKey porque es otro eje — un especialista puede
+ * querer, por ejemplo, "Sin historia clínica" + "Rechazada" a la vez, y los
+ * cortes de arriba son excluyentes entre sí.
+ */
+export type ReferralStatusFilter = ReferralReviewStatus | 'ALL';
+
+export function isReferralStatusFilter(
+  value: string,
+): value is ReferralStatusFilter {
+  return (
+    value === 'ALL' ||
+    value === 'NONE' ||
+    value === 'ACCEPTED' ||
+    value === 'REJECTED' ||
+    value === 'OBSERVED'
+  );
 }
 
 /** Solo los dígitos: así "12.345.678" y "12345678" son el mismo DNI. */
@@ -116,6 +137,8 @@ export interface CohortView {
   /** El DNI que se está tipeando. Vacío = sin buscar. */
   query: string;
   sort: CohortSort;
+  /** "ALL" = sin recorte por revisión del destino. */
+  referralStatus: ReferralStatusFilter;
 }
 
 /*
@@ -135,6 +158,11 @@ export function selectCohort(
   return patients
     .filter((patient) => (filter ? filter.matches(patient) : true))
     .filter((patient) => (query ? matchesDni(patient, query) : true))
+    .filter((patient) =>
+      view.referralStatus === 'ALL'
+        ? true
+        : patient.referralReviewStatus === view.referralStatus,
+    )
     .sort((a, b) =>
       view.sort === 'estado'
         ? TRANSITION_STATES.indexOf(a.state) -

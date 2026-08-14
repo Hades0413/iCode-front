@@ -944,6 +944,37 @@
   color: var(--ink-3);
 }
 
+/* El combo de "revisión del destino" vive pegado, a la izquierda, del
+   buscador — el margin-left:auto de .search es para cuando va solo, acá lo
+   anula el propio contenedor (que ya alinea el grupo entero a la derecha). */
+.p18 .filterbar-tools .search {
+  margin-left: 0;
+}
+.p18 .select-pill {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  padding: 0 14px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s;
+}
+.p18 .select-pill:focus-within {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+.p18 .select-pill select {
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: var(--t-meta);
+  color: var(--ink);
+  cursor: pointer;
+}
+
 /* ---------- tabla ---------- */
 .p18 .tw {
   overflow-x: auto;
