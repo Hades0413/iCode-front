@@ -1,17 +1,16 @@
 import type { Patient } from '../../domain/entities/patient.entity';
-import { treatmentStatus } from '../../domain/rules/transition.rules';
+import { formatShortDate } from '../../common/utils/format-date';
 import { ChevronIcon, PinIcon } from './icons';
 
 /**
  * La tabla de los que ya cumplieron 18: otra tabla que la del tablero, a
- * propósito. Del otro lado del cumpleaños las preguntas cambian — ya no
- * importa el resumen ni cuánto falta, sino **a qué hospital lo mandó la
- * posta y si está siguiendo su tratamiento** — y reusar la tabla de tutela
- * era arrastrar columnas que aquí no dicen nada.
+ * propósito. Del otro lado del cumpleaños la pregunta es una sola —¿tiene su
+ * cita de adultos y fue?— y las columnas son exactamente esa pregunta:
+ * tiene cita, cuándo es, y si acudió.
  *
- * El orden lo decide el problema: primero los que abandonaron (son a los
- * que hay que salir a buscar), después los que están en trámite, al final
- * los que van bien.
+ * Sin cita, el resto de la fila se muestra con una raya (—): una celda
+ * vacía parece un dato que no cargó; la raya dice "no hay nada que mostrar
+ * aquí, y es información".
  */
 export function FollowUpTable({
   patients,
@@ -26,9 +25,9 @@ export function FollowUpTable({
         <thead>
           <tr>
             <th style={{ paddingLeft: 18 }}>Paciente</th>
-            <th>Edad</th>
-            <th>Hospital al que lo derivó la posta</th>
-            <th>Tratamiento</th>
+            <th>Tiene cita</th>
+            <th>Fecha de la cita</th>
+            <th>Acudió</th>
             <th />
           </tr>
         </thead>
@@ -52,17 +51,39 @@ export function FollowUpTable({
   );
 }
 
+/** La raya de "aquí no hay nada": distinta de una celda que no cargó. */
+function Dash() {
+  return <span className="dim">—</span>;
+}
+
+/**
+ * Si fue a su cita, dicho desde el estado del caso: FIRST_CARE_DONE y
+ * READMITTED son un sí (llegó al otro lado), LOST_TO_FOLLOW_UP es el no que
+ * hay que salir a buscar, y todo lo demás es una cita que todavía no pasa.
+ */
+function attendance(patient: Patient): {
+  label: string;
+  chip: 'ok' | 'crit' | 'none';
+} {
+  if (patient.state === 'FIRST_CARE_DONE' || patient.state === 'READMITTED') {
+    return { label: 'Sí', chip: 'ok' };
+  }
+  if (patient.state === 'LOST_TO_FOLLOW_UP') {
+    return { label: 'No', chip: 'crit' };
+  }
+  return { label: 'Todavía no toca', chip: 'none' };
+}
+
 function FollowUpRow({
   patient,
   onOpen,
 }: Readonly<{ patient: Patient; onOpen: (patient: Patient) => void }>) {
-  const status = treatmentStatus(patient);
-  const hospital =
-    patient.appointment?.hospital ?? patient.hospitalReferral?.hospital ?? null;
+  const appointment = patient.appointment;
+  const attended = appointment ? attendance(patient) : null;
 
   return (
     <tr
-      className={status.tone === 'crit' ? 'u-crit' : ''}
+      className={attended?.chip === 'crit' ? 'u-crit' : ''}
       onClick={() => onOpen(patient)}
     >
       <td className="stripe">
@@ -72,35 +93,38 @@ function FollowUpRow({
         </div>
       </td>
       <td>
-        {/* "18a 3m": los años y los meses, que aquí son los meses que lleva
-            del otro lado del puente. */}
-        <div className="ttl">
-          <b>{patient.age}</b>
-        </div>
-      </td>
-      <td>
-        {hospital ? (
-          <>
-            <div className="dest">
-              <PinIcon />
-              {hospital}
-            </div>
-            <span className="mini">
-              {patient.hospitalReferral?.specialty ?? patient.specialty}
-              {patient.healthPost && ` · lo derivó ${patient.healthPost.name}`}
-            </span>
-          </>
-        ) : (
-          <span className="mini">
-            La posta todavía no lo derivó a ningún hospital
+        {appointment ? (
+          <span className="chip ok">
+            <i className="dot" />
+            Sí
           </span>
+        ) : (
+          <span className="chip none">No</span>
         )}
       </td>
       <td>
-        <span className={`chip ${CHIP_BY_TONE[status.tone]}`}>
-          <i className="dot" />
-          {status.label}
-        </span>
+        {appointment ? (
+          <>
+            <div className="ttl">
+              <b>{formatShortDate(appointment.date)}</b>
+            </div>
+            <span className="mini">
+              <PinIcon /> {appointment.hospital}
+            </span>
+          </>
+        ) : (
+          <Dash />
+        )}
+      </td>
+      <td>
+        {attended ? (
+          <span className={`chip ${attended.chip}`}>
+            {attended.chip !== 'none' && <i className="dot" />}
+            {attended.label}
+          </span>
+        ) : (
+          <Dash />
+        )}
       </td>
       <td>
         <div className="rowact">
@@ -116,9 +140,3 @@ function FollowUpRow({
     </tr>
   );
 }
-
-const CHIP_BY_TONE = {
-  ok: 'ok',
-  warn: 'draft',
-  crit: 'crit',
-} as const;
