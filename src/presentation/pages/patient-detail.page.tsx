@@ -15,6 +15,7 @@ import type { ReferralReview } from '../../domain/entities/referral-review.entit
 import type { ClinicalSummaryResult } from '../../application/dto/clinical-summary-result.dto';
 import type { ReferralReviewResult } from '../../application/dto/referral-review-result.dto';
 import { PERMISSIONS, hasPermission } from '../../domain/rules/permissions';
+import { REFERRAL_REVIEW_STATUS_LABELS } from '../../domain/rules/referral-review.rules';
 import { timeToEighteen } from '../../domain/rules/transition.rules';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
 import { saveBlob } from '../../common/utils/save-blob';
@@ -40,6 +41,37 @@ import styles from './patient-detail.page.module.css';
 const NO_SUMMARY: ClinicalSummary | null = null;
 const NO_REVIEW: ReferralReview | null = null;
 const NO_ATTACHMENTS: PatientAttachment[] = [];
+
+const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
+  NONE: 'chip none',
+  ACCEPTED: 'chip ok',
+  OBSERVED: 'chip review',
+  REJECTED: 'chip crit',
+};
+
+/**
+ * La pastilla del encabezado: "Vacía" mientras no hay nada escrito: una vez
+ * que hay una historia clínica (borrador o firmada), lo que más importa es
+ * qué dijo el destino sobre ella — el mismo dato que "Revisión del destino"
+ * en la tabla de pacientes.
+ */
+function headerStatusLabel(patient: Patient): string {
+  return patient.summaryStatus === 'NONE'
+    ? 'Vacía'
+    : REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus];
+}
+
+function headerStatusClass(patient: Patient): string {
+  return patient.summaryStatus === 'NONE'
+    ? 'chip none'
+    : REFERRAL_CHIP_CLASS[patient.referralReviewStatus];
+}
+
+function headerStatusShowsDot(patient: Patient): boolean {
+  return (
+    patient.summaryStatus !== 'NONE' && patient.referralReviewStatus !== 'NONE'
+  );
+}
 
 /**
  * La ficha del paciente: por dónde va el caso y su historia clínica de
@@ -367,17 +399,64 @@ export function PatientDetailPage() {
           <span>/</span>
           <span>{patient.initials}</span>
         </div>
-        <h1 className={styles['patient-detail-page-t']}>
-          {patient.initials}
-        </h1>
+        <div className={styles['patient-detail-title-row']}>
+          <div className={styles['patient-detail-avatar']}>
+            {patient.initials}
+          </div>
+          <div className={styles['patient-detail-title-text']}>
+            <h1 className={styles['patient-detail-page-t']}>
+              {patient.initials}
+            </h1>
+            <span
+              className={headerStatusClass(patient)}
+              title="Estado de la historia clínica ante el destino"
+            >
+              {headerStatusShowsDot(patient) && <i className="dot" />}
+              {headerStatusLabel(patient)}
+            </span>
+          </div>
+        </div>
         <div className={styles['patient-detail-page-sub']}>
-          <span className="mono">{patient.medicalRecord}</span>
-          <span>{patient.age}</span>
-          <span>
-            {time.prefix} <b>{time.text}</b>
-          </span>
-          <span>{patient.specialty}</span>
-          <span>{patient.district}</span>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Historia clínica
+            </span>
+            <span className={`${styles['patient-detail-field-value']} mono`}>
+              {patient.medicalRecord}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Edad
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.age}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Cumple 18 en
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {time.prefix} <b>{time.text}</b>
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Especialidad
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.specialty}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Distrito
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.district}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -33,24 +33,73 @@
   color: var(--ink);
 }
 
+.patient-detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Avatar con el degradé teal → índigo del "puente" (mismos tokens que la
+   franja de color de cada sección), para que la ficha se identifique de
+   un vistazo igual que el riel. */
+.patient-detail-avatar {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--m-ped) 0%, var(--m-adu) 100%);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  box-shadow: var(--sh-2);
+}
+
+.patient-detail-title-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .patient-detail-page-sub {
-  margin-top: 10px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
   gap: 0;
   flex-wrap: wrap;
-  color: var(--ink-2);
-  font-size: var(--t-meta);
 }
-.patient-detail-page-sub span {
-  padding: 0 12px;
+
+/* Cada dato de la fila lleva su propia etiqueta arriba: sin ella, valores
+   como "17a 10m" o el nombre de un distrito no dicen qué son. */
+.patient-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 16px;
   border-left: 1px solid var(--line-2);
 }
-.patient-detail-page-sub span:first-child {
+.patient-detail-field:first-child {
   padding-left: 0;
   border-left: 0;
 }
-.patient-detail-page-sub b {
+
+.patient-detail-field-label {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.patient-detail-field-value {
+  font-size: var(--t-meta);
+  color: var(--ink-2);
+}
+.patient-detail-field-value b {
   font-weight: 660;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
