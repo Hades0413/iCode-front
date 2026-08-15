@@ -15,7 +15,8 @@ import {
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
 import { formatFileSize } from '../../common/utils/format-file-size';
-import { PaperclipIcon, SignIcon, SparkIcon, TemplateIcon } from './icons';
+import { SignIcon, SparkIcon } from './icons';
+import { LiquidMark } from './brand/liquid-mark';
 import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
 import { Section } from './ui/section';
@@ -69,7 +70,8 @@ export function ClinicalSummaryPanel({
   /** Quién firmaría, para poder decirlo antes de firmar. */
   signerName: string;
   busy: SummaryBusy;
-  onGenerate: () => void;
+  /** Instrucciones opcionales para la IA, ej.: "hazlo breve". */
+  onGenerate: (instructions?: string) => void;
   /** "Llenar la plantilla": arranca un borrador en blanco, a mano. */
   onStartTemplate: () => void;
   /** "Subir el documento": ya viene redactado, solo se adjunta. */
@@ -261,7 +263,7 @@ export function ClinicalSummaryPanel({
                     type="button"
                     className="btn"
                     disabled={busy !== null}
-                    onClick={onGenerate}
+                    onClick={() => onGenerate()}
                     title="Descarta este borrador y le pide a la IA uno nuevo"
                   >
                     {busy === 'generate' ? (
@@ -281,6 +283,44 @@ export function ClinicalSummaryPanel({
   );
 }
 
+/**
+ * La entrada del estado vacío: las 2 hojas + título + explicación,
+ * centrados. Va antes de las formas de empezar (o del aviso de permiso)
+ * porque es lo primero que hay que entender: por qué no hay nada todavía.
+ *
+ * Las hojas se dibujan en CSS, no con un ícono: la de adelante lleva la
+ * marca líquida de la app en reposo (sin `animated`, ver LiquidMark) —
+ * es la firma de la casa, no un ícono genérico de documento.
+ */
+function EmptySummaryIntro({ patient }: Readonly<{ patient: Patient }>) {
+  return (
+    <div className={styles['clinical-summary-empty-hero']}>
+      <div className={styles['clinical-summary-empty-hero-art']} aria-hidden="true">
+        <span
+          className={`${styles['clinical-summary-empty-hero-sheet']} ${styles['clinical-summary-empty-hero-sheet-back']}`}
+        />
+        <span
+          className={`${styles['clinical-summary-empty-hero-sheet']} ${styles['clinical-summary-empty-hero-sheet-front']}`}
+        >
+          <LiquidMark
+            compact
+            className={styles['clinical-summary-empty-hero-mark']}
+          />
+        </span>
+      </div>
+      <h3 className={styles['clinical-summary-empty-hero-title']}>
+        {patient.initials} todavía no tiene sus 2 hojas
+      </h3>
+      <p className={styles['clinical-summary-empty-hero-text']}>
+        La historia clínica de transferencia es lo que el médico del hospital
+        de adultos va a leer antes de ver a {patient.initials} por primera
+        vez: diagnóstico, tratamiento, alertas y qué controles necesita. Sin
+        esto firmado, el caso no se puede mandar a la posta.
+      </p>
+    </div>
+  );
+}
+
 /** Todavía no hay documento: o no le toca, o hay que elegir cómo empezarlo. */
 function EmptySummary({
   patient,
@@ -295,11 +335,12 @@ function EmptySummary({
   blocked: string | null;
   canWrite: boolean;
   busy: SummaryBusy;
-  onGenerate: () => void;
+  onGenerate: (instructions?: string) => void;
   onStartTemplate: () => void;
   onUploadDocument: (file: File) => void;
 }>) {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [instructions, setInstructions] = useState('');
 
   if (blocked) {
     return (
@@ -311,43 +352,48 @@ function EmptySummary({
 
   return (
     <div className="stackv">
-      <Notice className="wrapmax">
-        <b>{patient.initials} no tiene historia clínica de transferencia.</b>{' '}
-        Son las 2 hojas que el médico del hospital de adultos va a leer antes de
-        verla por primera vez: diagnóstico, tratamiento, alertas y qué controles
-        necesita. Sin esto firmado, el caso no se puede mandar a la posta.
-      </Notice>
+      <EmptySummaryIntro patient={patient} />
 
       {canWrite && canGenerateSummary(patient) ? (
         <div className={styles['clinical-summary-card-row']}>
           <div className={styles['clinical-summary-start-card']}>
-            <div className={styles['clinical-summary-start-card-header']}>
-              <SparkIcon />
-              <h3>Generar con IA</h3>
-            </div>
-            <p className="mini">
-              Arma un borrador con lo que ya está en la ficha y marca lo que no
-              pudo confirmar. Después lo revisas, lo corriges y lo firmas tú.
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Generar con IA
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              Arma el borrador{' '}
+              <b>extrayendo frases textuales del historial</b>, cada una con
+              su cita: haces click en una frase y ves el documento original.
+              No inventa ni parafrasea — y el borrador queda editable, como
+              todos.
             </p>
+            <textarea
+              className="ta"
+              rows={2}
+              placeholder="Instrucciones para la IA (opcional). Ej.: hazlo breve."
+              aria-label="Instrucciones para la IA"
+              value={instructions}
+              disabled={busy !== null}
+              onChange={(event) => setInstructions(event.target.value)}
+            />
             <button
               type="button"
               className="btn btn-pri"
               disabled={busy !== null}
-              onClick={onGenerate}
+              onClick={() => onGenerate(instructions.trim() || undefined)}
             >
-              {busy === 'generate' ? <i className="spin" /> : <SparkIcon />}
+              {busy === 'generate' && <i className="spin" />}
               {busy === 'generate' ? 'Generando…' : 'Generar con IA'}
             </button>
           </div>
 
           <div className={styles['clinical-summary-start-card']}>
-            <div className={styles['clinical-summary-start-card-header']}>
-              <TemplateIcon />
-              <h3>Llenar la plantilla</h3>
-            </div>
-            <p className="mini">
-              Empieza las 2 hojas en blanco y las completas vos mismo, sección
-              por sección — sin que la IA proponga nada.
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Llenar la plantilla
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              Los 6 bloques del INSN —diagnóstico, tratamiento, alertas,
+              controles— para completar aquí mismo, con una guía en cada uno.
             </p>
             <button
               type="button"
@@ -355,22 +401,21 @@ function EmptySummary({
               disabled={busy !== null}
               onClick={onStartTemplate}
             >
-              {busy === 'template' ? <i className="spin" /> : <TemplateIcon />}
-              {busy === 'template' ? 'Creando…' : 'Empezar en blanco'}
+              {busy === 'template' && <i className="spin" />}
+              {busy === 'template' ? 'Creando…' : 'Empezar con la plantilla'}
             </button>
           </div>
 
           <div className={styles['clinical-summary-start-card']}>
-            <div className={styles['clinical-summary-start-card-header']}>
-              <PaperclipIcon />
-              <h3>Subir el documento</h3>
-            </div>
-            <p className="mini">
-              Si la historia ya está redactada en otro sistema, adjuntala en
-              PDF o Word y transcribila a las secciones desde acá.
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Subir el documento
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              ¿Ya está redactado? Sube el archivo y queda como borrador
+              esperando tu firma, igual que la plantilla.
             </p>
             <FilePicker
-              label="Elegir el documento"
+              label="Elegir archivo"
               accept=".pdf,.doc,.docx"
               hint="PDF o Word, hasta 10 MB"
               file={uploadFile}
@@ -385,8 +430,8 @@ function EmptySummary({
                 if (uploadFile) onUploadDocument(uploadFile);
               }}
             >
-              {busy === 'upload' ? <i className="spin" /> : null}
-              {busy === 'upload' ? 'Subiendo…' : 'Subir documento'}
+              {busy === 'upload' && <i className="spin" />}
+              {busy === 'upload' ? 'Subiendo…' : 'Subir como resumen'}
             </button>
           </div>
         </div>

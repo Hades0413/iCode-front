@@ -22,7 +22,10 @@
   margin-bottom: 16px;
 }
 
-.section-title {
+/* :global(.p18) — el reset local de design-system.css apunta a ".p18 h2"
+   (clase + elemento, más específico que una sola clase de módulo): sin este
+   prefijo, ese reset gana y nos pisa font-weight/color/margin. */
+:global(.p18) .section-title {
   font-size: var(--t-title);
   font-weight: 660;
   letter-spacing: -0.012em;

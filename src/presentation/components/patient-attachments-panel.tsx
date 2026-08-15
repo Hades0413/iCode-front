@@ -3,15 +3,41 @@ import type { PatientAttachment } from '../../domain/entities/patient-attachment
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
 import { formatFileSize } from '../../common/utils/format-file-size';
-import { DownloadIcon, PaperclipIcon } from './icons';
+import { CameraIcon, DocIcon, DownloadIcon, VideoIcon } from './icons';
 import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
 import { Section } from './ui/section';
-import { EmptyState, LoadingRows } from './ui/states';
+import { LoadingRows } from './ui/states';
 import type { LoadError } from '../hooks/use-async-resource';
+import styles from './patient-attachments-panel.module.css';
 
 const ACCEPTED_EXTENSIONS =
   '.jpg,.jpeg,.png,.pdf,.doc,.docx,.mp4,.mov,.webm';
+
+type AttachmentKind = 'doc' | 'image' | 'video';
+
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+const VIDEO_EXTENSIONS = new Set(['mp4', 'mov', 'webm']);
+
+/** Documento (PDF/Word) es el valor por defecto: es lo más común del caso. */
+function attachmentKind(fileName: string): AttachmentKind {
+  const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+  if (IMAGE_EXTENSIONS.has(ext)) return 'image';
+  if (VIDEO_EXTENSIONS.has(ext)) return 'video';
+  return 'doc';
+}
+
+const KIND_ICON_CLASS: Record<AttachmentKind, string> = {
+  doc: styles['patient-attachments-panel-item-icon-doc'],
+  image: styles['patient-attachments-panel-item-icon-image'],
+  video: styles['patient-attachments-panel-item-icon-video'],
+};
+
+function AttachmentKindIcon({ kind }: Readonly<{ kind: AttachmentKind }>) {
+  if (kind === 'image') return <CameraIcon />;
+  if (kind === 'video') return <VideoIcon />;
+  return <DocIcon />;
+}
 
 /**
  * "Exámenes y documentos" de la ficha: imágenes, PDF, Word o video sueltos
@@ -61,34 +87,49 @@ export function PatientAttachmentsPanel({
       ) : (
         <div className="stackv">
           {attachments.length === 0 ? (
-            <EmptyState>Todavía no se adjuntó ningún examen o documento.</EmptyState>
+            <p className="mini wrapmax">
+              Nada adjunto todavía. Los exámenes de laboratorio, informes e
+              imágenes que subas aquí viajan con el caso al hospital de
+              adultos.
+            </p>
           ) : (
-            <ul className="attlist">
-              {attachments.map((attachment) => (
-                <li key={attachment.id} className="attitem">
-                  <PaperclipIcon />
-                  <div className="attitem-t">
-                    <b>{attachment.fileName}</b>
-                    <span className="mini">
-                      {formatFileSize(attachment.fileSize)} · subido por{' '}
-                      {attachment.uploadedBy} el{' '}
-                      {formatShortDate(attachment.uploadedAt)}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-sm"
-                    onClick={() => onDownload(attachment)}
+            <ul className={styles['patient-attachments-panel-list']}>
+              {attachments.map((attachment) => {
+                const kind = attachmentKind(attachment.fileName);
+                return (
+                  <li
+                    key={attachment.id}
+                    className={styles['patient-attachments-panel-item']}
                   >
-                    <DownloadIcon /> Descargar
-                  </button>
-                </li>
-              ))}
+                    <span
+                      className={`${styles['patient-attachments-panel-item-icon']} ${KIND_ICON_CLASS[kind]}`}
+                      aria-hidden="true"
+                    >
+                      <AttachmentKindIcon kind={kind} />
+                    </span>
+                    <div className={styles['patient-attachments-panel-item-text']}>
+                      <b>{attachment.fileName}</b>
+                      <span className="mini">
+                        {formatFileSize(attachment.fileSize)} · subido por{' '}
+                        {attachment.uploadedBy} el{' '}
+                        {formatShortDate(attachment.uploadedAt)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => onDownload(attachment)}
+                    >
+                      <DownloadIcon /> Descargar
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
 
           {canWrite ? (
-            <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className={styles['patient-attachments-panel-upload']}>
               <FilePicker
                 label="Elegir archivo"
                 accept={ACCEPTED_EXTENSIONS}
@@ -108,7 +149,7 @@ export function PatientAttachmentsPanel({
                   }
                 }}
               >
-                {isUploading ? <i className="spin" /> : <PaperclipIcon />}
+                {isUploading && <i className="spin" />}
                 {isUploading ? 'Adjuntando…' : 'Adjuntar'}
               </button>
             </div>

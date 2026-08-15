@@ -91,9 +91,11 @@ class HttpPatientRepository implements PatientRepositoryPort {
 
   async generateClinicalSummary(
     patientId: string,
+    instructions?: string,
   ): Promise<ClinicalSummaryResult> {
     const { data } = await apiClient.post<ClinicalSummaryResult>(
       summaryUrl(patientId),
+      instructions ? { instructions } : undefined,
     );
     return data;
   }
