@@ -1513,6 +1513,9 @@
   display: grid;
   gap: 10px;
   padding-top: 18px;
+  /* Cuando un KPI trae el scroll hasta aquí, el título del grupo no queda
+     pegado al borde de arriba. */
+  scroll-margin-top: 14px;
 }
 /* El título del grupo: punto de color, nombre y cuántas. */
 .p18 .crgroup-h {

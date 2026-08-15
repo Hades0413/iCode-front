@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { referralService } from '../../composition-root';
 import type { CounterReferralQueueItem } from '../../application/dto/counter-referral-queue-item.dto';
 import type { CounterReferralUpload } from '../../application/dto/counter-referral-upload.dto';
@@ -28,6 +28,14 @@ import { useToasts } from '../hooks/use-toasts';
 
 const isSameItem = (a: CounterReferralQueueItem, b: CounterReferralQueueItem) =>
   a.patient.id === b.patient.id;
+
+/** El ancla de cada grupo: es a donde lleva el número de arriba. */
+const groupAnchor = (key: string) => `cr-${key}`;
+
+const scrollToGroup = (key: string) =>
+  document
+    .getElementById(groupAnchor(key))
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 /**
  * "Contrarreferencias" — la otra mitad del trabajo del área.
@@ -83,7 +91,7 @@ export function CounterReferralsPage() {
       key: 'NONE',
       title: 'Falta la carta',
       tone: 'crit' as const,
-      items: items.filter(
+      items: visible.filter(
         (item) => item.patient.counterReferralStatus === 'NONE',
       ),
     },
@@ -99,11 +107,37 @@ export function CounterReferralsPage() {
       key: 'SENT',
       title: 'Ya enviadas',
       tone: 'ok' as const,
-      items: items.filter(
+      items: visible.filter(
         (item) => item.patient.counterReferralStatus === 'SENT',
       ),
     },
   ];
+
+  /**
+   * Los números de arriba llevan a las cartas que cuentan. Sin esto, tocar
+   * "Falta la carta: 4" no hacía nada: las tarjetas estaban abajo del pliegue
+   * y había que ir a buscarlas a mano.
+   *
+   * Si un DNI tipeado dejó ese grupo sin nada que mostrar, se limpia la
+   * búsqueda y el salto queda pendiente para el próximo pintado — llevarlo a
+   * un grupo vacío sería peor que no moverse.
+   */
+  const pendingGroup = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (pendingGroup.current === null) return;
+    scrollToGroup(pendingGroup.current);
+    pendingGroup.current = null;
+  }, [visible]);
+
+  function goToGroup(key: string) {
+    if (document.getElementById(groupAnchor(key))) {
+      scrollToGroup(key);
+      return;
+    }
+    pendingGroup.current = key;
+    setQuery('');
+  }
 
   async function upload(
     item: CounterReferralQueueItem,
@@ -199,12 +233,17 @@ export function CounterReferralsPage() {
         ) : (
           <>
             <StatGrid>
+              {/* Cada número es un botón cuando tiene algo abajo: te deja en
+                  su grupo de cartas. En cero no finge ser clickeable. */}
               <StatCard
                 label="Falta la carta"
                 value={summary.pending}
                 total={summary.total}
                 hint="cumplieron 18 y todavía nadie redactó su contrarreferencia"
                 severity={summary.pending > 0 ? 'crit' : 'ok'}
+                onClick={
+                  summary.pending > 0 ? () => goToGroup('NONE') : undefined
+                }
               />
               <StatCard
                 label="Listas sin enviar"
@@ -212,6 +251,9 @@ export function CounterReferralsPage() {
                 total={summary.total}
                 hint="la carta existe pero la posta todavía no la recibió"
                 severity={summary.uploaded > 0 ? 'warn' : 'neutral'}
+                onClick={
+                  summary.uploaded > 0 ? () => goToGroup('UPLOADED') : undefined
+                }
               />
               <StatCard
                 label="Enviadas"
@@ -219,6 +261,7 @@ export function CounterReferralsPage() {
                 total={summary.total}
                 hint="el caso ya volvió al primer nivel"
                 severity="ok"
+                onClick={summary.sent > 0 ? () => goToGroup('SENT') : undefined}
               />
             </StatGrid>
 
@@ -244,7 +287,11 @@ export function CounterReferralsPage() {
                 groups
                   .filter((group) => group.items.length > 0)
                   .map((group) => (
-                    <div key={group.key} className="crgroup">
+                    <div
+                      key={group.key}
+                      id={groupAnchor(group.key)}
+                      className="crgroup"
+                    >
                       <div className="crgroup-h">
                         <i className={`crgroup-dot ${group.tone}`} />
                         {group.title}

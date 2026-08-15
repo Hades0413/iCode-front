@@ -18,7 +18,7 @@ export function StatCard({
   hint,
   severity = 'neutral',
   total,
-  isActive = false,
+  isActive,
   onClick,
 }: Readonly<{
   label: string;
@@ -29,6 +29,10 @@ export function StatCard({
   severity?: StatSeverity;
   /** Sobre cuántos, para el medidor. Sin esto no se dibuja. */
   total?: number;
+  /**
+   * Solo para los que filtran: sin esto no se escribe `aria-pressed`, porque
+   * un botón que lleva el scroll a otro lado no queda "apretado".
+   */
   isActive?: boolean;
   onClick?: () => void;
 }>) {
