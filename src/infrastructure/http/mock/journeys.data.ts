@@ -199,6 +199,12 @@ const JOURNEY: TransitionJourney = {
     reason: 'Primera consulta en el hospital de adultos',
     managedBy: 'P.S. Año Nuevo — Comas',
   },
+  // Su referencia ya fue aceptada: por eso tiene cita y por eso el
+  // formulario de "¿ya conseguiste tu cita?" estaría operativo. Poniendo
+  // 'NONE' aquí (y appointment en null) se ve el otro lado: el aviso de
+  // "en trámite" y el formulario con candado.
+  referralReviewStatus: 'ACCEPTED',
+  referralAcceptedBy: 'Hospital Sergio Bernales',
   appointmentAddress: 'Av. Túpac Amaru km 14.5, Comas · Consultorios externos',
   arriveMinutesEarly: 30,
   admissionNote:
@@ -343,6 +349,16 @@ export function setGuardianAccess(hasAccess: boolean): void {
 }
 
 /** true = se guardó; false = ya había una (mismo criterio que el back real: no se pisa en silencio). */
+/**
+ * Si el destino ya aceptó su referencia. Lo consulta el handler antes de
+ * guardar una cita: la misma precondición que el back real contesta con un
+ * 409 — sin esto, el mock aceptaría lo que el servidor rechaza y la demo
+ * enseñaría un flujo que no existe.
+ */
+export function isReferralAccepted(): boolean {
+  return JOURNEY.referralReviewStatus === 'ACCEPTED';
+}
+
 export function reportAppointment(report: AppointmentReport): boolean {
   const store = read();
   if (store.selfReportedAppointment ?? JOURNEY.appointment) {

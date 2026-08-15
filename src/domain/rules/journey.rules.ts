@@ -143,6 +143,21 @@ export function canReportAppointment(viewer: JourneyViewer): boolean {
   return viewer.role === 'OWNER' && viewer.canReportAppointment;
 }
 
+/**
+ * Si ya hay cita que agendar. **La referencia aceptada es la llave**: el
+ * hospital de adultos no le da fecha a nadie cuya referencia todavía está en
+ * revisión, así que dejar el formulario abierto antes de eso solo consigue
+ * que la persona escriba una cita que después no existe, o que se acerque al
+ * hospital para que lo manden de vuelta.
+ *
+ * Va aparte de canReportAppointment(viewer) a propósito: aquello dice **quién**
+ * puede registrar la cita (el dueño, no quien lo acompaña) y esto dice
+ * **cuándo** — dos preguntas distintas que se responden con datos distintos.
+ */
+export function canScheduleAppointment(journey: TransitionJourney): boolean {
+  return journey.referralReviewStatus === 'ACCEPTED';
+}
+
 /** Generar el código único de consulta: solo el dueño. */
 export function canManageConsultationCode(viewer: JourneyViewer): boolean {
   return viewer.role === 'OWNER' && viewer.canManageConsultationCode;

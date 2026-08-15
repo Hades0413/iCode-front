@@ -1325,7 +1325,7 @@ const POST_TRANSITION: readonly PatientRow[] = [
     checklistProgress: 0.8,
   },
   {
-    // El post-18 del oncólogo: sin él, el panel "Ya cumplieron 18" del
+    // El post-18 del oncólogo: sin él, el panel "Referencias aceptadas" del
     // usuario `medico` quedaba vacío y parecía roto.
     id: 'fz',
     initials: 'F.Z.',

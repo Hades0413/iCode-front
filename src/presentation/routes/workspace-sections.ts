@@ -43,7 +43,7 @@ export const WORKSPACE_SECTIONS: readonly WorkspaceSection[] = [
   },
   {
     key: 'seguimiento',
-    label: 'Ya cumplieron 18',
+    label: 'Referencias aceptadas',
     to: '/seguimiento',
     permission: PERMISSIONS.reportsRead,
     workspace: 'clinic',

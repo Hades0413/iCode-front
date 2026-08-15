@@ -112,7 +112,7 @@ front arranca solo, con datos estáticos y sin pedir login:
 ```
 VITE_USE_MOCK_DATA=1
 VITE_DEMO_USER=admin
-VITE_DEMO_PASSWORD=Passw0rd1!
+VITE_DEMO_PASSWORD=12345
 ```
 
 Ver [Backend simulado](#backend-simulado) y [Modo prototipo](#modo-prototipo-entrar-sin-tipear-nada).
@@ -179,7 +179,7 @@ el servidor — la misma filosofía que el README de iCode-back sobre
 ocultando algo en el cliente).
 
 Usuarios de prueba: los mismos del seed de iCode-back (`admin` /
-`Passw0rd1!`, entre otros — ver
+`12345`, entre otros — ver
 [el README de iCode-back](../iCode-back/README.md#autenticación)).
 
 ### Modo prototipo: un login que se ve pero no pide cuenta
@@ -574,7 +574,7 @@ Lo que el mock imita a propósito, para no tener sorpresas después:
   350 ms y ese estado también hay que poder probarlo.
 - `password` e `isActive` no salen nunca en una respuesta.
 
-Usuarios del mock (todos con password `Passw0rd1!`):
+Usuarios del mock (todos con password `12345`):
 
 | Usuario | Para qué sirve |
 | --- | --- |

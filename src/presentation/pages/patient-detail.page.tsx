@@ -49,7 +49,7 @@ const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
 /**
  * La pastilla del encabezado: "Vacía" mientras no hay nada escrito: una vez
  * que hay una historia clínica (borrador o firmada), lo que más importa es
- * qué dijo el destino sobre ella — el mismo dato que "Revisión del destino"
+ * qué dijo el destino sobre ella — el mismo dato que "Estado referencia"
  * en la tabla de pacientes.
  */
 function headerStatusLabel(patient: Patient): string {

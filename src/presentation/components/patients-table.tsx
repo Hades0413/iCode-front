@@ -33,9 +33,8 @@ const TIME_LEFT_URGENCY_CLASS: Record<'crit' | 'warn', string> = {
  *
  * Las columnas son lo que el médico decide mirando la lista: quién es, cuánto
  * falta, su diagnóstico, en qué está su **historia clínica** (abrirla para
- * generarla o revisarla) y qué dijo el destino sobre ella
- * ("Revisión del destino" — "Referencia" quedaba ambiguo: no queda claro si
- * habla del documento o de un veredicto sobre él).
+ * generarla o revisarla) y qué dijo el destino sobre ella ("Estado
+ * referencia": pendiente, aceptada, observada o rechazada).
  * Todo lo demás vive en la ficha, que es donde se mira un caso puntual.
  */
 export function PatientsTable({
@@ -68,7 +67,7 @@ export function PatientsTable({
             </th>
             <th>Diagnóstico</th>
             <th>Resumen de historia clínica</th>
-            <th>Revisión del destino</th>
+            <th>Estado referencia</th>
           </tr>
         </thead>
         <tbody>
