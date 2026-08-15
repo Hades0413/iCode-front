@@ -23,9 +23,9 @@ const NO_PATIENTS: Patient[] = [];
 const PAGE_SIZE = 7;
 
 /**
- * Los que **ya cumplieron 18** y por lo tanto salieron de la lista del
- * especialista. Aquí la pregunta es otra — no "¿está listo para pasar?" sino
- * "¿llegó al otro lado?".
+ * "Referencias aceptadas": los que ya salieron de la lista del especialista
+ * porque cruzaron al otro lado. Aquí la pregunta es otra — no "¿está listo
+ * para pasar?" sino "¿llegó al otro lado?".
  *
  * Tiene su propia tabla (FollowUpTable): quién es, si tiene cita de adultos,
  * cuándo es y si acudió. Las tarjetas van sin onClick porque aquí no hay nada
@@ -58,7 +58,7 @@ export function FollowUpPage() {
 
   return (
     <div className="main enter">
-      <PageHeader title="Ya cumplieron 18">
+      <PageHeader title="Referencias aceptadas">
         <PageHeaderStat value={summary.total}>
           pacientes ya pasaron al hospital de adultos
         </PageHeaderStat>

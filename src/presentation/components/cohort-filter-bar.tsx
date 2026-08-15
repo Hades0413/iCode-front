@@ -3,15 +3,20 @@ import type { ReferralStatusFilter } from '../../domain/rules/cohort.rules';
 import { REFERRAL_REVIEW_STATUS_LABELS } from '../../domain/rules/referral-review.rules';
 import { SearchInput } from './ui/search-input';
 
+/**
+ * Los cuatro estados en los que puede estar la referencia de un paciente, en
+ * el orden en que se leen: primero el desenlace bueno (la aceptaron), después
+ * los dos que dan trabajo, y al final la que todavía no tiene respuesta.
+ */
 const REFERRAL_STATUS_OPTIONS: readonly ReferralReviewStatus[] = [
-  'NONE',
   'ACCEPTED',
-  'REJECTED',
   'OBSERVED',
+  'REJECTED',
+  'NONE',
 ];
 
 /**
- * Lo que acota la lista dentro del corte elegido: la revisión del destino
+ * Lo que acota la lista dentro del corte elegido: el estado de la referencia
  * (ver referral-review.rules.ts) y el DNI.
  *
  * Aquí no hay filtro de especialidad a propósito: el médico solo ve pacientes
@@ -20,7 +25,7 @@ const REFERRAL_STATUS_OPTIONS: readonly ReferralReviewStatus[] = [
  * opción real. Los cortes (todos · cumplen 18 pronto · sin historia clínica)
  * son las tarjetas de arriba.
  *
- * El selector de revisión es OPCIONAL porque esta barra la comparten cuatro
+ * El selector de estado es OPCIONAL porque esta barra la comparten cuatro
  * pantallas y solo una tiene esa pregunta: "¿qué dijo el destino sobre la
  * historia firmada?" solo significa algo en la lista del médico. Seguimiento,
  * avisos y contrarreferencias buscan por DNI y nada más — pedirles el filtro
@@ -45,14 +50,14 @@ export function CohortFilterBar({
           <label className="select-pill">
             <select
               value={referralStatus}
-              aria-label="Filtrar por revisión del destino"
+              aria-label="Filtrar por estado de la referencia"
               onChange={(event) =>
                 onReferralStatusChange(
                   event.target.value as ReferralStatusFilter,
                 )
               }
             >
-              <option value="ALL">Revisión del destino: todas</option>
+              <option value="ALL">Estado referencia: todas</option>
               {REFERRAL_STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
                   {REFERRAL_REVIEW_STATUS_LABELS[status]}

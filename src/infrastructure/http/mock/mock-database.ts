@@ -46,13 +46,13 @@ export interface MockSession {
  * (sección "ROLE -> PERMISSION" y "USER -> ROLE") — no inventados: si acá
  * dice otra cosa que el seed real, es este archivo el que está desactualizado.
  * "admin" es la única excepción documentada en el README de iCode-back
- * ("admin / Passw0rd1!"); el resto sale de ese seed puntual.
+ * ("admin / 12345"); el resto sale de ese seed puntual.
  */
 const USERS: readonly MockUserRow[] = [
   {
     id: 1,
     userName: 'admin',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'admin@puente18.pe',
     firstName: 'Ada',
     lastName: 'Ramírez',
@@ -78,7 +78,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 5,
     userName: 'pediatra1',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'pediatra1@example.com',
     firstName: 'Álvaro',
     lastName: 'Solís',
@@ -99,7 +99,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 6,
     userName: 'referencias1',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'referencias1@example.com',
     firstName: 'Referencias',
     lastName: 'Ficticio Uno',
@@ -117,7 +117,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 2,
     userName: 'operador',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'operador@puente18.pe',
     firstName: 'Beto',
     lastName: 'Quispe',
@@ -132,7 +132,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 7,
     userName: 'paciente1',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: null,
     firstName: 'T.',
     lastName: 'D.',
@@ -151,7 +151,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 8,
     userName: 'tutor1',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'rosa@example.pe',
     firstName: 'Rosa',
     lastName: 'Delgado',
@@ -164,7 +164,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 3,
     userName: 'sinpermisos',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: null,
     firstName: 'Carla',
     lastName: 'Núñez',
@@ -176,7 +176,7 @@ const USERS: readonly MockUserRow[] = [
   {
     id: 4,
     userName: 'inactivo1',
-    password: 'Passw0rd1!',
+    password: '12345',
     email: 'inactivo1@example.com',
     firstName: 'Especialista',
     lastName: 'Desactivado Ficticio',

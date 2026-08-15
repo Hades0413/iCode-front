@@ -45,7 +45,7 @@ const PAGE_SIZE = 10;
  * "Pacientes en tutela" — el tablero del especialista de pediatría.
  *
  * En tutela significa **todavía no cumplió 18**: en cuanto los cumple, el
- * paciente sale de esta lista y pasa al panel de seguimiento.
+ * paciente sale de esta lista y pasa a "Referencias aceptadas".
  *
  * La pantalla es **la lista y nada más**: los cortes con sus conteos arriba
  * (que son navegación, no contenido) y la cohorte completa abajo. Cada fila
@@ -238,8 +238,10 @@ export function PatientsPage() {
                 arma el borrador y el médico lo revisa y lo firma. El caso se
                 manda a la posta de su barrio unos meses antes, para que la cita
                 ya esté cuando cumpla; la posta lo manda al hospital de adultos
-                y consigue el día y la hora. Al cumplir 18 el paciente sale de
-                esta lista y pasa a “Ya cumplieron 18”. Datos de prueba.
+                y consigue el día y la hora. “Estado referencia” es lo que
+                contestó el destino sobre esa historia ya firmada: aceptada,
+                observada, rechazada o pendiente —cuando la acepta, el caso pasa
+                a “Referencias aceptadas”—. Datos de prueba.
               </p>
             </Section>
           </>
