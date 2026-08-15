@@ -5,6 +5,7 @@ import type {
 import type { Patient } from '../../domain/entities/patient.entity';
 import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import type { ClinicalSummaryResult } from '../dto/clinical-summary-result.dto';
+import type { DiscardClinicalSummaryResult } from '../dto/discard-clinical-summary-result.dto';
 
 /**
  * Mismo criterio que AuthRepositoryPort: "application" pide pacientes sin
@@ -78,4 +79,13 @@ export interface PatientRepositoryPort {
     patientId: string,
     file: File,
   ): Promise<ClinicalSummaryResult>;
+
+  /**
+   * Descarta el borrador para empezar de nuevo: a mano, subiendo otro
+   * documento o pidiéndoselo otra vez a la IA. Nunca sobre una historia ya
+   * firmada.
+   */
+  discardClinicalSummaryDraft(
+    patientId: string,
+  ): Promise<DiscardClinicalSummaryResult>;
 }

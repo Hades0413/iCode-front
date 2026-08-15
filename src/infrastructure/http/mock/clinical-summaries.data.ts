@@ -348,7 +348,16 @@ function seedSummary(patient: PatientSeed): ClinicalSummary | null {
 
 const STORAGE_KEY = 'icode.mock.clinical-summaries';
 
+/**
+ * Quiénes descartaron el borrador del seed en esta demo, con cuándo. Hace
+ * falta aparte de STORAGE_KEY porque el seed no vive en localStorage: sin
+ * esto, borrar la fila de `summaries` no alcanzaría para tapar el borrador
+ * sintético y `summaryFor` volvería a mostrarlo como si nada.
+ */
+const DISCARDED_KEY = 'icode.mock.clinical-summaries.discarded';
+
 type SummaryMap = Record<string, ClinicalSummary>;
+type DiscardedMap = Record<string, string>;
 
 function readSummaries(): SummaryMap {
   try {
@@ -359,10 +368,28 @@ function readSummaries(): SummaryMap {
   }
 }
 
+function readDiscarded(): DiscardedMap {
+  try {
+    const raw = localStorage.getItem(DISCARDED_KEY);
+    return raw ? (JSON.parse(raw) as DiscardedMap) : {};
+  } catch {
+    return {};
+  }
+}
+
 function writeSummary(summary: ClinicalSummary): ClinicalSummary {
   const summaries = readSummaries();
   summaries[summary.patientId] = summary;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(summaries));
+
+  // Un borrador nuevo tapa cualquier descarte anterior: si quedara la marca,
+  // no cambiaría nada (`summaries` gana siempre en summaryFor), pero
+  // arrastrarla sin necesidad es la clase de estado que después confunde.
+  const discarded = readDiscarded();
+  if (summary.patientId in discarded) {
+    delete discarded[summary.patientId];
+    localStorage.setItem(DISCARDED_KEY, JSON.stringify(discarded));
+  }
   return summary;
 }
 
@@ -372,7 +399,35 @@ function now(): string {
 
 /** El documento del paciente: el que se escribió en la demo, o el del seed. */
 export function summaryFor(patient: PatientSeed): ClinicalSummary | null {
-  return readSummaries()[patient.id] ?? seedSummary(patient);
+  const stored = readSummaries()[patient.id];
+  if (stored) {
+    return stored;
+  }
+  // Descartado en esta demo: no cae al del seed, aunque exista.
+  if (patient.id in readDiscarded()) {
+    return null;
+  }
+  return seedSummary(patient);
+}
+
+/**
+ * Descarta el borrador (DRAFT) para volver a NONE. No hace nada sobre uno
+ * ya firmado — mismo criterio que canReviewSummary en domain/rules.
+ */
+export function discardSummaryDraft(patient: PatientSeed): boolean {
+  const current = summaryFor(patient);
+  if (!current || current.status !== 'DRAFT') {
+    return false;
+  }
+
+  const summaries = readSummaries();
+  delete summaries[patient.id];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(summaries));
+
+  const discarded = readDiscarded();
+  discarded[patient.id] = now();
+  localStorage.setItem(DISCARDED_KEY, JSON.stringify(discarded));
+  return true;
 }
 
 /**
@@ -447,7 +502,13 @@ export function clinicalSummaryAction(
 ): { at: string; text: string } | null {
   const summary = readSummaries()[patientId] ?? null;
   if (!summary) {
-    return null;
+    const discardedAt = readDiscarded()[patientId];
+    return discardedAt
+      ? {
+          at: discardedAt,
+          text: `Borrador descartado · ${formatShortDate(discardedAt)}`,
+        }
+      : null;
   }
   if (summary.approvedAt) {
     return {
@@ -468,7 +529,7 @@ export function clinicalSummaryAction(
 }
 
 export function applyClinicalSummary(patient: PatientSeed): Patient {
-  const summary = readSummaries()[patient.id] ?? seedSummary(patient);
+  const summary = summaryFor(patient);
   return {
     ...patient,
     summaryStatus: summary?.status ?? 'NONE',
