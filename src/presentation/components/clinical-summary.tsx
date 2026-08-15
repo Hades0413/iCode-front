@@ -21,6 +21,7 @@ import { Notice } from './ui/notice';
 import { Section } from './ui/section';
 import { LoadingRows } from './ui/states';
 import type { LoadError } from '../hooks/use-async-resource';
+import styles from './clinical-summary.module.css';
 
 /** Qué acción está en vuelo, para deshabilitar solo esa. */
 export type SummaryBusy = 'generate' | 'template' | 'upload' | 'save' | 'approve' | null;
@@ -141,7 +142,7 @@ export function ClinicalSummaryPanel({
             <PendingChecks checks={summary.pendingChecks} />
           )}
 
-          <div className="sheet">
+          <div className={styles['clinical-summary-sheet']}>
             {(editing ?? summary.sections).map((section) => (
               <SheetSection
                 key={section.id}
@@ -188,7 +189,7 @@ export function ClinicalSummaryPanel({
               </span>
             </div>
           ) : confirmingSignature ? (
-            <div className="signbar">
+            <div className={styles['clinical-summary-signbar']}>
               <div>
                 <b>Vas a firmar como {signerName}.</b> A partir de ahí estas 2
                 hojas viajan con {patient.initials} al hospital de adultos y no
@@ -318,9 +319,9 @@ function EmptySummary({
       </Notice>
 
       {canWrite && canGenerateSummary(patient) ? (
-        <div className="cardrow">
-          <div className="startcard">
-            <div className="startcard-h">
+        <div className={styles['clinical-summary-card-row']}>
+          <div className={styles['clinical-summary-start-card']}>
+            <div className={styles['clinical-summary-start-card-header']}>
               <SparkIcon />
               <h3>Generar con IA</h3>
             </div>
@@ -339,8 +340,8 @@ function EmptySummary({
             </button>
           </div>
 
-          <div className="startcard">
-            <div className="startcard-h">
+          <div className={styles['clinical-summary-start-card']}>
+            <div className={styles['clinical-summary-start-card-header']}>
               <TemplateIcon />
               <h3>Llenar la plantilla</h3>
             </div>
@@ -359,8 +360,8 @@ function EmptySummary({
             </button>
           </div>
 
-          <div className="startcard">
-            <div className="startcard-h">
+          <div className={styles['clinical-summary-start-card']}>
+            <div className={styles['clinical-summary-start-card-header']}>
               <PaperclipIcon />
               <h3>Subir el documento</h3>
             </div>
@@ -443,15 +444,15 @@ function SummaryHeader({ summary }: Readonly<{ summary: ClinicalSummary }>) {
 /** Lo que la IA no pudo confirmar. Va antes del texto, no después. */
 function PendingChecks({ checks }: Readonly<{ checks: readonly string[] }>) {
   return (
-    <div className="checks wrapmax">
-      <div className="checks-h">
+    <div className={`${styles['clinical-summary-checks']} wrapmax`}>
+      <div className={styles['clinical-summary-checks-header']}>
         <SparkIcon />
         <b>
           {checks.length} {checks.length === 1 ? 'cosa' : 'cosas'} que la IA no
           pudo confirmar
         </b>
       </div>
-      <ul className="checks-l">
+      <ul className={styles['clinical-summary-checks-list']}>
         {checks.map((check) => (
           <li key={check}>{check}</li>
         ))}
@@ -475,11 +476,22 @@ function SheetSection({
   const isEmpty = section.body.trim() === '';
 
   return (
-    <article className={`sheet-s ${isEmpty && !isEditing ? 'gap' : ''}`}>
-      <h3 className="sheet-t">{section.title}</h3>
+    <article
+      className={`${styles['clinical-summary-sheet-section']} ${
+        isEmpty && !isEditing
+          ? styles['clinical-summary-sheet-section-gap']
+          : ''
+      }`}
+    >
+      <h3 className={styles['clinical-summary-sheet-section-title']}>
+        {section.title}
+      </h3>
       {isEditing ? (
         <>
-          <label className="sheet-hint" htmlFor={`sec-${section.id}`}>
+          <label
+            className={styles['clinical-summary-sheet-hint']}
+            htmlFor={`sec-${section.id}`}
+          >
             {section.hint}
           </label>
           <textarea
@@ -494,9 +506,15 @@ function SheetSection({
       ) : isEmpty ? (
         // Un bloque vacío se muestra vacío y se dice por qué. Rellenarlo con
         // texto de relleno sería exactamente el problema que queremos evitar.
-        <p className="sheet-b empty">Sin escribir — {section.hint}</p>
+        <p
+          className={`${styles['clinical-summary-sheet-section-body']} ${styles['clinical-summary-sheet-section-body-empty']}`}
+        >
+          Sin escribir — {section.hint}
+        </p>
       ) : (
-        <p className="sheet-b">{section.body}</p>
+        <p className={styles['clinical-summary-sheet-section-body']}>
+          {section.body}
+        </p>
       )}
     </article>
   );

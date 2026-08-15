@@ -1,0 +1,151 @@
+/* ============================================================
+   CLINICAL SUMMARY — estilos propios de este componente.
+   Copiado desde clinic.css ("sheet"/"checks"/"signbar"/"cardrow"/
+   "startcard") como punto de partida para poder tocarlo sin afectar
+   clinic.css. "sheet-*" también las usa summary-preview.tsx, que sigue
+   tomándolas de clinic.css hasta que se migre aparte.
+   ============================================================ */
+
+/* ---------- las 2 hojas: se dibujan como un documento ---------- */
+.clinical-summary-sheet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  overflow: hidden;
+  max-width: 860px;
+}
+
+.clinical-summary-sheet-section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+}
+.clinical-summary-sheet-section:first-child {
+  border-top: 0;
+}
+/* Un bloque sin escribir se ve vacío a propósito: es trabajo pendiente, no
+   un detalle de maquetación. */
+.clinical-summary-sheet-section-gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wash) 0 8px,
+    var(--paper) 8px 16px
+  );
+}
+
+.clinical-summary-sheet-section-title {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.clinical-summary-sheet-section-body {
+  font-size: var(--t-body-lg);
+  line-height: 1.62;
+  color: var(--ink);
+  max-width: 72ch;
+}
+.clinical-summary-sheet-section-body-empty {
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: var(--t-meta);
+}
+
+.clinical-summary-sheet-hint {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin-bottom: 7px;
+}
+
+/* ---------- lo que la IA no pudo confirmar ---------- */
+.clinical-summary-checks {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--rev-tint);
+  color: var(--rev-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rev) 22%, transparent);
+}
+.clinical-summary-checks-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: var(--t-meta);
+}
+.clinical-summary-checks-header svg {
+  flex: none;
+}
+.clinical-summary-checks-list {
+  margin-top: 9px;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+}
+.clinical-summary-checks-list li {
+  padding-left: 16px;
+  position: relative;
+}
+.clinical-summary-checks-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
+}
+
+/* ---------- la confirmación de la firma ---------- */
+.clinical-summary-signbar {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--acc-tint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 26%, transparent);
+  font-size: var(--t-meta);
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 720px;
+}
+.clinical-summary-signbar b {
+  font-weight: 660;
+}
+
+/* ---------- las 3 formas de empezar la historia clínica ---------- */
+.clinical-summary-card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.clinical-summary-start-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+}
+.clinical-summary-start-card :global(.filepick) {
+  background: var(--wash);
+}
+.clinical-summary-start-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.clinical-summary-start-card-header h3 {
+  font-size: var(--t-body-lg);
+  font-weight: 680;
+  letter-spacing: -0.014em;
+}
