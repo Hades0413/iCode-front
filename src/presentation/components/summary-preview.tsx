@@ -27,7 +27,7 @@ export function SummaryPreview({ patientId }: Readonly<{ patientId: string }>) {
   const { data, isLoading, error, reload } = useAsyncResource(
     load,
     NO_SUMMARY,
-    'No se pudo cargar la historia clínica.',
+    'Prueba de nuevo.',
   );
 
   if (isLoading) {

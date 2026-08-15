@@ -5,6 +5,7 @@ import type {
 import type { Patient } from '../../domain/entities/patient.entity';
 import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import type { ClinicalSummaryResult } from '../../application/dto/clinical-summary-result.dto';
+import type { DiscardClinicalSummaryResult } from '../../application/dto/discard-clinical-summary-result.dto';
 import type { PatientRepositoryPort } from '../../application/ports/patient-repository.port';
 import { getApiErrorStatus } from '../../common/utils/get-api-error-message';
 import { apiClient } from '../http/api-client';
@@ -144,6 +145,20 @@ class HttpPatientRepository implements PatientRepositoryPort {
     const { data } = await apiClient.post<ClinicalSummaryResult>(
       `${summaryUrl(patientId)}/document`,
       body,
+    );
+    return data;
+  }
+
+  /**
+   * DELETE del recurso y no un PATCH del estado: descartar borra el
+   * borrador entero (y su archivo, si vino de "Subir el documento"), no
+   * cambia un campo — mismo criterio que la firma con su propio sub-recurso.
+   */
+  async discardClinicalSummaryDraft(
+    patientId: string,
+  ): Promise<DiscardClinicalSummaryResult> {
+    const { data } = await apiClient.delete<DiscardClinicalSummaryResult>(
+      summaryUrl(patientId),
     );
     return data;
   }

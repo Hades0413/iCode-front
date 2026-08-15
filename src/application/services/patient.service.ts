@@ -13,6 +13,7 @@ import {
   summaryBlockedReason,
 } from '../../domain/rules/clinical-summary.rules';
 import type { ClinicalSummaryResult } from '../dto/clinical-summary-result.dto';
+import type { DiscardClinicalSummaryResult } from '../dto/discard-clinical-summary-result.dto';
 import type { PatientRepositoryPort } from '../ports/patient-repository.port';
 
 /** Se lanza cuando la historia clínica no se puede tocar en este estado. */
@@ -196,5 +197,24 @@ export class PatientService {
       patient.id,
       file,
     );
+  }
+
+  /**
+   * "Descartar borrador": vuelve a NONE para poder empezar de nuevo — a
+   * mano, subiendo otro documento o pidiéndoselo otra vez a la IA. Misma
+   * precondición que guardar/editar: solo sobre un DRAFT, nunca sobre una
+   * historia ya firmada.
+   */
+  async discardClinicalSummaryDraft(
+    patient: Patient,
+  ): Promise<DiscardClinicalSummaryResult> {
+    if (!canReviewSummary(patient)) {
+      throw new ClinicalSummaryNotAllowedError(
+        patient.summaryStatus === 'APPROVED'
+          ? 'La historia clínica ya está firmada: no se puede descartar.'
+          : 'Todavía no hay un borrador que descartar.',
+      );
+    }
+    return this.patientRepository.discardClinicalSummaryDraft(patient.id);
   }
 }

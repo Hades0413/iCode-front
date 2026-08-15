@@ -25,7 +25,14 @@ import type { LoadError } from '../hooks/use-async-resource';
 import styles from './clinical-summary.module.css';
 
 /** Qué acción está en vuelo, para deshabilitar solo esa. */
-export type SummaryBusy = 'generate' | 'template' | 'upload' | 'save' | 'approve' | null;
+export type SummaryBusy =
+  | 'generate'
+  | 'template'
+  | 'upload'
+  | 'save'
+  | 'approve'
+  | 'discard'
+  | null;
 
 /**
  * La historia clínica de transferencia dentro de la ficha del paciente: las
@@ -35,6 +42,11 @@ export type SummaryBusy = 'generate' | 'template' | 'upload' | 'save' | 'approve
  *
  *   sin generar  →  [Generar con IA]  →  borrador  →  revisar / corregir
  *                                                   →  [Firmar]  →  validado
+ *
+ * "Descartar borrador" es la vuelta atrás desde cualquier punto de la fila
+ * del borrador: tira el documento entero y vuelve a "sin generar", para
+ * empezar de nuevo a mano, subiendo otro archivo o pidiéndoselo otra vez a
+ * la IA. Nunca aparece sobre uno ya firmado.
  *
  * Dos decisiones que no son de diseño sino de seguridad clínica:
  *
@@ -59,6 +71,7 @@ export function ClinicalSummaryPanel({
   onUploadDocument,
   onSave,
   onApprove,
+  onDeleteDraft,
   onRetry,
 }: Readonly<{
   patient: Patient;
@@ -83,11 +96,14 @@ export function ClinicalSummaryPanel({
    */
   onSave: (sections: ClinicalSummarySection[]) => Promise<boolean>;
   onApprove: () => void;
+  /** "Descartar borrador": vuelve a empezar, a mano o regenerando. */
+  onDeleteDraft: () => void;
   onRetry: () => void;
 }>) {
   /** Copia editable del borrador. null = no se está editando. */
   const [editing, setEditing] = useState<ClinicalSummarySection[] | null>(null);
   const [confirmingSignature, setConfirmingSignature] = useState(false);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
   const blocked = summaryBlockedReason(patient);
   const percent = summaryPercent(patient.summaryProgress);
@@ -272,6 +288,40 @@ export function ClinicalSummaryPanel({
                       <SparkIcon />
                     )}
                     {busy === 'generate' ? 'Generando…' : 'Volver a generar'}
+                  </button>
+                )}
+                {confirmingDiscard ? (
+                  <>
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={busy !== null}
+                      onClick={() => {
+                        setConfirmingDiscard(false);
+                        onDeleteDraft();
+                      }}
+                    >
+                      {busy === 'discard' && <i className="spin" />}
+                      ¿Descartar todo el borrador?
+                    </button>
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={busy !== null}
+                      onClick={() => setConfirmingDiscard(false)}
+                    >
+                      No
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={busy !== null}
+                    onClick={() => setConfirmingDiscard(true)}
+                    title="Vuelves a empezar: a mano, subiendo un documento o generando de nuevo"
+                  >
+                    Descartar borrador
                   </button>
                 )}
               </div>

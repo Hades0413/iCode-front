@@ -101,11 +101,7 @@ export function PatientDetailPage() {
     error: summaryError,
     reload: reloadSummary,
     setData: setSummary,
-  } = useAsyncResource(
-    loadSummary,
-    NO_SUMMARY,
-    'No se pudo cargar la historia clínica.',
-  );
+  } = useAsyncResource(loadSummary, NO_SUMMARY, 'Prueba de nuevo.');
 
   const canWrite = hasPermission(user, PERMISSIONS.patientsWrite);
   const canManageReferralReview = hasPermission(
@@ -127,7 +123,7 @@ export function PatientDetailPage() {
     error: reviewError,
     reload: reloadReview,
     setData: setReview,
-  } = useAsyncResource(loadReview, NO_REVIEW, 'No se pudo cargar la referencia.');
+  } = useAsyncResource(loadReview, NO_REVIEW, 'Prueba de nuevo.');
   const [reviewBusy, setReviewBusy] = useState<ReferralReviewBusy>(null);
 
   const loadAttachments = useCallback(
@@ -143,11 +139,7 @@ export function PatientDetailPage() {
     error: attachmentsError,
     reload: reloadAttachments,
     setData: setAttachments,
-  } = useAsyncResource(
-    loadAttachments,
-    NO_ATTACHMENTS,
-    'No se pudieron cargar los adjuntos.',
-  );
+  } = useAsyncResource(loadAttachments, NO_ATTACHMENTS, 'Prueba de nuevo.');
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
 
   /**
@@ -249,6 +241,34 @@ export function PatientDetailPage() {
           detail: 'Transcribe el contenido a las secciones antes de firmar.',
         }),
     );
+  }
+
+  /**
+   * "Descartar borrador": a diferencia de las otras 4 acciones, esta vuelve
+   * a NONE — no hay documento que guardar en `summary`, así que no pasa por
+   * runSummaryAction. La fila del paciente sí se actualiza igual que las
+   * demás, para que la tabla y el riel dejen de mostrarlo como en progreso.
+   */
+  async function discardDraft(current: Patient) {
+    setBusy('discard');
+    try {
+      const result = await patientService.discardClinicalSummaryDraft(current);
+      setSummary(null);
+      applyPatient(result.patient);
+      push({
+        tone: 'ok',
+        title: 'Borrador descartado',
+        detail: `${current.initials}: puedes empezar de nuevo — a mano, subiendo un documento o generando otra vez.`,
+      });
+    } catch (error) {
+      push({
+        tone: 'err',
+        title: 'No se pudo descartar el borrador',
+        detail: getApiErrorMessage(error),
+      });
+    } finally {
+      setBusy(null);
+    }
   }
 
   /**
@@ -493,6 +513,7 @@ export function PatientDetailPage() {
           onUploadDocument={(file) => uploadDocument(patient, file)}
           onSave={(sections) => save(patient, sections)}
           onApprove={() => approve(patient)}
+          onDeleteDraft={() => void discardDraft(patient)}
           onRetry={reloadSummary}
         />
 

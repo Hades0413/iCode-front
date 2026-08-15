@@ -11,6 +11,7 @@ import {
 import { PERMISSIONS } from '../../../domain/rules/permissions';
 import {
   approveSummary,
+  discardSummaryDraft,
   generateSummary,
   saveSummaryDraft,
   summaryFor,
@@ -245,6 +246,44 @@ const approve: MockHandler = (request) => {
   return { status: 201, data: { patient: updated, summary } };
 };
 
+/**
+ * DELETE /patients/:patientId/clinical-summary — descartar el borrador.
+ *
+ * Sub-recurso propio en el sentido inverso a la firma: en vez de agregar un
+ * estado, borra el documento entero y vuelve a NONE. Igual que
+ * generar/plantilla/subir, nunca sobre uno ya firmado.
+ */
+const discard: MockHandler = (request) => {
+  const auth = requirePermission(request, PERMISSIONS.patientsWrite);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
+  const patient = findPatient(request.params.patientId);
+  if (!patient) {
+    return mockError(404, 'Ese paciente no existe.');
+  }
+  if (outsideSpecialty(auth.user, patient.specialty)) {
+    return mockError(403, 'Ese paciente no es de tu especialidad.');
+  }
+  if (!canReviewSummary(patient)) {
+    return mockError(
+      409,
+      patient.summaryStatus === 'APPROVED'
+        ? 'La historia clínica ya está firmada: no se puede descartar.'
+        : 'Todavía no hay un borrador que descartar.',
+    );
+  }
+
+  discardSummaryDraft(patient);
+  const updated = reload(patient.id);
+  if (!updated) {
+    return mockError(404, 'Ese paciente no existe.');
+  }
+
+  return { status: 200, data: { patient: updated } };
+};
+
 export const clinicalSummaryRoutes: readonly MockRoute[] = [
   {
     method: 'GET',
@@ -265,5 +304,10 @@ export const clinicalSummaryRoutes: readonly MockRoute[] = [
     method: 'POST',
     path: '/patients/:patientId/clinical-summary/approval',
     handler: approve,
+  },
+  {
+    method: 'DELETE',
+    path: '/patients/:patientId/clinical-summary',
+    handler: discard,
   },
 ];
