@@ -35,6 +35,7 @@ import { useAsyncResource } from '../hooks/use-async-resource';
 import { useAuth } from '../hooks/use-auth';
 import { useCohort } from '../hooks/use-cohort';
 import { useToasts } from '../hooks/use-toasts';
+import styles from './patient-detail.page.module.css';
 
 const NO_SUMMARY: ClinicalSummary | null = null;
 const NO_REVIEW: ReferralReview | null = null;
@@ -328,8 +329,8 @@ export function PatientDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="main">
-        <div className="page-body">
+      <div className={styles['patient-detail-main']}>
+        <div className={styles['patient-detail-page-body']}>
           <div className="empty-s">Cargando…</div>
         </div>
       </div>
@@ -338,9 +339,12 @@ export function PatientDetailPage() {
 
   if (!patient) {
     return (
-      <div className="main enter">
-        <div className="page-body">
-          <div className="crumb" style={{ paddingTop: 24 }}>
+      <div className={`${styles['patient-detail-main']} enter`}>
+        <div className={styles['patient-detail-page-body']}>
+          <div
+            className={styles['patient-detail-crumb']}
+            style={{ paddingTop: 24 }}
+          >
             <button type="button" onClick={() => navigate('/pacientes')}>
               Pacientes en tutela
             </button>
@@ -354,17 +358,19 @@ export function PatientDetailPage() {
   const time = timeToEighteen(patient);
 
   return (
-    <div className="main enter">
-      <div className="page-h">
-        <div className="crumb">
+    <div className={`${styles['patient-detail-main']} enter`}>
+      <div className={styles['patient-detail-page-h']}>
+        <div className={styles['patient-detail-crumb']}>
           <button type="button" onClick={() => navigate('/pacientes')}>
             Mis pacientes
           </button>
           <span>/</span>
           <span>{patient.initials}</span>
         </div>
-        <h1 className="page-t">{patient.initials}</h1>
-        <div className="page-sub">
+        <h1 className={styles['patient-detail-page-t']}>
+          {patient.initials}
+        </h1>
+        <div className={styles['patient-detail-page-sub']}>
           <span className="mono">{patient.medicalRecord}</span>
           <span>{patient.age}</span>
           <span>
@@ -375,8 +381,8 @@ export function PatientDetailPage() {
         </div>
       </div>
 
-      <div className="page-body">
-        <section className="sec">
+      <div className={styles['patient-detail-page-body']}>
+        <section className={styles['patient-detail-sec']}>
           <div className="row" style={{ gap: 9, flexWrap: 'wrap' }}>
             <StatePill state={patient.state} />
             <SummaryChip patient={patient} />
@@ -431,7 +437,7 @@ export function PatientDetailPage() {
           onRetry={reloadAttachments}
         />
 
-        <section className="sec">
+        <section className={styles['patient-detail-sec']}>
           <div className="notice wrapmax">
             <InfoIcon />
             <div>

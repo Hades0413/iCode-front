@@ -29,6 +29,7 @@ import { Section } from '../components/ui/section';
 import { LoadErrorState, LoadingRows } from '../components/ui/states';
 import { useCohort } from '../hooks/use-cohort';
 import { useToasts } from '../hooks/use-toasts';
+import styles from './patients.page.module.css';
 
 /** Ancla del listado, para que la barra de filtros pueda llevar el scroll. */
 const LIST_ANCHOR = 'lista';
@@ -164,7 +165,7 @@ export function PatientsPage() {
   }
 
   return (
-    <div className="main enter">
+    <div className={`${styles['patients-page-main']} enter`}>
       <PageHeader title="Mis pacientes">
         <PageHeaderStat>
           {summary.total} pacientes, todos menores de 18 años
@@ -174,7 +175,7 @@ export function PatientsPage() {
         </PageHeaderStat>
       </PageHeader>
 
-      <div className="page-body">
+      <div className={styles['patients-page-body']}>
         {error ? (
           <LoadErrorState
             status={error.status}

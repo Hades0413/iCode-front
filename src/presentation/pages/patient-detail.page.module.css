@@ -1,0 +1,98 @@
+/* ============================================================
+   FICHA DEL PACIENTE — layout propio de esta página.
+   Copiado desde clinic.css (secciones "main"/"page-h"/"page-body"/"crumb"/
+   "sec") como punto de partida para poder tocarlo sin afectar otras
+   páginas, que siguen usando esas mismas reglas desde clinic.css.
+   ============================================================ */
+
+.patient-detail-main {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+  border-radius: 22px;
+  box-shadow: var(--sh-2);
+  overflow: hidden;
+}
+
+.patient-detail-page-h {
+  padding: 30px 32px 26px;
+  background: linear-gradient(
+    150deg,
+    var(--acc-tint) 0%,
+    color-mix(in srgb, var(--acc-tint) 35%, var(--paper)) 45%,
+    var(--paper) 100%
+  );
+  border-bottom: 1px solid var(--line);
+}
+
+.patient-detail-page-t {
+  font-size: var(--t-page);
+  font-weight: 680;
+  letter-spacing: -0.026em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+.patient-detail-page-sub {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  color: var(--ink-2);
+  font-size: var(--t-meta);
+}
+.patient-detail-page-sub span {
+  padding: 0 12px;
+  border-left: 1px solid var(--line-2);
+}
+.patient-detail-page-sub span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.patient-detail-page-sub b {
+  font-weight: 660;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.patient-detail-page-body {
+  padding: 0 32px 34px;
+}
+
+.patient-detail-crumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+.patient-detail-crumb button {
+  transition: color 0.14s;
+}
+.patient-detail-crumb button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.patient-detail-sec {
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+}
+.patient-detail-sec:first-child {
+  border-top: 0;
+}
+
+@media (max-width: 1000px) {
+  .patient-detail-main {
+    width: 100%;
+    border-radius: 18px;
+  }
+  .patient-detail-page-h {
+    padding: 22px 18px 20px;
+  }
+  .patient-detail-page-body {
+    padding: 0 18px 28px;
+  }
+}
