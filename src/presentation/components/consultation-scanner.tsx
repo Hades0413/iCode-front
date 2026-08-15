@@ -3,148 +3,160 @@ import { CameraIcon } from './icons';
 import { Notice } from './ui/notice';
 
 /**
- * Detección de QR nativa del navegador — sin librería nueva. Es una API
- * experimental (Chrome/Edge de escritorio y Android; ni Firefox ni Safari
- * la tienen todavía), por eso todo lo que la usa comprueba primero
- * `scanSupported` y el botón de cámara desaparece si no está.
+ * El lector de QR del pase de consulta, para el médico del hospital de
+ * adultos que atiende con el celular o la laptop en la mano.
+ *
+ * `getUserMedia` (cámara trasera) + un canvas fuera de pantalla: cada
+ * ~150 ms se baja un cuadro del video y jsQR intenta decodificarlo. Es jsQR
+ * y no `BarcodeDetector` —que sería gratis y nativo— porque esa API todavía
+ * no existe en Firefox ni en Safari: el médico que abría la consulta desde
+ * cualquiera de los dos no veía ni el botón, y el escáner que a veces no
+ * está no es un escáner.
+ *
+ * Entrega el texto crudo del QR (`onDetected`) y nada más: verificar que
+ * ese texto sea un pase válido es de quien lo usa (ver
+ * consultation-pass.rules.ts), no de la cámara.
+ *
+ * Solo funciona sobre HTTPS o localhost: es una regla del navegador para
+ * pedir la cámara, no nuestra.
  */
-interface BarcodeDetectorResult {
-  rawValue: string;
-}
-interface BarcodeDetectorLike {
-  detect(source: CanvasImageSource): Promise<BarcodeDetectorResult[]>;
-}
-interface BarcodeDetectorConstructor {
-  new (options: { formats: string[] }): BarcodeDetectorLike;
-}
-declare global {
-  interface Window {
-    BarcodeDetector?: BarcodeDetectorConstructor;
-  }
-}
+type ScannerState = 'idle' | 'starting' | 'scanning' | 'denied' | 'unavailable';
 
-const scanSupported =
-  typeof window !== 'undefined' && 'BarcodeDetector' in window;
+/** Cada cuánto se mira un cuadro. 150 ms lee al vuelo sin freír la batería. */
+const FRAME_INTERVAL_MS = 150;
 
-/**
- * El botón "Escanear el QR con la cámara" del pase de consulta. Abre la
- * cámara trasera, lee frames hasta encontrar un QR y avisa con el valor
- * crudo — quien lo use decide qué hacer con el código (normalizarlo,
- * pedir el resumen, etc.), este componente no sabe nada de eso.
- */
 export function ConsultationScanner({
   onDetected,
 }: Readonly<{ onDetected: (value: string) => void }>) {
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
+  const [state, setState] = useState<ScannerState>('idle');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const cancelledRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
+  /** El último texto entregado, para no dispararlo dos veces por el mismo QR. */
+  const deliveredRef = useRef<string | null>(null);
 
-  function stopScan() {
-    cancelledRef.current = true;
-    setIsScanning(false);
+  function stop() {
+    if (timerRef.current !== null) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
     for (const track of streamRef.current?.getTracks() ?? []) {
       track.stop();
     }
     streamRef.current = null;
   }
 
-  // Apaga la cámara si la persona se va de la pantalla con el escaneo abierto.
-  useEffect(() => stopScan, []);
+  // La cámara se apaga sí o sí al salir de la pantalla: dejarla prendida es
+  // la clase de bug que el usuario nota (la lucecita) y no perdona.
+  useEffect(() => stop, []);
 
-  async function startScan() {
-    setScanError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      });
-      streamRef.current = stream;
-      cancelledRef.current = false;
-      setIsScanning(true);
-    } catch {
-      setScanError(
-        'No se pudo abrir la cámara — revisá los permisos del navegador.',
-      );
-    }
-  }
-
-  // Arranca a leer frames recién cuando el <video> ya está montado y tiene
-  // la cámara enchufada — por eso va en su propio efecto, atado a isScanning.
-  useEffect(() => {
-    const video = videoRef.current;
-    const stream = streamRef.current;
-    const Detector = window.BarcodeDetector;
-    if (!isScanning || !video || !stream || !Detector) {
+  async function start() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setState('unavailable');
       return;
     }
-    video.srcObject = stream;
-    void video.play();
-    const detector = new Detector({ formats: ['qr_code'] });
-
-    function tick() {
-      if (cancelledRef.current || !video) {
+    setState('starting');
+    try {
+      // Acá es donde el navegador pide el permiso. La trasera por defecto:
+      // se escanea el celular DEL PACIENTE, no un selfie.
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      });
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) {
+        stop();
         return;
       }
-      detector
-        .detect(video)
-        .then((codes) => {
-          const value = codes[0]?.rawValue?.trim();
-          if (value) {
-            stopScan();
-            onDetected(value);
-            return;
-          }
-          requestAnimationFrame(tick);
-        })
-        .catch(() => {
-          // Un frame que no se pudo leer no es el final — sigue probando.
-          requestAnimationFrame(tick);
-        });
-    }
-    tick();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScanning]);
+      video.srcObject = stream;
+      await video.play();
+      setState('scanning');
 
-  if (isScanning) {
-    return (
-      <div className="stackv">
-        <video
-          ref={videoRef}
-          className="jn-qr-wrap"
-          style={{ width: '100%', maxWidth: 320, borderRadius: 16 }}
-          muted
-          playsInline
-        />
-        <button type="button" className="jn-btn" onClick={stopScan}>
-          Cancelar
-        </button>
-      </div>
-    );
+      // El decodificador se baja recién acá: pesa, y solo lo necesita quien
+      // abre la cámara — no todo el que entra a la app.
+      const { default: jsQR } = await import('jsqr');
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      timerRef.current = window.setInterval(() => {
+        if (!context || video.readyState < video.HAVE_ENOUGH_DATA) {
+          return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        const image = context.getImageData(0, 0, canvas.width, canvas.height);
+        const found = jsQR(image.data, image.width, image.height, {
+          inversionAttempts: 'dontInvert',
+        });
+        if (found?.data && deliveredRef.current !== found.data) {
+          deliveredRef.current = found.data;
+          stop();
+          setState('idle');
+          onDetected(found.data);
+        }
+      }, FRAME_INTERVAL_MS);
+    } catch {
+      stop();
+      // Un permiso negado y una cámara ocupada por otra app caen acá igual:
+      // para el médico las dos se resuelven igual (reintentar o tipear).
+      setState('denied');
+    }
   }
 
   return (
-    <>
-      {scanSupported ? (
+    <div className="jn-scan">
+      {/* El <video> existe siempre —la ref tiene que estar montada antes de
+          poder llamar a play()— pero solo se ve mientras se escanea. */}
+      <div className={`jn-scan-view ${state === 'scanning' ? 'on' : ''}`}>
+        <video ref={videoRef} playsInline muted />
+        <span className="jn-scan-frame" aria-hidden="true" />
+        {state === 'scanning' && (
+          <span className="jn-scan-hint">Apuntá al QR del paciente</span>
+        )}
+      </div>
+
+      {state === 'denied' && (
+        <Notice tone="warn" className="wrapmax">
+          No pudimos usar la cámara — puede ser que el permiso esté denegado o
+          que otra app la esté usando. Podés volver a intentar, o escribir el
+          código acá abajo.
+        </Notice>
+      )}
+      {state === 'unavailable' && (
+        <Notice tone="warn" className="wrapmax">
+          Este dispositivo no tiene cámara disponible. Escribí el código del
+          paciente acá abajo.
+        </Notice>
+      )}
+
+      {state === 'scanning' ? (
+        <button
+          type="button"
+          className="jn-btn"
+          onClick={() => {
+            stop();
+            setState('idle');
+          }}
+        >
+          Cerrar la cámara
+        </button>
+      ) : (
         <button
           type="button"
           className="jn-btn jn-btn-pri"
-          onClick={() => void startScan()}
+          disabled={state === 'starting'}
+          onClick={() => void start()}
         >
-          <CameraIcon />
-          Escanear el QR con la cámara
+          {state === 'starting' ? <i className="spin" /> : <CameraIcon />}
+          {state === 'starting'
+            ? 'Abriendo la cámara…'
+            : state === 'idle'
+              ? 'Escanear el QR con la cámara'
+              : 'Volver a intentar con la cámara'}
         </button>
-      ) : (
-        <p className="jn-note">
-          Tu navegador no soporta escanear directo desde acá — usá el código
-          de abajo.
-        </p>
       )}
-      {scanError && (
-        <Notice tone="crit" className="wrapmax">
-          {scanError}
-        </Notice>
-      )}
-    </>
+    </div>
   );
 }
