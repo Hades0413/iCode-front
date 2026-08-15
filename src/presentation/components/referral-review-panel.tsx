@@ -5,7 +5,6 @@ import {
   REFERRAL_REVIEW_STATUS_LABELS,
   canReviewReferral,
 } from '../../domain/rules/referral-review.rules';
-import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
 import { CheckIcon, DownloadIcon, PaperclipIcon, WarnIcon } from './icons';
 import { FilePicker } from './ui/file-picker';
@@ -64,6 +63,15 @@ export function ReferralReviewPanel({
     setFile(null);
   }
 
+  /**
+   * Antes de la firma esta sección no aplica todavía: no hay nada que el
+   * destino pueda revisar, así que ni se muestra en vez de explicar por qué
+   * no aplica.
+   */
+  if (!canReviewReferral(patient)) {
+    return null;
+  }
+
   return (
     <Section
       title="Referencia"
@@ -82,11 +90,6 @@ export function ReferralReviewPanel({
             </button>
           </div>
         </>
-      ) : !canReviewReferral(patient) ? (
-        <Notice tone="locked" className="wrapmax">
-          Todavía no aplica: el destino recién puede revisar la historia
-          clínica una vez que esté firmada.
-        </Notice>
       ) : (
         <div className="stackv">
           {review ? (
@@ -114,13 +117,7 @@ export function ReferralReviewPanel({
             </Notice>
           )}
 
-          {!canManage ? (
-            <Notice tone="locked" className="wrapmax">
-              Solo el área de Referencias puede registrar la respuesta del
-              destino: te falta el permiso{' '}
-              <span className="mono">{PERMISSIONS.referralReviewManage}</span>.
-            </Notice>
-          ) : mode === 'reject' ? (
+          {!canManage ? null : mode === 'reject' ? (
             <div className="stackv">
               <textarea
                 className="ta"

@@ -10,6 +10,7 @@ import {
   canManageConsultationCode,
   canRemindPatient,
   canReportAppointment,
+  canScheduleAppointment,
   canTickChecklist,
   pendingChecklist,
 } from '../../domain/rules/journey.rules';
@@ -25,6 +26,7 @@ import { GuideCard } from '../components/journey/guide-card';
 import { HomeHero } from '../components/journey/home-hero';
 import { JourneyNav, type JourneyTab } from '../components/journey/journey-nav';
 import { MessageBanner } from '../components/journey/message-banner';
+import { ReferralStatusCard } from '../components/journey/referral-status-card';
 import { ReminderForm } from '../components/journey/reminder-form';
 import { RevokedScreen } from '../components/journey/revoked-screen';
 import { TreatmentCard } from '../components/journey/treatment-card';
@@ -230,9 +232,13 @@ export function JourneyPage() {
               onGoSteps={() => goTo('pasos')}
             />
             <AppointmentCard journey={journey} today={new Date()} />
+            {/* Va antes del formulario porque es su explicación: la
+                referencia es lo que lo abre o lo mantiene con candado. */}
+            <ReferralStatusCard journey={journey} isOwner={isOwner} />
             {!journey.appointment && canReportAppointment(viewer) && (
               <AppointmentReportCard
                 isSending={busyAction === 'reportAppointment'}
+                isLocked={!canScheduleAppointment(journey)}
                 onSubmit={reportAppointment}
               />
             )}

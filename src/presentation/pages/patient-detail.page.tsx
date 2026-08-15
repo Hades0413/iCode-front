@@ -15,6 +15,7 @@ import type { ReferralReview } from '../../domain/entities/referral-review.entit
 import type { ClinicalSummaryResult } from '../../application/dto/clinical-summary-result.dto';
 import type { ReferralReviewResult } from '../../application/dto/referral-review-result.dto';
 import { PERMISSIONS, hasPermission } from '../../domain/rules/permissions';
+import { REFERRAL_REVIEW_STATUS_LABELS } from '../../domain/rules/referral-review.rules';
 import { timeToEighteen } from '../../domain/rules/transition.rules';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
 import { saveBlob } from '../../common/utils/save-blob';
@@ -27,18 +28,47 @@ import {
   ReferralReviewPanel,
   type ReferralReviewBusy,
 } from '../components/referral-review-panel';
-import { InfoIcon } from '../components/icons';
-import { StatePill } from '../components/state-pill';
-import { SummaryChip } from '../components/summary-chip';
 import { Toasts } from '../components/toasts';
 import { useAsyncResource } from '../hooks/use-async-resource';
 import { useAuth } from '../hooks/use-auth';
 import { useCohort } from '../hooks/use-cohort';
 import { useToasts } from '../hooks/use-toasts';
+import styles from './patient-detail.page.module.css';
 
 const NO_SUMMARY: ClinicalSummary | null = null;
 const NO_REVIEW: ReferralReview | null = null;
 const NO_ATTACHMENTS: PatientAttachment[] = [];
+
+const REFERRAL_CHIP_CLASS: Record<Patient['referralReviewStatus'], string> = {
+  NONE: 'chip none',
+  ACCEPTED: 'chip ok',
+  OBSERVED: 'chip review',
+  REJECTED: 'chip crit',
+};
+
+/**
+ * La pastilla del encabezado: "Vacía" mientras no hay nada escrito: una vez
+ * que hay una historia clínica (borrador o firmada), lo que más importa es
+ * qué dijo el destino sobre ella — el mismo dato que "Estado referencia"
+ * en la tabla de pacientes.
+ */
+function headerStatusLabel(patient: Patient): string {
+  return patient.summaryStatus === 'NONE'
+    ? 'Vacía'
+    : REFERRAL_REVIEW_STATUS_LABELS[patient.referralReviewStatus];
+}
+
+function headerStatusClass(patient: Patient): string {
+  return patient.summaryStatus === 'NONE'
+    ? 'chip none'
+    : REFERRAL_CHIP_CLASS[patient.referralReviewStatus];
+}
+
+function headerStatusShowsDot(patient: Patient): boolean {
+  return (
+    patient.summaryStatus !== 'NONE' && patient.referralReviewStatus !== 'NONE'
+  );
+}
 
 /**
  * La ficha del paciente: por dónde va el caso y su historia clínica de
@@ -152,10 +182,11 @@ export function PatientDetailPage() {
     }
   }
 
-  function generate(current: Patient) {
+  function generate(current: Patient, instructions?: string) {
     void runSummaryAction(
       'generate',
-      () => patientService.generateClinicalSummary(current, summary),
+      () =>
+        patientService.generateClinicalSummary(current, summary, instructions),
       () =>
         push({
           tone: 'ok',
@@ -328,8 +359,8 @@ export function PatientDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="main">
-        <div className="page-body">
+      <div className={styles['patient-detail-main']}>
+        <div className={styles['patient-detail-page-body']}>
           <div className="empty-s">Cargando…</div>
         </div>
       </div>
@@ -338,9 +369,12 @@ export function PatientDetailPage() {
 
   if (!patient) {
     return (
-      <div className="main enter">
-        <div className="page-body">
-          <div className="crumb" style={{ paddingTop: 24 }}>
+      <div className={`${styles['patient-detail-main']} enter`}>
+        <div className={styles['patient-detail-page-body']}>
+          <div
+            className={styles['patient-detail-crumb']}
+            style={{ paddingTop: 24 }}
+          >
             <button type="button" onClick={() => navigate('/pacientes')}>
               Pacientes en tutela
             </button>
@@ -354,36 +388,92 @@ export function PatientDetailPage() {
   const time = timeToEighteen(patient);
 
   return (
-    <div className="main enter">
-      <div className="page-h">
-        <div className="crumb">
+    <div className={`${styles['patient-detail-main']} enter`}>
+      <div className={styles['patient-detail-page-h']}>
+        <div className={styles['patient-detail-crumb']}>
           <button type="button" onClick={() => navigate('/pacientes')}>
             Mis pacientes
           </button>
           <span>/</span>
           <span>{patient.initials}</span>
         </div>
-        <h1 className="page-t">{patient.initials}</h1>
-        <div className="page-sub">
-          <span className="mono">{patient.medicalRecord}</span>
-          <span>{patient.age}</span>
-          <span>
-            {time.prefix} <b>{time.text}</b>
-          </span>
-          <span>{patient.specialty}</span>
-          <span>{patient.district}</span>
+        <div className={styles['patient-detail-title-row']}>
+          <div className={styles['patient-detail-avatar']}>
+            {patient.initials}
+          </div>
+          <div className={styles['patient-detail-title-text']}>
+            <h1 className={styles['patient-detail-page-t']}>
+              {patient.initials}
+            </h1>
+            <span
+              className={headerStatusClass(patient)}
+              title="Estado de la historia clínica ante el destino"
+            >
+              {headerStatusShowsDot(patient) && <i className="dot" />}
+              {headerStatusLabel(patient)}
+            </span>
+          </div>
+        </div>
+        <div className={styles['patient-detail-page-sub']}>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              N.º historia clínica
+            </span>
+            <span className={`${styles['patient-detail-field-value']} mono`}>
+              {patient.medicalRecord}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Edad
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.age}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Cumple 18 años
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {time.prefix} <b>{time.text}</b>
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Especialidad
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.specialty}
+            </span>
+          </div>
+          <div className={styles['patient-detail-field']}>
+            <span className={styles['patient-detail-field-label']}>
+              Distrito
+            </span>
+            <span className={styles['patient-detail-field-value']}>
+              {patient.district}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="page-body">
-        <section className="sec">
-          <div className="row" style={{ gap: 9, flexWrap: 'wrap' }}>
-            <StatePill state={patient.state} />
-            <SummaryChip patient={patient} />
-          </div>
-          <p style={{ paddingTop: 18, maxWidth: 720 }}>{patient.diagnosis}</p>
-          <p className="mini" style={{ paddingTop: 8 }}>
-            {patient.lastAction} · {patient.attendingDoctor}
+      <div className={styles['patient-detail-page-body']}>
+        <section className={styles['patient-detail-sec']}>
+          <span className="eyebrow">Diagnóstico</span>
+          <p
+            className={styles['patient-detail-diagnosis']}
+            style={{ marginBottom: 14 }}
+          >
+            {patient.diagnosis}
+          </p>
+
+          <span className="eyebrow">Último registro</span>
+          <p className="mini" style={{ paddingTop: 6 }}>
+            {patient.lastAction}
+          </p>
+          <p className="mini" style={{ paddingTop: 2 }}>
+            <b>Pediatra responsable:</b> {patient.attendingDoctor}
           </p>
         </section>
 
@@ -398,7 +488,7 @@ export function PatientDetailPage() {
           canWrite={canWrite}
           signerName={signerName}
           busy={busy}
-          onGenerate={() => generate(patient)}
+          onGenerate={(instructions) => generate(patient, instructions)}
           onStartTemplate={() => startTemplate(patient)}
           onUploadDocument={(file) => uploadDocument(patient, file)}
           onSave={(sections) => save(patient, sections)}
@@ -431,15 +521,12 @@ export function PatientDetailPage() {
           onRetry={reloadAttachments}
         />
 
-        <section className="sec">
-          <div className="notice wrapmax">
-            <InfoIcon />
-            <div>
-              <b>Esta ficha está a medio hacer.</b> Faltan la línea de tiempo
-              del caso y el historial de lo que se fue haciendo. Datos de
-              prueba.
-            </div>
-          </div>
+        <section className={styles['patient-detail-sec']}>
+          <p className={styles['patient-detail-wip']}>
+            Esta ficha está a medio hacer: faltan la línea de tiempo del
+            caso, la lista de preparación del paciente y el historial de lo
+            que se fue haciendo. Datos de prueba.
+          </p>
         </section>
       </div>
 

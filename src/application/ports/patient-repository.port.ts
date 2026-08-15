@@ -51,7 +51,10 @@ export interface PatientRepositoryPort {
    * Le pide a la IA el borrador de las 2 hojas. Queda en DRAFT: generar no
    * es firmar.
    */
-  generateClinicalSummary(patientId: string): Promise<ClinicalSummaryResult>;
+  generateClinicalSummary(
+    patientId: string,
+    instructions?: string,
+  ): Promise<ClinicalSummaryResult>;
 
   /** Guarda las correcciones del médico sobre el borrador. */
   saveClinicalSummaryDraft(

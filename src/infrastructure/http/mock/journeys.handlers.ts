@@ -6,6 +6,7 @@ import {
   addMessage,
   dismissMessage,
   generateConsultationCode,
+  isReferralAccepted,
   journeyFor,
   reportAppointment,
   setChecklistItem,
@@ -138,6 +139,13 @@ const reportAppointmentHandler: MockHandler = (request) => {
     typeof body?.doctor !== 'string'
   ) {
     return mockError(400, 'Completa el hospital, la fecha, la hora y el doctor.');
+  }
+
+  if (!isReferralAccepted()) {
+    return mockError(
+      409,
+      'Es necesaria la referencia aceptada para agendar una cita.',
+    );
   }
 
   const saved = reportAppointment({

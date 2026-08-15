@@ -1,0 +1,44 @@
+/* ============================================================
+   SECTION — estilos propios de este componente.
+   Copiado desde clinic.css (".sec"/".sec-h"/".sec-t") como punto de
+   partida para poder tocarlo sin afectar clinic.css. Section es el único
+   lugar del código que rendeaba esas clases, así que migrarlo acá cubre a
+   todos sus consumidores (paneles de la ficha, listas, etc.) de una vez.
+   ============================================================ */
+
+.section-root {
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+}
+.section-root:first-child {
+  border-top: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* :global(.p18) — el reset local de design-system.css apunta a ".p18 h2"
+   (clase + elemento, más específico que una sola clase de módulo): sin este
+   prefijo, ese reset gana y nos pisa font-weight/color/margin. */
+:global(.p18) .section-title {
+  font-size: var(--t-title);
+  font-weight: 660;
+  letter-spacing: -0.012em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* La barrita de acento que dice de qué trata la sección sin leerla. */
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 17px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--m-ped), var(--acc));
+  flex: none;
+}

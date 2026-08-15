@@ -87,7 +87,7 @@ export function isCohortSort(value: string): value is CohortSort {
 }
 
 /**
- * Corte por "revisión del destino" (ver referral-review.rules.ts): qué dijo
+ * Corte por "estado referencia" (ver referral-review.rules.ts): qué dijo
  * la posta/hospital sobre la historia clínica ya firmada de cada paciente.
  * Va aparte de CohortFilterKey porque es otro eje — un especialista puede
  * querer, por ejemplo, "Sin historia clínica" + "Rechazada" a la vez, y los
@@ -150,7 +150,7 @@ export interface CohortView {
   /** El DNI que se está tipeando. Vacío = sin buscar. */
   query: string;
   sort: CohortSort;
-  /** "ALL" = sin recorte por revisión del destino. */
+  /** "ALL" = sin recorte por estado de la referencia. */
   referralStatus: ReferralStatusFilter;
 }
 

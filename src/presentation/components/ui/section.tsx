@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import styles from './section.module.css';
 
 /**
  * Una sección de contenido con su título y, a la derecha, un dato de
@@ -20,10 +21,10 @@ export function Section({
   id?: string;
 }>) {
   return (
-    <section className="sec" id={id}>
+    <section className={styles['section-root']} id={id}>
       {title && (
-        <div className="sec-h">
-          <h2 className="sec-t">{title}</h2>
+        <div className={styles['section-header']}>
+          <h2 className={styles['section-title']}>{title}</h2>
           {aside && <span className="eyebrow">{aside}</span>}
         </div>
       )}

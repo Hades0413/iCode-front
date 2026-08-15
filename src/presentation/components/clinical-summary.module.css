@@ -1,0 +1,238 @@
+/* ============================================================
+   CLINICAL SUMMARY — estilos propios de este componente.
+   Copiado desde clinic.css ("sheet"/"checks"/"signbar"/"cardrow"/
+   "startcard") como punto de partida para poder tocarlo sin afectar
+   clinic.css. "sheet-*" también las usa summary-preview.tsx, que sigue
+   tomándolas de clinic.css hasta que se migre aparte.
+   ============================================================ */
+
+/* ---------- estado vacío: las 2 hojas + logo, título, explicación ---------- */
+.clinical-summary-empty-hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 7px;
+  padding: 30px 20px 26px;
+}
+
+/* Las 2 hojas, dibujadas en CSS: una atrás lisa, una adelante con la marca
+   líquida en reposo y renglones de "texto" — se leen como un documento sin
+   serlo todavía. */
+.clinical-summary-empty-hero-art {
+  position: relative;
+  width: 116px;
+  height: 96px;
+  margin-bottom: 12px;
+}
+.clinical-summary-empty-hero-sheet {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 64px;
+  height: 86px;
+  margin-left: -32px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: 9px;
+}
+.clinical-summary-empty-hero-sheet-back {
+  transform: translateX(-16px) rotate(-8deg);
+  background: var(--wash-2);
+}
+.clinical-summary-empty-hero-sheet-front {
+  transform: translateX(12px) rotate(5deg);
+  display: grid;
+  place-items: start center;
+  padding-top: 10px;
+  box-shadow: var(--sh-2);
+}
+.clinical-summary-empty-hero-mark {
+  width: 34px;
+}
+/* Renglones de "texto" para que la hoja de adelante se lea como documento. */
+.clinical-summary-empty-hero-sheet-front::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 11px;
+  height: 30px;
+  background: repeating-linear-gradient(
+    180deg,
+    var(--line) 0 2px,
+    transparent 2px 9px
+  );
+}
+
+/* :global(.p18) en estos dos — el reset local de design-system.css
+   (".p18 h3"/".p18 p", clase + elemento) le gana en especificidad a una
+   sola clase de módulo y nos pisa color/font-weight. */
+:global(.p18) .clinical-summary-empty-hero-title {
+  font-size: 18.5px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+:global(.p18) .clinical-summary-empty-hero-text {
+  max-width: 58ch;
+  color: var(--ink-2);
+  line-height: 1.6;
+  font-size: var(--t-meta);
+}
+
+/* ---------- las 2 hojas: se dibujan como un documento ---------- */
+.clinical-summary-sheet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  overflow: hidden;
+  max-width: 860px;
+}
+
+.clinical-summary-sheet-section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+}
+.clinical-summary-sheet-section:first-child {
+  border-top: 0;
+}
+/* Un bloque sin escribir se ve vacío a propósito: es trabajo pendiente, no
+   un detalle de maquetación. */
+.clinical-summary-sheet-section-gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wash) 0 8px,
+    var(--paper) 8px 16px
+  );
+}
+
+/* :global(.p18) en título/cuerpo/hint — mismo motivo: ".p18 h3"/".p18 p"/
+   ".p18 label" (clase + elemento) ganan por especificidad a una sola
+   clase de módulo y nos pisan font-family/color/font-weight/margin. */
+:global(.p18) .clinical-summary-sheet-section-title {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+:global(.p18) .clinical-summary-sheet-section-body {
+  font-size: var(--t-body-lg);
+  line-height: 1.62;
+  color: var(--ink);
+  max-width: 72ch;
+}
+/* Misma especificidad que la base de arriba (mismo prefijo :global(.p18)):
+   como viene después en el archivo, gana el empate y pisa color/font-size
+   cuando el bloque está vacío. */
+:global(.p18) .clinical-summary-sheet-section-body-empty {
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: var(--t-meta);
+}
+
+:global(.p18) .clinical-summary-sheet-hint {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin-bottom: 7px;
+}
+
+/* ---------- lo que la IA no pudo confirmar ---------- */
+.clinical-summary-checks {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--rev-tint);
+  color: var(--rev-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rev) 22%, transparent);
+}
+.clinical-summary-checks-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: var(--t-meta);
+}
+.clinical-summary-checks-header svg {
+  flex: none;
+}
+/* :global(.p18) — ".p18 ul" (clase + elemento) le gana en especificidad a
+   una sola clase de módulo y nos pisaba el margin-top. */
+:global(.p18) .clinical-summary-checks-list {
+  margin-top: 9px;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+}
+.clinical-summary-checks-list li {
+  padding-left: 16px;
+  position: relative;
+}
+.clinical-summary-checks-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
+}
+
+/* ---------- la confirmación de la firma ---------- */
+.clinical-summary-signbar {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--acc-tint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 26%, transparent);
+  font-size: var(--t-meta);
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 720px;
+}
+.clinical-summary-signbar b {
+  font-weight: 660;
+}
+
+/* ---------- las 3 formas de empezar la historia clínica ---------- */
+.clinical-summary-card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 380px));
+  justify-content: center;
+  gap: 14px;
+}
+.clinical-summary-start-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  justify-items: start;
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--wash);
+}
+/* El picker queda blanco adentro de la tarjeta recesada, igual que en
+   crcard-work: la superficie de trabajo se separa del fondo tinte. */
+.clinical-summary-start-card :global(.filepick) {
+  background: var(--paper);
+}
+/* :global(.p18) — ".p18 h4"/".p18 p" (clase + elemento) le ganan en
+   especificidad a una sola clase de módulo: sin esto, font-weight/color
+   quedaban en "inherit" en vez del valor puesto acá (el bug de la negrita
+   que faltaba). */
+:global(.p18) .clinical-summary-start-card-title {
+  font-size: var(--t-body-lg);
+  font-weight: 700;
+}
+:global(.p18) .clinical-summary-start-card-description {
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink-2);
+}

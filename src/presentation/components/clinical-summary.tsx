@@ -15,12 +15,14 @@ import {
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
 import { formatFileSize } from '../../common/utils/format-file-size';
-import { PaperclipIcon, SignIcon, SparkIcon, TemplateIcon } from './icons';
+import { SignIcon, SparkIcon } from './icons';
+import { LiquidMark } from './brand/liquid-mark';
 import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
 import { Section } from './ui/section';
 import { LoadingRows } from './ui/states';
 import type { LoadError } from '../hooks/use-async-resource';
+import styles from './clinical-summary.module.css';
 
 /** Qué acción está en vuelo, para deshabilitar solo esa. */
 export type SummaryBusy = 'generate' | 'template' | 'upload' | 'save' | 'approve' | null;
@@ -68,7 +70,8 @@ export function ClinicalSummaryPanel({
   /** Quién firmaría, para poder decirlo antes de firmar. */
   signerName: string;
   busy: SummaryBusy;
-  onGenerate: () => void;
+  /** Instrucciones opcionales para la IA, ej.: "hazlo breve". */
+  onGenerate: (instructions?: string) => void;
   /** "Llenar la plantilla": arranca un borrador en blanco, a mano. */
   onStartTemplate: () => void;
   /** "Subir el documento": ya viene redactado, solo se adjunta. */
@@ -141,7 +144,7 @@ export function ClinicalSummaryPanel({
             <PendingChecks checks={summary.pendingChecks} />
           )}
 
-          <div className="sheet">
+          <div className={styles['clinical-summary-sheet']}>
             {(editing ?? summary.sections).map((section) => (
               <SheetSection
                 key={section.id}
@@ -188,7 +191,7 @@ export function ClinicalSummaryPanel({
               </span>
             </div>
           ) : confirmingSignature ? (
-            <div className="signbar">
+            <div className={styles['clinical-summary-signbar']}>
               <div>
                 <b>Vas a firmar como {signerName}.</b> A partir de ahí estas 2
                 hojas viajan con {patient.initials} al hospital de adultos y no
@@ -260,7 +263,7 @@ export function ClinicalSummaryPanel({
                     type="button"
                     className="btn"
                     disabled={busy !== null}
-                    onClick={onGenerate}
+                    onClick={() => onGenerate()}
                     title="Descarta este borrador y le pide a la IA uno nuevo"
                   >
                     {busy === 'generate' ? (
@@ -280,6 +283,44 @@ export function ClinicalSummaryPanel({
   );
 }
 
+/**
+ * La entrada del estado vacío: las 2 hojas + título + explicación,
+ * centrados. Va antes de las formas de empezar (o del aviso de permiso)
+ * porque es lo primero que hay que entender: por qué no hay nada todavía.
+ *
+ * Las hojas se dibujan en CSS, no con un ícono: la de adelante lleva la
+ * marca líquida de la app en reposo (sin `animated`, ver LiquidMark) —
+ * es la firma de la casa, no un ícono genérico de documento.
+ */
+function EmptySummaryIntro({ patient }: Readonly<{ patient: Patient }>) {
+  return (
+    <div className={styles['clinical-summary-empty-hero']}>
+      <div className={styles['clinical-summary-empty-hero-art']} aria-hidden="true">
+        <span
+          className={`${styles['clinical-summary-empty-hero-sheet']} ${styles['clinical-summary-empty-hero-sheet-back']}`}
+        />
+        <span
+          className={`${styles['clinical-summary-empty-hero-sheet']} ${styles['clinical-summary-empty-hero-sheet-front']}`}
+        >
+          <LiquidMark
+            compact
+            className={styles['clinical-summary-empty-hero-mark']}
+          />
+        </span>
+      </div>
+      <h3 className={styles['clinical-summary-empty-hero-title']}>
+        {patient.initials} todavía no tiene sus 2 hojas
+      </h3>
+      <p className={styles['clinical-summary-empty-hero-text']}>
+        La historia clínica de transferencia es lo que el médico del hospital
+        de adultos va a leer antes de ver a {patient.initials} por primera
+        vez: diagnóstico, tratamiento, alertas y qué controles necesita. Sin
+        esto firmado, el caso no se puede mandar a la posta.
+      </p>
+    </div>
+  );
+}
+
 /** Todavía no hay documento: o no le toca, o hay que elegir cómo empezarlo. */
 function EmptySummary({
   patient,
@@ -294,11 +335,12 @@ function EmptySummary({
   blocked: string | null;
   canWrite: boolean;
   busy: SummaryBusy;
-  onGenerate: () => void;
+  onGenerate: (instructions?: string) => void;
   onStartTemplate: () => void;
   onUploadDocument: (file: File) => void;
 }>) {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [instructions, setInstructions] = useState('');
 
   if (blocked) {
     return (
@@ -310,43 +352,48 @@ function EmptySummary({
 
   return (
     <div className="stackv">
-      <Notice className="wrapmax">
-        <b>{patient.initials} no tiene historia clínica de transferencia.</b>{' '}
-        Son las 2 hojas que el médico del hospital de adultos va a leer antes de
-        verla por primera vez: diagnóstico, tratamiento, alertas y qué controles
-        necesita. Sin esto firmado, el caso no se puede mandar a la posta.
-      </Notice>
+      <EmptySummaryIntro patient={patient} />
 
       {canWrite && canGenerateSummary(patient) ? (
-        <div className="cardrow">
-          <div className="startcard">
-            <div className="startcard-h">
-              <SparkIcon />
-              <h3>Generar con IA</h3>
-            </div>
-            <p className="mini">
-              Arma un borrador con lo que ya está en la ficha y marca lo que no
-              pudo confirmar. Después lo revisas, lo corriges y lo firmas tú.
+        <div className={styles['clinical-summary-card-row']}>
+          <div className={styles['clinical-summary-start-card']}>
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Generar con IA
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              Arma el borrador{' '}
+              <b>extrayendo frases textuales del historial</b>, cada una con
+              su cita: haces click en una frase y ves el documento original.
+              No inventa ni parafrasea — y el borrador queda editable, como
+              todos.
             </p>
+            <textarea
+              className="ta"
+              rows={2}
+              placeholder="Instrucciones para la IA (opcional). Ej.: hazlo breve."
+              aria-label="Instrucciones para la IA"
+              value={instructions}
+              disabled={busy !== null}
+              onChange={(event) => setInstructions(event.target.value)}
+            />
             <button
               type="button"
               className="btn btn-pri"
               disabled={busy !== null}
-              onClick={onGenerate}
+              onClick={() => onGenerate(instructions.trim() || undefined)}
             >
-              {busy === 'generate' ? <i className="spin" /> : <SparkIcon />}
+              {busy === 'generate' && <i className="spin" />}
               {busy === 'generate' ? 'Generando…' : 'Generar con IA'}
             </button>
           </div>
 
-          <div className="startcard">
-            <div className="startcard-h">
-              <TemplateIcon />
-              <h3>Llenar la plantilla</h3>
-            </div>
-            <p className="mini">
-              Empieza las 2 hojas en blanco y las completas vos mismo, sección
-              por sección — sin que la IA proponga nada.
+          <div className={styles['clinical-summary-start-card']}>
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Llenar la plantilla
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              Los 6 bloques del INSN —diagnóstico, tratamiento, alertas,
+              controles— para completar aquí mismo, con una guía en cada uno.
             </p>
             <button
               type="button"
@@ -354,22 +401,21 @@ function EmptySummary({
               disabled={busy !== null}
               onClick={onStartTemplate}
             >
-              {busy === 'template' ? <i className="spin" /> : <TemplateIcon />}
-              {busy === 'template' ? 'Creando…' : 'Empezar en blanco'}
+              {busy === 'template' && <i className="spin" />}
+              {busy === 'template' ? 'Creando…' : 'Empezar con la plantilla'}
             </button>
           </div>
 
-          <div className="startcard">
-            <div className="startcard-h">
-              <PaperclipIcon />
-              <h3>Subir el documento</h3>
-            </div>
-            <p className="mini">
-              Si la historia ya está redactada en otro sistema, adjuntala en
-              PDF o Word y transcribila a las secciones desde acá.
+          <div className={styles['clinical-summary-start-card']}>
+            <h4 className={styles['clinical-summary-start-card-title']}>
+              Subir el documento
+            </h4>
+            <p className={styles['clinical-summary-start-card-description']}>
+              ¿Ya está redactado? Sube el archivo y queda como borrador
+              esperando tu firma, igual que la plantilla.
             </p>
             <FilePicker
-              label="Elegir el documento"
+              label="Elegir archivo"
               accept=".pdf,.doc,.docx"
               hint="PDF o Word, hasta 10 MB"
               file={uploadFile}
@@ -384,8 +430,8 @@ function EmptySummary({
                 if (uploadFile) onUploadDocument(uploadFile);
               }}
             >
-              {busy === 'upload' ? <i className="spin" /> : null}
-              {busy === 'upload' ? 'Subiendo…' : 'Subir documento'}
+              {busy === 'upload' && <i className="spin" />}
+              {busy === 'upload' ? 'Subiendo…' : 'Subir como resumen'}
             </button>
           </div>
         </div>
@@ -443,15 +489,15 @@ function SummaryHeader({ summary }: Readonly<{ summary: ClinicalSummary }>) {
 /** Lo que la IA no pudo confirmar. Va antes del texto, no después. */
 function PendingChecks({ checks }: Readonly<{ checks: readonly string[] }>) {
   return (
-    <div className="checks wrapmax">
-      <div className="checks-h">
+    <div className={`${styles['clinical-summary-checks']} wrapmax`}>
+      <div className={styles['clinical-summary-checks-header']}>
         <SparkIcon />
         <b>
           {checks.length} {checks.length === 1 ? 'cosa' : 'cosas'} que la IA no
           pudo confirmar
         </b>
       </div>
-      <ul className="checks-l">
+      <ul className={styles['clinical-summary-checks-list']}>
         {checks.map((check) => (
           <li key={check}>{check}</li>
         ))}
@@ -475,11 +521,22 @@ function SheetSection({
   const isEmpty = section.body.trim() === '';
 
   return (
-    <article className={`sheet-s ${isEmpty && !isEditing ? 'gap' : ''}`}>
-      <h3 className="sheet-t">{section.title}</h3>
+    <article
+      className={`${styles['clinical-summary-sheet-section']} ${
+        isEmpty && !isEditing
+          ? styles['clinical-summary-sheet-section-gap']
+          : ''
+      }`}
+    >
+      <h3 className={styles['clinical-summary-sheet-section-title']}>
+        {section.title}
+      </h3>
       {isEditing ? (
         <>
-          <label className="sheet-hint" htmlFor={`sec-${section.id}`}>
+          <label
+            className={styles['clinical-summary-sheet-hint']}
+            htmlFor={`sec-${section.id}`}
+          >
             {section.hint}
           </label>
           <textarea
@@ -494,9 +551,15 @@ function SheetSection({
       ) : isEmpty ? (
         // Un bloque vacío se muestra vacío y se dice por qué. Rellenarlo con
         // texto de relleno sería exactamente el problema que queremos evitar.
-        <p className="sheet-b empty">Sin escribir — {section.hint}</p>
+        <p
+          className={`${styles['clinical-summary-sheet-section-body']} ${styles['clinical-summary-sheet-section-body-empty']}`}
+        >
+          Sin escribir — {section.hint}
+        </p>
       ) : (
-        <p className="sheet-b">{section.body}</p>
+        <p className={styles['clinical-summary-sheet-section-body']}>
+          {section.body}
+        </p>
       )}
     </article>
   );

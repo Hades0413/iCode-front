@@ -3,6 +3,7 @@ import type {
   HealthPost,
   TransitionState,
 } from './patient.entity';
+import type { ReferralReviewStatus } from './referral-review.entity';
 
 /**
  * El recorrido visto **desde adentro**: lo que el propio paciente (y su
@@ -126,6 +127,20 @@ export interface TransitionJourney {
   guide: JourneyGuideEntry[];
   /** La posta que gestiona su cita. null antes de la derivación. */
   healthPost: HealthPost | null;
+  /**
+   * Qué contestó el destino sobre su referencia — el mismo dato que el
+   * hospital ve como "Estado referencia" en su tablero, dicho para quien lo
+   * está esperando. Manda sobre la única acción que tiene esta pantalla:
+   * hasta que no esté aceptada no hay cita que agendar (ver
+   * canScheduleAppointment), porque el hospital de adultos no recibe a nadie
+   * sin la referencia aprobada.
+   */
+  referralReviewStatus: ReferralReviewStatus;
+  /**
+   * Quién la aceptó, para poder nombrarlo: "Hospital Sergio Bernales aceptó
+   * tu referencia". null mientras no esté aceptada.
+   */
+  referralAcceptedBy: string | null;
   /** La cita que consiguió la posta. null mientras no haya fecha. */
   appointment: Appointment | null;
   /** Dirección del hospital de la cita, para el pase. */

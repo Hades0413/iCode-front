@@ -100,7 +100,7 @@ export function FollowUpDetailPage() {
         <div className="page-body">
           <div className="crumb" style={{ paddingTop: 24 }}>
             <button type="button" onClick={() => navigate('/seguimiento')}>
-              Ya cumplieron 18
+              Referencias aceptadas
             </button>
           </div>
           <div className="empty-s">Ese paciente no está en tu seguimiento.</div>
@@ -120,7 +120,7 @@ export function FollowUpDetailPage() {
       <div className="page-h">
         <div className="crumb">
           <button type="button" onClick={() => navigate('/seguimiento')}>
-            Ya cumplieron 18
+            Referencias aceptadas
           </button>
           <span>/</span>
           <span>{patient.initials}</span>
