@@ -25,7 +25,9 @@
   border-bottom: 1px solid var(--line);
 }
 
-.patient-detail-page-t {
+/* :global(.p18) — sin esto, el reset ".p18 h1" (clase + elemento) le gana
+   en especificidad a esta sola clase y nos pisa color/font-weight. */
+:global(.p18) .patient-detail-page-t {
   font-size: var(--t-page);
   font-weight: 680;
   letter-spacing: -0.026em;
@@ -131,6 +133,31 @@
 }
 .patient-detail-sec:first-child {
   border-top: 0;
+}
+
+/* El diagnóstico es contenido primario, no una línea de metadatos perdida:
+   letra más grande que el resto del bloque.
+   :global(.p18) — ".p18 p" (clase + elemento) le gana en especificidad a
+   una sola clase de módulo y nos pisaría el font-weight. */
+:global(.p18) .patient-detail-diagnosis {
+  max-width: 68ch;
+  font-size: var(--t-body-lg);
+  font-weight: 560;
+  line-height: 1.55;
+}
+
+/* La nota de "a medio hacer": una caja punteada y discreta para que no
+   compita con contenido real, al pie de la tarjeta.
+   :global(.p18) — el reset ".p18 p" (clase + elemento) le gana en
+   especificidad a una sola clase de módulo y nos pisaba el padding. */
+:global(.p18) .patient-detail-wip {
+  margin-top: 6px;
+  padding: 20px 24px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: var(--t-small);
 }
 
 @media (max-width: 1000px) {

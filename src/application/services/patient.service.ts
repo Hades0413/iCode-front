@@ -91,6 +91,8 @@ export class PatientService {
     patient: Patient,
     /** El borrador que ya existe, cuando lo que se pide es rehacerlo. */
     current: ClinicalSummary | null = null,
+    /** Instrucciones opcionales para la IA, ej.: "hazlo breve". */
+    instructions?: string,
   ): Promise<ClinicalSummaryResult> {
     const allowed = current
       ? canRegenerateSummary(patient, current)
@@ -103,7 +105,10 @@ export class PatientService {
             : 'Este paciente ya tiene su historia clínica empezada.'),
       );
     }
-    return this.patientRepository.generateClinicalSummary(patient.id);
+    return this.patientRepository.generateClinicalSummary(
+      patient.id,
+      instructions,
+    );
   }
 
   /** Guarda lo que el médico corrigió del borrador. Solo sobre un DRAFT. */

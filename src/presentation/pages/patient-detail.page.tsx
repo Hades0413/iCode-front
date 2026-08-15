@@ -28,9 +28,6 @@ import {
   ReferralReviewPanel,
   type ReferralReviewBusy,
 } from '../components/referral-review-panel';
-import { InfoIcon } from '../components/icons';
-import { StatePill } from '../components/state-pill';
-import { SummaryChip } from '../components/summary-chip';
 import { Toasts } from '../components/toasts';
 import { useAsyncResource } from '../hooks/use-async-resource';
 import { useAuth } from '../hooks/use-auth';
@@ -185,10 +182,11 @@ export function PatientDetailPage() {
     }
   }
 
-  function generate(current: Patient) {
+  function generate(current: Patient, instructions?: string) {
     void runSummaryAction(
       'generate',
-      () => patientService.generateClinicalSummary(current, summary),
+      () =>
+        patientService.generateClinicalSummary(current, summary, instructions),
       () =>
         push({
           tone: 'ok',
@@ -419,7 +417,7 @@ export function PatientDetailPage() {
         <div className={styles['patient-detail-page-sub']}>
           <div className={styles['patient-detail-field']}>
             <span className={styles['patient-detail-field-label']}>
-              Historia clínica
+              N.º historia clínica
             </span>
             <span className={`${styles['patient-detail-field-value']} mono`}>
               {patient.medicalRecord}
@@ -435,7 +433,7 @@ export function PatientDetailPage() {
           </div>
           <div className={styles['patient-detail-field']}>
             <span className={styles['patient-detail-field-label']}>
-              Cumple 18 en
+              Cumple 18 años
             </span>
             <span className={styles['patient-detail-field-value']}>
               {time.prefix} <b>{time.text}</b>
@@ -462,13 +460,20 @@ export function PatientDetailPage() {
 
       <div className={styles['patient-detail-page-body']}>
         <section className={styles['patient-detail-sec']}>
-          <div className="row" style={{ gap: 9, flexWrap: 'wrap' }}>
-            <StatePill state={patient.state} />
-            <SummaryChip patient={patient} />
-          </div>
-          <p style={{ paddingTop: 18, maxWidth: 720 }}>{patient.diagnosis}</p>
-          <p className="mini" style={{ paddingTop: 8 }}>
-            {patient.lastAction} · {patient.attendingDoctor}
+          <span className="eyebrow">Diagnóstico</span>
+          <p
+            className={styles['patient-detail-diagnosis']}
+            style={{ marginBottom: 14 }}
+          >
+            {patient.diagnosis}
+          </p>
+
+          <span className="eyebrow">Último registro</span>
+          <p className="mini" style={{ paddingTop: 6 }}>
+            {patient.lastAction}
+          </p>
+          <p className="mini" style={{ paddingTop: 2 }}>
+            <b>Pediatra responsable:</b> {patient.attendingDoctor}
           </p>
         </section>
 
@@ -483,7 +488,7 @@ export function PatientDetailPage() {
           canWrite={canWrite}
           signerName={signerName}
           busy={busy}
-          onGenerate={() => generate(patient)}
+          onGenerate={(instructions) => generate(patient, instructions)}
           onStartTemplate={() => startTemplate(patient)}
           onUploadDocument={(file) => uploadDocument(patient, file)}
           onSave={(sections) => save(patient, sections)}
@@ -517,14 +522,11 @@ export function PatientDetailPage() {
         />
 
         <section className={styles['patient-detail-sec']}>
-          <div className="notice wrapmax">
-            <InfoIcon />
-            <div>
-              <b>Esta ficha está a medio hacer.</b> Faltan la línea de tiempo
-              del caso y el historial de lo que se fue haciendo. Datos de
-              prueba.
-            </div>
-          </div>
+          <p className={styles['patient-detail-wip']}>
+            Esta ficha está a medio hacer: faltan la línea de tiempo del
+            caso, la lista de preparación del paciente y el historial de lo
+            que se fue haciendo. Datos de prueba.
+          </p>
         </section>
       </div>
 

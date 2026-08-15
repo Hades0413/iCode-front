@@ -1,0 +1,77 @@
+/* ============================================================
+   PATIENT ATTACHMENTS PANEL — estilos propios de este componente.
+   Copiado desde clinic.css ("attlist"/"attitem") como punto de partida y
+   rediseñado: la fila de subida separada por un filete punteado, y cada
+   adjunto con un badge de color según el tipo de archivo (documento,
+   imagen, video) en vez de un único ícono de clip para todos.
+   ============================================================ */
+
+.patient-attachments-panel-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line-2);
+}
+.patient-attachments-panel-upload :global(.filepick) {
+  flex: 1;
+  min-width: 260px;
+}
+
+/* :global(.p18) — ".p18 ul" (clase + elemento) le gana en especificidad a
+   una sola clase de módulo; hoy no cambia nada visible (no hay margin ni
+   color acá) pero deja la regla a salvo de ese reset si mañana se agrega
+   alguno. */
+:global(.p18) .patient-attachments-panel-list {
+  display: grid;
+  gap: 8px;
+}
+.patient-attachments-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+/* El color del badge dice de qué tipo es el archivo sin leer la extensión. */
+.patient-attachments-panel-item-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+.patient-attachments-panel-item-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.patient-attachments-panel-item-icon-doc {
+  background: var(--acc-tint);
+  color: var(--acc-2);
+}
+.patient-attachments-panel-item-icon-image {
+  background: var(--ok-tint);
+  color: var(--ok-ink);
+}
+.patient-attachments-panel-item-icon-video {
+  background: var(--rev-tint);
+  color: var(--rev-ink);
+}
+
+.patient-attachments-panel-item-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+.patient-attachments-panel-item-text b {
+  font-weight: 640;
+  font-size: var(--t-body);
+  overflow-wrap: anywhere;
+}

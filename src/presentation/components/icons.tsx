@@ -58,6 +58,33 @@ export function CameraIcon() {
   );
 }
 
+/** Un video adjunto: el marco de una pantalla con el triángulo de play. */
+export function VideoIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="1.8"
+        y="3.4"
+        width="12.4"
+        height="9.2"
+        rx="1.8"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <path
+        d="M6.8 6.3l3 1.7-3 1.7V6.3z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function ChevronIcon() {
   return (
     <svg
