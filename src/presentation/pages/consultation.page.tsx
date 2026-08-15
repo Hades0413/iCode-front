@@ -3,6 +3,10 @@ import { patientService } from '../../composition-root';
 import type { ClinicalSummary } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
 import type { AppointmentReport } from '../../domain/entities/journey.entity';
+import {
+  CONSULTATION_PASS_MESSAGES,
+  decodeConsultationPass,
+} from '../../domain/rules/consultation-pass.rules';
 import { formatShortDate } from '../../common/utils/format-date';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
 import { useAuth } from '../hooks/use-auth';
@@ -28,6 +32,11 @@ function normalizeCode(raw: string): string {
  * Dos caminos al mismo código (GET /patients/consultation/:code y su
  * .../clinical-summary, el mismo permiso PATIENT_READ que ya protegía la
  * ficha por id): escanear el QR con la cámara, o escribirlo a mano.
+ *
+ * Los dos caminos terminan en el mismo input, y eso es a propósito: al
+ * escanear, el código aparece escrito ahí antes de buscar. El médico ve
+ * QUÉ leyó la cámara —y puede corregirlo— en vez de que la pantalla salte
+ * sola a la ficha de alguien.
  */
 export function ConsultationPage() {
   const [code, setCode] = useState('');
@@ -35,6 +44,8 @@ export function ConsultationPage() {
     'idle',
   );
   const [error, setError] = useState<string | null>(null);
+  /** Lo que falló al leer un QR: es otro problema que un código que no existe. */
+  const [scanError, setScanError] = useState<string | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [summary, setSummary] = useState<ClinicalSummary | null>(null);
 
@@ -63,11 +74,29 @@ export function ConsultationPage() {
     }
   }
 
+  /**
+   * Lo que la cámara acaba de leer. El texto del QR no es el código: es un
+   * pase firmado que hay que abrir y validar primero (ver
+   * consultation-pass.rules.ts). Si no valida, se dice por qué y no se
+   * consulta nada — un QR ajeno no llega a tocar el servidor.
+   */
+  async function openFromScan(rawValue: string) {
+    setScanError(null);
+    const pass = await decodeConsultationPass(rawValue);
+    if (!pass.ok) {
+      setScanError(CONSULTATION_PASS_MESSAGES[pass.reason]);
+      return;
+    }
+    setCode(pass.code);
+    await open(pass.code);
+  }
+
   function reset() {
     setPatient(null);
     setSummary(null);
     setStatus('idle');
     setError(null);
+    setScanError(null);
     setCode('');
   }
 
@@ -93,11 +122,13 @@ export function ConsultationPage() {
           transferencia.
         </p>
         <ConsultationScanner
-          onDetected={(value) => {
-            setCode(normalizeCode(value));
-            void open(value);
-          }}
+          onDetected={(value) => void openFromScan(value)}
         />
+        {scanError && (
+          <Notice tone="warn" className="wrapmax">
+            {scanError}
+          </Notice>
+        )}
       </section>
 
       <section className="jn-card">

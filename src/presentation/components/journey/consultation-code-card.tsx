@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { formatClockTime } from '../../../common/utils/format-date';
+import { encodeConsultationPass } from '../../../domain/rules/consultation-pass.rules';
 import { QrCode } from './qr-code';
 
 const TTL_MINUTES = 15;
@@ -14,10 +16,16 @@ function formatForReading(code: string): string {
  * resumen clínico sin que el paciente tenga que decir su documento en voz
  * alta ni el doctor tenga que buscarlo por nombre.
  *
- * Es UN solo código para las dos formas de usarlo: el QR lo codifica tal
- * cual, y si no se puede escanear, el mismo código se dicta y se tipea en
- * puente18.pe/consulta — no hay un código "de respaldo" distinto. Dura 15
- * minutos: pasado ese tiempo, no se renueva solo, se genera uno nuevo.
+ * Es UN solo código para las dos formas de usarlo, pero **no viaja igual en
+ * las dos**. Dictado es lo que se ve: seis caracteres que el médico escribe
+ * en puente18.pe/consulta. Dentro del QR va cifrado como un pase firmado
+ * (ver consultation-pass.rules.ts), porque un QR lo lee cualquier app del
+ * teléfono de cualquiera y el código en claro ahí sería una historia
+ * clínica abierta a quien apunte la cámara desde la fila de al lado.
+ *
+ * Dura 15 minutos: pasado ese tiempo, no se renueva solo, se genera uno
+ * nuevo — y el vencimiento viaja dentro del pase, así el lector del médico
+ * rechaza un pantallazo viejo sin preguntarle nada al servidor.
  */
 export function ConsultationCodeCard({
   code,
@@ -30,6 +38,33 @@ export function ConsultationCodeCard({
   isGenerating: boolean;
   onGenerate: () => Promise<boolean>;
 }>) {
+  // El pase que se dibuja en el QR. Se arma aparte porque firmarlo es
+  // asíncrono (Web Crypto). Se guarda junto al código del que salió: al
+  // generar otro, el pase anterior deja de coincidir y el QR viejo no se
+  // dibuja ni un cuadro mientras se firma el nuevo.
+  const [pass, setPass] = useState<{ code: string; value: string } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!code || !expiresAt) {
+      return;
+    }
+    let alive = true;
+    encodeConsultationPass(code, expiresAt)
+      .then((value) => {
+        if (alive) setPass({ code, value });
+      })
+      .catch(() => {
+        if (alive) setPass(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [code, expiresAt]);
+
+  const qrValue = pass?.code === code ? pass.value : null;
+
   let buttonLabel = 'Generar código único';
   if (isGenerating) {
     buttonLabel = 'Generando…';
@@ -44,12 +79,21 @@ export function ConsultationCodeCard({
       {code ? (
         <>
           <div className="jn-qr-wrap">
-            <QrCode value={code} label={`Código de consulta ${code}`} />
+            {qrValue ? (
+              // El label no dice el código: es el texto que lee un lector de
+              // pantalla en voz alta, y decirlo ahí sería sacarlo del QR por
+              // la puerta de atrás.
+              <QrCode value={qrValue} label="Tu código QR para la consulta" />
+            ) : (
+              <p className="jn-note">Preparando tu código…</p>
+            )}
           </div>
 
           <p className="jn-lead">
             Muéstralo cuando te atiendan: el doctor lo escanea y ve tu
-            resumen de historia clínica al instante.
+            resumen de historia clínica al instante. Solo la app del doctor
+            puede leerlo — si alguien más le apunta con la cámara, no ve
+            nada.
           </p>
 
           <hr className="jn-qr-sep" />
