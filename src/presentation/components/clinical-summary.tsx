@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type {
   ClinicalSummary,
+  ClinicalSummaryAuthor,
   ClinicalSummarySection,
 } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
@@ -15,7 +16,7 @@ import {
 import { PERMISSIONS } from '../../domain/rules/permissions';
 import { formatShortDate } from '../../common/utils/format-date';
 import { formatFileSize } from '../../common/utils/format-file-size';
-import { SignIcon, SparkIcon } from './icons';
+import { SignIcon, SparkIcon, WarnIcon } from './icons';
 import { LiquidMark } from './brand/liquid-mark';
 import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
@@ -157,7 +158,10 @@ export function ClinicalSummaryPanel({
           <SummaryHeader summary={summary} />
 
           {summary.status === 'DRAFT' && summary.pendingChecks.length > 0 && (
-            <PendingChecks checks={summary.pendingChecks} />
+            <PendingChecks
+              checks={summary.pendingChecks}
+              draftedBy={summary.draftedBy}
+            />
           )}
 
           <div className={styles['clinical-summary-sheet']}>
@@ -536,15 +540,30 @@ function SummaryHeader({ summary }: Readonly<{ summary: ClinicalSummary }>) {
   );
 }
 
-/** Lo que la IA no pudo confirmar. Va antes del texto, no después. */
-function PendingChecks({ checks }: Readonly<{ checks: readonly string[] }>) {
+/**
+ * Lo pendiente antes de firmar. Va antes del texto, no después.
+ *
+ * El texto solo habla de "la IA" cuando el borrador lo generó la IA: si vino
+ * de subir un documento o de la plantilla en blanco, no hubo ningún modelo
+ * "confirmando" nada — decir lo contrario es información falsa sobre cómo
+ * se armó el documento que un médico va a firmar.
+ */
+function PendingChecks({
+  checks,
+  draftedBy,
+}: Readonly<{ checks: readonly string[]; draftedBy: ClinicalSummaryAuthor }>) {
+  const isAI = draftedBy.kind === 'AI';
   return (
     <div className={`${styles['clinical-summary-checks']} wrapmax`}>
       <div className={styles['clinical-summary-checks-header']}>
-        <SparkIcon />
+        {isAI ? <SparkIcon /> : <WarnIcon />}
         <b>
-          {checks.length} {checks.length === 1 ? 'cosa' : 'cosas'} que la IA no
-          pudo confirmar
+          {checks.length} {checks.length === 1 ? 'cosa' : 'cosas'}{' '}
+          {isAI
+            ? 'que la IA no pudo confirmar'
+            : checks.length === 1
+              ? 'pendiente antes de firmar'
+              : 'pendientes antes de firmar'}
         </b>
       </div>
       <ul className={styles['clinical-summary-checks-list']}>

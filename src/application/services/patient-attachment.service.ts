@@ -33,4 +33,14 @@ export class PatientAttachmentService {
       attachmentId,
     );
   }
+
+  async removeAttachment(
+    patientId: string,
+    attachmentId: string,
+  ): Promise<void> {
+    return this.patientAttachmentRepository.removeAttachment(
+      patientId,
+      attachmentId,
+    );
+  }
 }

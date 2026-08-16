@@ -52,6 +52,7 @@ export function PatientAttachmentsPanel({
   isUploading,
   onUpload,
   onDownload,
+  onRemove,
   onRetry,
 }: Readonly<{
   attachments: PatientAttachment[];
@@ -62,9 +63,24 @@ export function PatientAttachmentsPanel({
   isUploading: boolean;
   onUpload: (file: File) => void;
   onDownload: (attachment: PatientAttachment) => void;
+  /** Devuelve si salió bien, para saber si cerrar la confirmación. */
+  onRemove: (attachment: PatientAttachment) => Promise<boolean>;
   onRetry: () => void;
 }>) {
   const [file, setFile] = useState<File | null>(null);
+  /** El adjunto con el "¿Quitar?" armado, o en vuelo. Uno a la vez. */
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  async function remove(attachment: PatientAttachment) {
+    setRemovingId(attachment.id);
+    try {
+      await onRemove(attachment);
+    } finally {
+      setRemovingId(null);
+      setConfirmingId(null);
+    }
+  }
 
   return (
     <Section
@@ -115,13 +131,49 @@ export function PatientAttachmentsPanel({
                         {formatShortDate(attachment.uploadedAt)}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      className="btn btn-sm"
-                      onClick={() => onDownload(attachment)}
-                    >
-                      <DownloadIcon /> Descargar
-                    </button>
+                    <div className="row" style={{ gap: 7 }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => onDownload(attachment)}
+                      >
+                        <DownloadIcon /> Descargar
+                      </button>
+                      {canWrite &&
+                        (confirmingId === attachment.id ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              disabled={removingId !== null}
+                              onClick={() => void remove(attachment)}
+                            >
+                              {removingId === attachment.id && (
+                                <i className="spin" />
+                              )}
+                              {removingId === attachment.id
+                                ? 'Quitando…'
+                                : '¿Quitar?'}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              disabled={removingId !== null}
+                              onClick={() => setConfirmingId(null)}
+                            >
+                              No
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            onClick={() => setConfirmingId(attachment.id)}
+                          >
+                            Quitar
+                          </button>
+                        ))}
+                    </div>
                   </li>
                 );
               })}

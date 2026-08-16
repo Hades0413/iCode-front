@@ -40,6 +40,15 @@ class HttpPatientAttachmentRepository
     );
     return data;
   }
+
+  async removeAttachment(
+    patientId: string,
+    attachmentId: string,
+  ): Promise<void> {
+    await apiClient.delete(
+      `${attachmentsUrl(patientId)}/${encodeURIComponent(attachmentId)}`,
+    );
+  }
 }
 
 export const patientAttachmentRepository =

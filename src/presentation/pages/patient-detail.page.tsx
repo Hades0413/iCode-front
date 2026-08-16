@@ -377,6 +377,28 @@ export function PatientDetailPage() {
     }
   }
 
+  async function removeAttachment(
+    current: Patient,
+    attachment: PatientAttachment,
+  ): Promise<boolean> {
+    try {
+      await patientAttachmentService.removeAttachment(
+        current.id,
+        attachment.id,
+      );
+      setAttachments(attachments.filter((a) => a.id !== attachment.id));
+      push({ tone: 'ok', title: `${attachment.fileName} quitado de la ficha.` });
+      return true;
+    } catch (error) {
+      push({
+        tone: 'err',
+        title: 'No se pudo quitar el adjunto',
+        detail: getApiErrorMessage(error),
+      });
+      return false;
+    }
+  }
+
   if (isLoading) {
     return (
       <div className={styles['patient-detail-main']}>
@@ -539,6 +561,7 @@ export function PatientDetailPage() {
           isUploading={isUploadingAttachment}
           onUpload={(file) => void uploadAttachment(patient, file)}
           onDownload={(attachment) => void downloadAttachment(patient, attachment)}
+          onRemove={(attachment) => removeAttachment(patient, attachment)}
           onRetry={reloadAttachments}
         />
 

@@ -17,4 +17,6 @@ export interface PatientAttachmentRepositoryPort {
     patientId: string,
     attachmentId: string,
   ): Promise<Blob>;
+
+  removeAttachment(patientId: string, attachmentId: string): Promise<void>;
 }
