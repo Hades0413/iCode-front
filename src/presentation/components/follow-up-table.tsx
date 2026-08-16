@@ -1,6 +1,7 @@
 import type { Patient } from '../../domain/entities/patient.entity';
 import { formatShortDate } from '../../common/utils/format-date';
 import { ChevronIcon, PinIcon } from './icons';
+import styles from './follow-up-table.module.css';
 
 /**
  * La tabla de los que ya cumplieron 18: otra tabla que la del tablero, a
@@ -20,8 +21,8 @@ export function FollowUpTable({
   onOpen: (patient: Patient) => void;
 }>) {
   return (
-    <div className="tw">
-      <table className="dt">
+    <div className={styles['follow-up-table-wrapper']}>
+      <table className={styles['follow-up-table']}>
         <thead>
           <tr>
             <th style={{ paddingLeft: 18 }}>Paciente</th>
@@ -83,12 +84,16 @@ function FollowUpRow({
 
   return (
     <tr
-      className={attended?.chip === 'crit' ? 'u-crit' : ''}
+      className={
+        attended?.chip === 'crit' ? styles['follow-up-table-critical'] : ''
+      }
       onClick={() => onOpen(patient)}
     >
-      <td className="stripe">
-        <div className="ini">{patient.initials}</div>
-        <div className="hc">
+      <td className={styles['follow-up-table-stripe-cell']}>
+        <div className={styles['follow-up-table-initials']}>
+          {patient.initials}
+        </div>
+        <div className={styles['follow-up-table-hint']}>
           {patient.medicalRecord} · DNI {patient.dni}
         </div>
       </td>
@@ -105,7 +110,7 @@ function FollowUpRow({
       <td>
         {appointment ? (
           <>
-            <div className="ttl">
+            <div className={styles['follow-up-table-appointment-date']}>
               <b>{formatShortDate(appointment.date)}</b>
             </div>
             <span className="mini">
@@ -127,10 +132,10 @@ function FollowUpRow({
         )}
       </td>
       <td>
-        <div className="rowact">
+        <div className={styles['follow-up-table-row-actions']}>
           <button
             type="button"
-            className="go"
+            className={styles['follow-up-table-row-open-icon']}
             aria-label={`Abrir la ficha de ${patient.initials}`}
           >
             <ChevronIcon />

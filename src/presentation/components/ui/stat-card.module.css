@@ -1,0 +1,194 @@
+/* ============================================================
+   STAT CARD — estilos propios de este componente.
+   Copiado desde clinic.css (".kpis"/".kpi"/".kpi-*") como punto de partida
+   para poder tocarlo sin afectar clinic.css. stat-card.tsx es el único
+   lugar del código que rendea esas clases: StatCard/StatGrid es el
+   componente compartido de bajo nivel que usan follow-up.page.tsx,
+   referral-notices.page.tsx y counter-referrals.page.tsx, así que
+   migrarlo acá los deja resueltos a todos sin tocarlos.
+
+   "kpi" se mantiene además como clase literal en el .tsx (junto a
+   stat-card-kpi), tanto en la tarjeta estática como en el botón: es el
+   selector que usan brand-fx.tsx (GLOW_SELECTOR) y fx.css para el brillo
+   de marca que sigue al cursor, un hook aparte de clinic.css que no
+   migra con este archivo. Por eso clinic.css sigue pudiendo aplicar su
+   propia ".kpi" en paralelo — los valores son los mismos, así que no hay
+   conflicto visual.
+
+   "on" queda global a propósito: es el mismo modificador de estado que
+   usan rail-nav.tsx / pagination.tsx / checklist-card.tsx /
+   journey-nav.tsx desde clinic.css — stat-card.tsx sigue aplicando el
+   string literal "on", no algo que pase por este módulo.
+   ============================================================ */
+
+.stat-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(198px, 1fr));
+  gap: 14px;
+  padding: 26px 0 6px;
+}
+
+/* :global(.p18) — ".p18 button" (clase + elemento) le gana en
+   especificidad a una sola clase de módulo cuando esta tarjeta se
+   renderea como <button> (con onClick): sin este prefijo nos pisaría
+   font/color/background/border/border-radius/padding/cursor. La variante
+   sin onClick se renderea como <div>, a la que ese reset no le aplica,
+   pero comparte esta misma clase. */
+:global(.p18) .stat-card-kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 17px 18px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  text-align: left;
+  overflow: hidden;
+  --card: var(--acc);
+  transition:
+    box-shadow 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+/* El filete de color se ve SIEMPRE cuando el número importa. */
+.stat-card-kpi::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--line-2);
+  opacity: 0;
+  transition: opacity 0.18s var(--ease);
+}
+.stat-card-kpi[data-severity='ok']::after,
+.stat-card-kpi[data-severity='warn']::after,
+.stat-card-kpi[data-severity='crit']::after,
+.stat-card-kpi:global(.on)::after,
+.stat-card-kpi:hover::after {
+  opacity: 1;
+}
+.stat-card-kpi[data-severity='ok']::after {
+  background: var(--ok);
+}
+.stat-card-kpi[data-severity='warn']::after {
+  background: var(--warn);
+}
+.stat-card-kpi[data-severity='crit']::after {
+  background: var(--crit);
+}
+.stat-card-kpi:global(.on)::after {
+  background: var(--ink);
+}
+.stat-card-kpi[data-severity='ok']:global(.on)::after {
+  background: var(--ok);
+}
+.stat-card-kpi[data-severity='warn']:global(.on)::after {
+  background: var(--warn);
+}
+.stat-card-kpi[data-severity='crit']:global(.on)::after {
+  background: var(--crit);
+}
+.stat-card-kpi[data-severity='ok'] {
+  --card: var(--ok);
+  background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
+}
+.stat-card-kpi[data-severity='warn'] {
+  --card: var(--warn);
+  background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
+}
+.stat-card-kpi[data-severity='crit'] {
+  --card: var(--crit);
+  background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 62%);
+  border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
+}
+/* Ver stat-card-kpi: misma sombra corta y densa, mismo aro del color de
+   la tarjeta. Solo el <button> (con onClick) se levanta al pasar por
+   encima — la tarjeta estática no finge ser clickeable. */
+button.stat-card-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 6px rgba(16, 24, 22, 0.07),
+    0 12px 24px -8px color-mix(in srgb, var(--card) 62%, transparent);
+}
+button.stat-card-kpi:hover:not(:global(.on)) {
+  border-color: var(--card);
+}
+button.stat-card-kpi:active {
+  transform: translateY(0);
+  box-shadow: var(--sh-1);
+}
+.stat-card-kpi:global(.on) {
+  border-color: var(--ink);
+  box-shadow: var(--sh-2);
+}
+/* Sin onClick no se levanta ni se marca: no finge ser clickeable. */
+.stat-card-kpi-static {
+  cursor: default;
+}
+.stat-card-kpi-label {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  font-weight: 560;
+  line-height: 1.3;
+}
+.stat-card-kpi-value {
+  font-size: var(--t-kpi);
+  font-weight: 690;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.stat-card-kpi[data-severity='ok'] .stat-card-kpi-value {
+  color: var(--ok-ink);
+}
+.stat-card-kpi[data-severity='warn'] .stat-card-kpi-value {
+  color: var(--warn-ink);
+}
+.stat-card-kpi[data-severity='crit'] .stat-card-kpi-value {
+  color: var(--crit);
+}
+/* La unidad, más chica que el número: "100 %" se lee como un porcentaje
+   sin que el símbolo compita con la cifra. */
+.stat-card-kpi-suffix {
+  font-size: 0.5em;
+  font-weight: 650;
+  margin-left: 3px;
+  letter-spacing: 0;
+}
+
+.stat-card-kpi-meter {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(16, 24, 22, 0.09);
+  overflow: hidden;
+  margin: 8px 0 3px;
+}
+.stat-card-kpi-meter > i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--acc);
+  width: var(--w, 0%);
+  transition: width 0.9s var(--ease);
+}
+.stat-card-kpi[data-severity='ok'] .stat-card-kpi-meter > i {
+  background: var(--ok);
+}
+.stat-card-kpi[data-severity='warn'] .stat-card-kpi-meter > i {
+  background: var(--warn);
+}
+.stat-card-kpi[data-severity='crit'] .stat-card-kpi-meter > i {
+  background: var(--crit);
+}
+.stat-card-kpi-hint {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.35;
+}

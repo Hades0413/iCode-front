@@ -1,0 +1,92 @@
+/* ============================================================
+   PAGINATION — estilos propios de este componente.
+   Copiado desde clinic.css ("pager"/"pager-c"/"pager-b"/"pager-i"/
+   "pager-arrow"/"flip"/"pager-gap") como punto de partida para poder
+   tocarlo sin afectar clinic.css. Pagination es el único lugar del código
+   que rendea estas clases, así que migrarlo acá cubre a todos sus
+   consumidores de una sola vez, sin duplicación.
+   ============================================================ */
+
+.pagination-root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+/* :global(.p18) — vive en un <p>, y ".p18 p" (clase + elemento) es el reset
+   local de design-system.css: le gana en especificidad a una sola clase de
+   módulo y nos pisaría margin/padding/font-weight/color. */
+:global(.p18) .pagination-count {
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+/* <b> no está en la lista de reset, así que el descendiente va sin :global. */
+.pagination-count b {
+  color: var(--ink);
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* :global(.p18) — cada página (y cada flecha) es un <button>, y
+   ".p18 button" (clase + elemento) es el reset local de design-system.css:
+   le gana en especificidad a una sola clase de módulo y nos pisaría
+   color/background/border/border-radius/padding/cursor. Todas las reglas
+   sobre este mismo <button> (hover, estado actual, disabled, flechas)
+   llevan el mismo prefijo por la misma razón. */
+:global(.p18) .pagination-item {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  border: 1px solid transparent;
+  transition:
+    background 0.14s var(--ease),
+    border-color 0.14s var(--ease),
+    color 0.14s var(--ease);
+}
+:global(.p18) .pagination-item:hover:not([disabled]):not(.pagination-item-current) {
+  background: var(--wash);
+  border-color: var(--line);
+  color: var(--ink);
+}
+/* ".pagination-item-current" es el estado "página actual" (antes
+   ".pager-i.on"); mismo <button>, mismo prefijo :global(.p18). */
+:global(.p18) .pagination-item.pagination-item-current {
+  background: var(--acc-tint);
+  border-color: var(--acc);
+  color: var(--acc-2);
+  font-weight: 660;
+}
+:global(.p18) .pagination-item[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+:global(.p18) .pagination-arrow {
+  color: var(--ink-3);
+}
+
+/* <span>, no está en la lista de reset: no hace falta :global(.p18). */
+.pagination-gap {
+  padding: 0 2px;
+  color: var(--ink-3);
+}
+
+.pagination-flip {
+  display: inline-flex;
+  transform: rotate(180deg);
+}

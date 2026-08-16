@@ -1,4 +1,5 @@
 import { useCountUp } from '../../hooks/use-count-up';
+import styles from './stat-card.module.css';
 
 export type StatSeverity = 'neutral' | 'ok' | 'warn' | 'crit';
 
@@ -38,23 +39,32 @@ export function StatCard({
 
   const body = (
     <>
-      <span className="kpi-l">{label}</span>
-      <span className="kpi-v">
+      <span className={styles['stat-card-kpi-label']}>{label}</span>
+      <span className={styles['stat-card-kpi-value']}>
         {shown}
-        {suffix && <span className="kpi-suf">{suffix}</span>}
+        {suffix && (
+          <span className={styles['stat-card-kpi-suffix']}>{suffix}</span>
+        )}
       </span>
       {share !== undefined && (
-        <span className="kpi-m">
+        <span className={styles['stat-card-kpi-meter']}>
           <i style={{ ['--w' as string]: `${share}%` }} />
         </span>
       )}
-      {hint && <span className="kpi-h">{hint}</span>}
+      {hint && <span className={styles['stat-card-kpi-hint']}>{hint}</span>}
     </>
   );
 
+  // "kpi" se mantiene literal (además de styles['stat-card-kpi']), en las
+  // dos variantes: es el selector que usan brand-fx.tsx (GLOW_SELECTOR) y
+  // fx.css para el brillo de marca que sigue al cursor, un hook aparte de
+  // clinic.css que no migra con este archivo.
   if (!onClick) {
     return (
-      <div className="kpi kpi-static" data-severity={severity}>
+      <div
+        className={`${styles['stat-card-kpi']} ${styles['stat-card-kpi-static']} kpi`}
+        data-severity={severity}
+      >
         {body}
       </div>
     );
@@ -63,7 +73,7 @@ export function StatCard({
   return (
     <button
       type="button"
-      className={`kpi ${isActive ? 'on' : ''}`}
+      className={`${styles['stat-card-kpi']} kpi ${isActive ? 'on' : ''}`}
       data-severity={severity}
       aria-pressed={isActive}
       onClick={onClick}
@@ -77,5 +87,5 @@ export function StatCard({
 export function StatGrid({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="kpis">{children}</div>;
+  return <div className={styles['stat-card-grid']}>{children}</div>;
 }

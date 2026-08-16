@@ -1,0 +1,234 @@
+/* ============================================================
+   COHORT STATS — estilos propios de este componente.
+   Copiado desde clinic.css (".stats"/".stat"/".stat-*") como punto de
+   partida para poder tocarlo sin afectar clinic.css. cohort-stats.tsx es
+   el único lugar del código que rendea esas clases.
+
+   "stat" se mantiene además como clase literal en el .tsx (junto a
+   cohort-stats-tile): es el selector que usan brand-fx.tsx
+   (GLOW_SELECTOR) y fx.css para el brillo de marca que sigue al cursor,
+   un hook aparte de clinic.css que no migra con este archivo. Por eso
+   clinic.css sigue pudiendo aplicar su propia ".stat" en paralelo — los
+   valores son los mismos, así que no hay conflicto visual.
+
+   "on" queda global a propósito: es el mismo modificador de estado que
+   usan rail-nav.tsx / pagination.tsx / checklist-card.tsx /
+   journey-nav.tsx desde clinic.css — cohort-stats.tsx sigue aplicando el
+   string literal "on", no algo que pase por este módulo.
+   ============================================================ */
+
+.cohort-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  padding: 26px 0 4px;
+}
+
+/* :global(.p18) — el reset local de design-system.css apunta a ".p18
+   button" (clase + elemento, más específico que una sola clase de
+   módulo): sin este prefijo, ese reset gana y nos pisa
+   font/color/background/border/border-radius/padding/cursor. */
+:global(.p18) .cohort-stats-tile {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  padding: 18px 20px 17px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  text-align: left;
+  overflow: hidden;
+  --card: var(--acc);
+  transition:
+    box-shadow 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+.cohort-stats-tile:global(.on) {
+  border-color: var(--ink);
+  box-shadow: var(--sh-2);
+}
+/* Después de .on a propósito: la tarjeta activa también se levanta con su
+   color al pasar por encima. */
+.cohort-stats-tile:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 6px rgba(16, 24, 22, 0.07),
+    0 12px 24px -8px color-mix(in srgb, var(--card) 62%, transparent);
+}
+.cohort-stats-tile:hover:not(:global(.on)) {
+  border-color: var(--card);
+}
+.cohort-stats-tile:active {
+  transform: translateY(0);
+  box-shadow: var(--sh-1);
+}
+.cohort-stats-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--line-2);
+}
+.cohort-stats-tile[data-severity='ok']::after {
+  background: var(--ok);
+}
+.cohort-stats-tile[data-severity='warn']::after {
+  background: var(--warn);
+}
+.cohort-stats-tile[data-severity='crit']::after {
+  background: var(--crit);
+}
+.cohort-stats-tile[data-severity='ok'] {
+  --card: var(--ok);
+  background: linear-gradient(180deg, var(--ok-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--ok) 22%, var(--line));
+}
+.cohort-stats-tile[data-severity='warn'] {
+  --card: var(--warn);
+  background: linear-gradient(180deg, var(--warn-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--warn) 22%, var(--line));
+}
+.cohort-stats-tile[data-severity='crit'] {
+  --card: var(--crit);
+  background: linear-gradient(180deg, var(--crit-tint) 0%, var(--paper) 58%);
+  border-color: color-mix(in srgb, var(--crit) 22%, var(--line));
+}
+
+.cohort-stats-tile-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cohort-stats-tile-label {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1.25;
+}
+/* "Ver estos" aparece al pasar por encima: la tarjeta avisa que lleva a
+   algún lado sin gritarlo todo el tiempo. */
+.cohort-stats-tile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: 0.16s var(--ease);
+}
+.cohort-stats-tile:hover .cohort-stats-tile-cta,
+.cohort-stats-tile:focus-visible .cohort-stats-tile-cta,
+.cohort-stats-tile:global(.on) .cohort-stats-tile-cta {
+  opacity: 1;
+  transform: none;
+}
+.cohort-stats-tile:global(.on) .cohort-stats-tile-cta {
+  color: var(--ink);
+  font-weight: 560;
+}
+
+.cohort-stats-tile-value {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: var(--t-kpi);
+  font-weight: 690;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.cohort-stats-tile[data-severity='ok'] .cohort-stats-tile-value {
+  color: var(--ok-ink);
+}
+.cohort-stats-tile[data-severity='warn'] .cohort-stats-tile-value {
+  color: var(--warn-ink);
+}
+.cohort-stats-tile[data-severity='crit'] .cohort-stats-tile-value {
+  color: var(--crit);
+}
+.cohort-stats-tile-of-total {
+  font-size: var(--t-meta);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+.cohort-stats-tile-meter {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(15, 20, 32, 0.09);
+  overflow: hidden;
+}
+.cohort-stats-tile-meter > i {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: 3px;
+  background: var(--acc);
+  transition: width 0.9s var(--ease);
+}
+.cohort-stats-tile-meter > i[data-severity='ok'] {
+  background: var(--ok);
+}
+.cohort-stats-tile-meter > i[data-severity='warn'] {
+  background: var(--warn);
+}
+.cohort-stats-tile-meter > i[data-severity='crit'] {
+  background: var(--crit);
+}
+.cohort-stats-tile-meter > i[data-severity='neutral'] {
+  background: var(--line-2);
+}
+
+.cohort-stats-tile-parts {
+  display: grid;
+  gap: 7px;
+}
+.cohort-stats-tile-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: var(--t-small);
+  color: var(--ink-3);
+}
+.cohort-stats-tile-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cohort-stats-tile-legend > span::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+.cohort-stats-tile-legend > span[data-severity='crit']::before {
+  background: var(--crit);
+}
+.cohort-stats-tile-legend > span[data-severity='warn']::before {
+  background: var(--warn);
+}
+.cohort-stats-tile-legend > span[data-severity='ok']::before {
+  background: var(--ok);
+}
+.cohort-stats-tile-legend b {
+  color: var(--ink);
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+.cohort-stats-tile-hint {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  line-height: 1.4;
+}

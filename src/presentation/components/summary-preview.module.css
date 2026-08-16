@@ -1,0 +1,63 @@
+/* ============================================================
+   SUMMARY PREVIEW — estilos propios de este componente.
+   Copiado desde clinic.css ("sheet"/"sheet-s"/"sheet-t"/"sheet-b") como
+   punto de partida. Esas reglas quedan igual en clinic.css: eran las que
+   usaba clinical-summary.tsx antes de migrar a su propio módulo
+   (clinical-summary-sheet-*, ver clinical-summary.module.css) y
+   summary-preview.tsx era, hasta este cambio, el último consumidor que
+   las seguía rendeando en crudo desde clinic.css.
+   ============================================================ */
+
+.summary-preview-sheet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--sh-1);
+  overflow: hidden;
+  max-width: 860px;
+}
+
+.summary-preview-sheet-section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+}
+.summary-preview-sheet-section:first-child {
+  border-top: 0;
+}
+/* Un bloque sin escribir se ve vacío a propósito: es trabajo pendiente,
+   no un detalle de maquetación. */
+.summary-preview-sheet-section-gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wash) 0 8px,
+    var(--paper) 8px 16px
+  );
+}
+
+/* :global(.p18) en título/cuerpo — el reset local de design-system.css
+   (".p18 h3"/".p18 p", clase + elemento) le gana en especificidad a una
+   sola clase de módulo y nos pisa font-family/color/font-weight/margin. */
+:global(.p18) .summary-preview-sheet-section-title {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+:global(.p18) .summary-preview-sheet-section-body {
+  font-size: var(--t-body-lg);
+  line-height: 1.62;
+  color: var(--ink);
+  max-width: 72ch;
+}
+/* Misma especificidad que la base de arriba (mismo prefijo :global(.p18)):
+   como viene después en el archivo, gana el empate y pisa color/font-size
+   cuando el bloque está vacío. */
+:global(.p18) .summary-preview-sheet-section-body-empty {
+  color: var(--ink-3);
+  font-style: italic;
+  font-size: var(--t-meta);
+}

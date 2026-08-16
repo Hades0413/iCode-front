@@ -2,6 +2,7 @@ import type { ReferralReviewStatus } from '../../domain/entities/referral-review
 import type { ReferralStatusFilter } from '../../domain/rules/cohort.rules';
 import { REFERRAL_REVIEW_STATUS_LABELS } from '../../domain/rules/referral-review.rules';
 import { SearchInput } from './ui/search-input';
+import styles from './cohort-filter-bar.module.css';
 
 /**
  * Los cuatro estados en los que puede estar la referencia de un paciente, en
@@ -44,10 +45,10 @@ export function CohortFilterBar({
   onReferralStatusChange?: (value: ReferralStatusFilter) => void;
 }>) {
   return (
-    <div className="filterbar">
-      <div className="filterbar-tools">
+    <div className={styles['cohort-filter-bar']}>
+      <div className={styles['cohort-filter-bar-tools']}>
         {onReferralStatusChange && (
-          <label className="select-pill">
+          <label className={styles['cohort-filter-bar-select-pill']}>
             <select
               value={referralStatus}
               aria-label="Filtrar por estado de la referencia"

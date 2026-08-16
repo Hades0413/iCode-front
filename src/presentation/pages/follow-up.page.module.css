@@ -1,0 +1,29 @@
+/* ============================================================
+   REFERENCIAS ACEPTADAS — layout propio de esta página.
+   Copiado desde clinic.css (secciones "main"/"page-body") como punto de
+   partida para poder tocarlo sin afectar otras páginas, que siguen
+   usando esas mismas reglas desde clinic.css.
+   ============================================================ */
+
+.follow-up-page-main {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+  border-radius: 22px;
+  box-shadow: var(--sh-2);
+  overflow: hidden;
+}
+
+.follow-up-page-body {
+  padding: 0 32px 34px;
+}
+
+@media (max-width: 1000px) {
+  .follow-up-page-main {
+    width: 100%;
+    border-radius: 18px;
+  }
+  .follow-up-page-body {
+    padding: 0 18px 28px;
+  }
+}

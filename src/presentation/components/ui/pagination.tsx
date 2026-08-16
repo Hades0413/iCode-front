@@ -1,4 +1,5 @@
 import { ChevronIcon } from '../icons';
+import styles from './pagination.module.css';
 
 /**
  * El paginador de una lista larga.
@@ -36,8 +37,11 @@ export function Pagination({
   }
 
   return (
-    <nav className="pager" aria-label="Páginas de la lista">
-      <p className="pager-c">
+    <nav
+      className={styles['pagination-root']}
+      aria-label="Páginas de la lista"
+    >
+      <p className={styles['pagination-count']}>
         <b>
           {from}–{to}
         </b>{' '}
@@ -45,15 +49,15 @@ export function Pagination({
       </p>
 
       {pageCount > 1 && (
-        <div className="pager-b">
+        <div className={styles['pagination-buttons']}>
           <button
             type="button"
-            className="pager-i pager-arrow"
+            className={`${styles['pagination-item']} ${styles['pagination-arrow']}`}
             disabled={page === 1}
             onClick={() => onChange(page - 1)}
             aria-label="Página anterior"
           >
-            <span className="flip">
+            <span className={styles['pagination-flip']}>
               <ChevronIcon />
             </span>
           </button>
@@ -61,14 +65,16 @@ export function Pagination({
           {pagesAround(page, pageCount).map((entry, index) =>
             entry === null ? (
               // key por posición: los huecos no tienen identidad propia.
-              <span key={`gap-${index}`} className="pager-gap">
+              <span key={`gap-${index}`} className={styles['pagination-gap']}>
                 …
               </span>
             ) : (
               <button
                 key={entry}
                 type="button"
-                className={`pager-i ${entry === page ? 'on' : ''}`}
+                className={`${styles['pagination-item']} ${
+                  entry === page ? styles['pagination-item-current'] : ''
+                }`}
                 aria-current={entry === page ? 'page' : undefined}
                 onClick={() => onChange(entry)}
               >
@@ -79,7 +85,7 @@ export function Pagination({
 
           <button
             type="button"
-            className="pager-i pager-arrow"
+            className={`${styles['pagination-item']} ${styles['pagination-arrow']}`}
             disabled={page === pageCount}
             onClick={() => onChange(page + 1)}
             aria-label="Página siguiente"

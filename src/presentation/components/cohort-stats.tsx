@@ -5,6 +5,7 @@ import type {
 } from '../../domain/rules/cohort.rules';
 import { useCountUp } from '../hooks/use-count-up';
 import { ChevronIcon } from './icons';
+import styles from './cohort-stats.module.css';
 
 /**
  * Los tres números del tablero, arriba de todo y como tarjetas grandes.
@@ -29,7 +30,11 @@ export function CohortStats({
   onSelect: (key: CohortFilterKey) => void;
 }>) {
   return (
-    <div className="stats" role="group" aria-label="Resumen de la cohorte">
+    <div
+      className={styles['cohort-stats-grid']}
+      role="group"
+      aria-label="Resumen de la cohorte"
+    >
       {kpis.map((kpi) => (
         <StatTile
           key={kpi.key}
@@ -58,35 +63,41 @@ function StatTile({
   return (
     <button
       type="button"
-      className={`stat ${isActive ? 'on' : ''}`}
+      // "stat" se mantiene literal además de styles['cohort-stats-tile']:
+      // es el selector que usan brand-fx.tsx (GLOW_SELECTOR) y fx.css para
+      // el brillo de marca que sigue al cursor, un hook aparte de
+      // clinic.css que no migra con este archivo.
+      className={`${styles['cohort-stats-tile']} stat ${isActive ? 'on' : ''}`}
       data-severity={kpi.severity}
       aria-pressed={isActive}
       onClick={() => onSelect(kpi.key)}
     >
-      <span className="stat-h">
-        <span className="stat-l">{kpi.label}</span>
-        <span className="stat-go">
+      <span className={styles['cohort-stats-tile-header']}>
+        <span className={styles['cohort-stats-tile-label']}>{kpi.label}</span>
+        <span className={styles['cohort-stats-tile-cta']}>
           {isActive ? 'Viendo estos' : 'Ver estos'}
           <ChevronIcon />
         </span>
       </span>
 
-      <span className="stat-v">
+      <span className={styles['cohort-stats-tile-value']}>
         {shown}
         {kpi.total > 0 && kpi.value !== kpi.total && (
-          <span className="stat-of">de {kpi.total}</span>
+          <span className={styles['cohort-stats-tile-of-total']}>
+            de {kpi.total}
+          </span>
         )}
       </span>
 
       {parts.length > 1 ? (
         <StatParts parts={parts} total={kpi.total} />
       ) : (
-        <span className="stat-m">
+        <span className={styles['cohort-stats-tile-meter']}>
           <i style={{ ['--w' as string]: `${share}%` }} />
         </span>
       )}
 
-      <span className="stat-hint">{kpi.hint}</span>
+      <span className={styles['cohort-stats-tile-hint']}>{kpi.hint}</span>
     </button>
   );
 }
@@ -100,8 +111,10 @@ function StatParts({
   total,
 }: Readonly<{ parts: readonly KpiPart[]; total: number }>) {
   return (
-    <span className="stat-parts">
-      <span className="stat-m split">
+    <span className={styles['cohort-stats-tile-parts']}>
+      {/* "split" queda literal: no tiene ninguna regla propia en
+          clinic.css (no-op hoy), así que no hay nada que migrar. */}
+      <span className={`${styles['cohort-stats-tile-meter']} split`}>
         {parts.map((part) => (
           <i
             key={part.label}
@@ -112,7 +125,7 @@ function StatParts({
           />
         ))}
       </span>
-      <span className="stat-legend">
+      <span className={styles['cohort-stats-tile-legend']}>
         {parts.map((part) => (
           <span key={part.label} data-severity={part.severity}>
             <b>{part.value}</b> {part.label}

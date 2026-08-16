@@ -1,0 +1,139 @@
+/* ============================================================
+   FOLLOW-UP TABLE — estilos propios de este componente.
+   Copiado desde clinic.css (sección "tabla") como punto de partida para
+   poder tocarlo sin afectar clinic.css. notice-queue-table.tsx sigue
+   usando esas mismas reglas ("tw"/"dt"/"stripe"/"ini"/"hc"/"ttl"/"u-crit"/
+   "rowact") desde clinic.css tal cual, hasta que le toque su turno de
+   migrar.
+   ============================================================ */
+
+.follow-up-table-wrapper {
+  overflow-x: auto;
+  margin: 0 -32px;
+  padding: 0 32px;
+}
+
+.follow-up-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;
+}
+.follow-up-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-2);
+  font-weight: 700;
+  background: var(--acc-tint);
+  border-bottom: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line));
+  white-space: nowrap;
+}
+.follow-up-table th:first-child {
+  border-radius: 12px 0 0 0;
+}
+.follow-up-table th:last-child {
+  border-radius: 0 12px 0 0;
+}
+.follow-up-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body);
+  vertical-align: middle;
+  background: var(--paper);
+  transition: background 0.12s;
+}
+.follow-up-table tbody tr {
+  cursor: pointer;
+}
+.follow-up-table tbody tr:hover td {
+  background: var(--acc-tint);
+}
+.follow-up-table tbody tr:hover .follow-up-table-row-open-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+.follow-up-table tbody tr:hover .follow-up-table-row-actions {
+  opacity: 1;
+}
+
+.follow-up-table-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  opacity: 0.6;
+  transition: opacity 0.16s var(--ease);
+}
+.follow-up-table-row-actions:focus-within {
+  opacity: 1;
+}
+
+/* :global(.p18) — cae sobre un <button>: el reset ".p18 button" de
+   design-system.css (clase + elemento, especificidad 0,1,1) le gana a una
+   sola clase de módulo (0,1,0) y nos pisaría el color en silencio.
+   :global(.p18) sube la especificidad a (0,2,0) y gana. */
+:global(.p18) .follow-up-table-row-open-icon {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: 0.16s var(--ease);
+  color: var(--ink-3);
+  display: inline-flex;
+}
+:global(.p18) .follow-up-table-row-open-icon:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.follow-up-table-stripe-cell {
+  position: relative;
+  padding-left: 18px;
+}
+.follow-up-table-stripe-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: width 0.16s var(--ease);
+}
+tr.follow-up-table-critical .follow-up-table-stripe-cell::before {
+  background: var(--crit);
+}
+tr.follow-up-table-critical:hover .follow-up-table-stripe-cell::before {
+  width: 6px;
+}
+
+.follow-up-table-initials {
+  font-weight: 660;
+  font-size: var(--t-body-lg);
+  letter-spacing: -0.01em;
+}
+
+.follow-up-table-hint {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.follow-up-table-appointment-date {
+  font-family: var(--mono);
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+}
+.follow-up-table-appointment-date b {
+  font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+  .follow-up-table-wrapper {
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+}

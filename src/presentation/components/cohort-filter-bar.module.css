@@ -1,0 +1,67 @@
+/* ============================================================
+   COHORT FILTER BAR — estilos propios de este componente.
+   Copiado desde clinic.css ("filterbar"/"filterbar-tools"/"select-pill")
+   como punto de partida para poder tocarlo sin afectar clinic.css. Nadie
+   más rendea estas clases, así que migrarlas acá las resuelve del todo
+   sin dejar duplicación pendiente.
+   ============================================================ */
+
+/* ---------- la barra que acota la lista ---------- */
+.cohort-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+/* ---------- lo que acota la lista: especialidad + DNI ---------- */
+.cohort-filter-bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* SearchInput (ui/search-input.tsx) todavía no está migrado y sigue
+   trayendo ".search" de clinic.css. Acá solo se scopea, con :global, el
+   override de margin-left que antes vivía en
+   ".p18 .filterbar-tools .search" — el margin-left:auto de ".search" es
+   para cuando el buscador va solo; acá lo anula el propio contenedor, que
+   ya alinea el grupo entero a la derecha. */
+.cohort-filter-bar-tools :global(.search) {
+  margin-left: 0;
+}
+
+/* :global(.p18) — select-pill vive en un <label>, y ".p18 label" (clase +
+   elemento) es el reset local de design-system.css: le gana en
+   especificidad a una sola clase de módulo y nos pisaría
+   display/margin/font-size/color. */
+:global(.p18) .cohort-filter-bar-select-pill {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  padding: 0 14px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s;
+}
+/* Mismo prefijo :global(.p18) que la base de arriba: es el mismo <label>. */
+:global(.p18) .cohort-filter-bar-select-pill:focus-within {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-tint);
+}
+/* El <select> es un elemento descendiente sin reset propio (no está en la
+   lista de design-system.css), así que no hace falta :global(.p18) acá. */
+.cohort-filter-bar-select-pill select {
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: var(--t-meta);
+  color: var(--ink);
+  cursor: pointer;
+}

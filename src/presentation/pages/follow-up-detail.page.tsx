@@ -24,6 +24,7 @@ import { Section } from '../components/ui/section';
 import { useAsyncResource } from '../hooks/use-async-resource';
 import { useAuth } from '../hooks/use-auth';
 import { useToasts } from '../hooks/use-toasts';
+import styles from './follow-up-detail.page.module.css';
 
 const NO_PATIENTS: Patient[] = [];
 
@@ -86,8 +87,8 @@ export function FollowUpDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="main">
-        <div className="page-body">
+      <div className={styles['follow-up-detail-main']}>
+        <div className={styles['follow-up-detail-page-body']}>
           <div className="empty-s">Cargando…</div>
         </div>
       </div>
@@ -96,9 +97,12 @@ export function FollowUpDetailPage() {
 
   if (!patient) {
     return (
-      <div className="main enter">
-        <div className="page-body">
-          <div className="crumb" style={{ paddingTop: 24 }}>
+      <div className={`${styles['follow-up-detail-main']} enter`}>
+        <div className={styles['follow-up-detail-page-body']}>
+          <div
+            className={styles['follow-up-detail-crumb']}
+            style={{ paddingTop: 24 }}
+          >
             <button type="button" onClick={() => navigate('/seguimiento')}>
               Referencias aceptadas
             </button>
@@ -116,17 +120,19 @@ export function FollowUpDetailPage() {
     patient.appointment?.hospital ?? patient.hospitalReferral?.hospital ?? null;
 
   return (
-    <div className="main enter">
-      <div className="page-h">
-        <div className="crumb">
+    <div className={`${styles['follow-up-detail-main']} enter`}>
+      <div className={styles['follow-up-detail-page-h']}>
+        <div className={styles['follow-up-detail-crumb']}>
           <button type="button" onClick={() => navigate('/seguimiento')}>
             Referencias aceptadas
           </button>
           <span>/</span>
           <span>{patient.initials}</span>
         </div>
-        <h1 className="page-t">{patient.initials}</h1>
-        <div className="page-sub">
+        <h1 className={styles['follow-up-detail-page-t']}>
+          {patient.initials}
+        </h1>
+        <div className={styles['follow-up-detail-page-sub']}>
           <span className="mono">{patient.medicalRecord}</span>
           <span>DNI {patient.dni}</span>
           <span>{patient.age}</span>
@@ -139,7 +145,7 @@ export function FollowUpDetailPage() {
         </div>
       </div>
 
-      <div className="page-body">
+      <div className={styles['follow-up-detail-page-body']}>
         {/* El resumen del caso: qué tiene, quién lo siguió y dónde está hoy. */}
         <Section title="Resumen">
           <div className="row" style={{ gap: 9, flexWrap: 'wrap' }}>

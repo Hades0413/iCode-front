@@ -5,6 +5,7 @@ import { formatShortDate } from '../../common/utils/format-date';
 import { Notice } from './ui/notice';
 import { LoadingRows } from './ui/states';
 import { useAsyncResource } from '../hooks/use-async-resource';
+import styles from './summary-preview.module.css';
 
 const NO_SUMMARY: ClinicalSummary | null = null;
 
@@ -74,17 +75,29 @@ export function SummaryPreview({ patientId }: Readonly<{ patientId: string }>) {
         </Notice>
       )}
 
-      <div className="sheet">
+      <div className={styles['summary-preview-sheet']}>
         {data.sections.map((section) => (
           <article
             key={section.id}
-            className={`sheet-s ${section.body.trim() === '' ? 'gap' : ''}`}
+            className={`${styles['summary-preview-sheet-section']} ${
+              section.body.trim() === ''
+                ? styles['summary-preview-sheet-section-gap']
+                : ''
+            }`}
           >
-            <h3 className="sheet-t">{section.title}</h3>
+            <h3 className={styles['summary-preview-sheet-section-title']}>
+              {section.title}
+            </h3>
             {section.body.trim() === '' ? (
-              <p className="sheet-b empty">Sin escribir — {section.hint}</p>
+              <p
+                className={`${styles['summary-preview-sheet-section-body']} ${styles['summary-preview-sheet-section-body-empty']}`}
+              >
+                Sin escribir — {section.hint}
+              </p>
             ) : (
-              <p className="sheet-b">{section.body}</p>
+              <p className={styles['summary-preview-sheet-section-body']}>
+                {section.body}
+              </p>
             )}
           </article>
         ))}

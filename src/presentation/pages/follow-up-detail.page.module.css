@@ -1,0 +1,92 @@
+/* ============================================================
+   FICHA DE SEGUIMIENTO — layout propio de esta página.
+   Copiado desde clinic.css (secciones "main"/"page-h"/"page-body"/"crumb"/
+   "page-t"/"page-sub") como punto de partida para poder tocarlo sin afectar
+   otras páginas, que siguen usando esas mismas reglas desde clinic.css.
+   ============================================================ */
+
+.follow-up-detail-main {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+  border-radius: 22px;
+  box-shadow: var(--sh-2);
+  overflow: hidden;
+}
+
+.follow-up-detail-page-h {
+  padding: 30px 32px 26px;
+  background: linear-gradient(
+    150deg,
+    var(--acc-tint) 0%,
+    color-mix(in srgb, var(--acc-tint) 35%, var(--paper)) 45%,
+    var(--paper) 100%
+  );
+  border-bottom: 1px solid var(--line);
+}
+
+/* :global(.p18) — sin esto, el reset ".p18 h1" (clase + elemento) le gana
+   en especificidad a esta sola clase y nos pisa color/font-weight. */
+:global(.p18) .follow-up-detail-page-t {
+  font-size: var(--t-page);
+  font-weight: 680;
+  letter-spacing: -0.026em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+.follow-up-detail-page-sub {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  color: var(--ink-2);
+  font-size: var(--t-meta);
+}
+.follow-up-detail-page-sub span {
+  padding: 0 12px;
+  border-left: 1px solid var(--line-2);
+}
+.follow-up-detail-page-sub span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.follow-up-detail-page-sub b {
+  font-weight: 660;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.follow-up-detail-page-body {
+  padding: 0 32px 34px;
+}
+
+.follow-up-detail-crumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+.follow-up-detail-crumb button {
+  transition: color 0.14s;
+}
+.follow-up-detail-crumb button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 1000px) {
+  .follow-up-detail-main {
+    width: 100%;
+    border-radius: 18px;
+  }
+  .follow-up-detail-page-h {
+    padding: 22px 18px 20px;
+  }
+  .follow-up-detail-page-body {
+    padding: 0 18px 28px;
+  }
+}

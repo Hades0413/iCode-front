@@ -16,6 +16,7 @@ import { Section } from '../components/ui/section';
 import { StatCard, StatGrid } from '../components/ui/stat-card';
 import { LoadErrorState, LoadingRows } from '../components/ui/states';
 import { useAsyncResource } from '../hooks/use-async-resource';
+import styles from './follow-up.page.module.css';
 
 const NO_PATIENTS: Patient[] = [];
 
@@ -57,7 +58,7 @@ export function FollowUpPage() {
   const paged = usePagination(visible, PAGE_SIZE);
 
   return (
-    <div className="main enter">
+    <div className={`${styles['follow-up-page-main']} enter`}>
       <PageHeader title="Referencias aceptadas">
         <PageHeaderStat value={summary.total}>
           pacientes ya pasaron al hospital de adultos
@@ -72,7 +73,7 @@ export function FollowUpPage() {
         </PageHeaderStat>
       </PageHeader>
 
-      <div className="page-body">
+      <div className={styles['follow-up-page-body']}>
         {error ? (
           <LoadErrorState
             status={error.status}

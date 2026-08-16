@@ -240,8 +240,9 @@ export function PatientsPage() {
                 ya esté cuando cumpla; la posta lo manda al hospital de adultos
                 y consigue el día y la hora. “Estado referencia” es lo que
                 contestó el destino sobre esa historia ya firmada: aceptada,
-                observada, rechazada o pendiente —cuando la acepta, el caso pasa
-                a “Referencias aceptadas”—. Datos de prueba.
+                observada, rechazada o pendiente — no decide cuándo el caso
+                pasa a “Referencias aceptadas”: eso ocurre al cumplir 18,
+                tenga o no respuesta todavía. Datos de prueba.
               </p>
             </Section>
           </>
