@@ -615,4 +615,4 @@ Flujo de ramas, PRs y convención de commits en [CONTRIBUTING.md](CONTRIBUTING.m
 
 ## License
 
-[MIT](LICENSE)
+[AGPL-3.0](LICENSE)
