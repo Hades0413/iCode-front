@@ -43,4 +43,13 @@ export class PatientAttachmentService {
       attachmentId,
     );
   }
+
+  /** "Pase de consulta" — mismo código que resuelve la historia clínica de transferencia. */
+  async listAttachmentsByConsultationCode(
+    code: string,
+  ): Promise<PatientAttachment[]> {
+    return this.patientAttachmentRepository.listAttachmentsByConsultationCode(
+      code,
+    );
+  }
 }

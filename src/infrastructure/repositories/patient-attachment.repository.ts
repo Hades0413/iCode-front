@@ -49,6 +49,15 @@ class HttpPatientAttachmentRepository
       `${attachmentsUrl(patientId)}/${encodeURIComponent(attachmentId)}`,
     );
   }
+
+  async listAttachmentsByConsultationCode(
+    code: string,
+  ): Promise<PatientAttachment[]> {
+    const { data } = await apiClient.get<PatientAttachment[]>(
+      `/patients/consultation/${encodeURIComponent(code)}/attachments`,
+    );
+    return data;
+  }
 }
 
 export const patientAttachmentRepository =

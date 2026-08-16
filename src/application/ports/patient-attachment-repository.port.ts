@@ -19,4 +19,9 @@ export interface PatientAttachmentRepositoryPort {
   ): Promise<Blob>;
 
   removeAttachment(patientId: string, attachmentId: string): Promise<void>;
+
+  /** "Pase de consulta" — mismo código que resuelve la historia clínica de transferencia. */
+  listAttachmentsByConsultationCode(
+    code: string,
+  ): Promise<PatientAttachment[]>;
 }

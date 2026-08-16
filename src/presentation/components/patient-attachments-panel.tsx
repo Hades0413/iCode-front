@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import type { PatientAttachment } from '../../domain/entities/patient-attachment.entity';
 import { PERMISSIONS } from '../../domain/rules/permissions';
+import {
+  attachmentKind,
+  type AttachmentKind,
+} from '../../domain/rules/patient-attachment.rules';
 import { formatShortDate } from '../../common/utils/format-date';
 import { formatFileSize } from '../../common/utils/format-file-size';
-import { CameraIcon, DocIcon, DownloadIcon, VideoIcon } from './icons';
+import { AttachmentKindIcon } from './attachment-kind-icon';
+import { DownloadIcon } from './icons';
 import { FilePicker } from './ui/file-picker';
 import { Notice } from './ui/notice';
 import { Section } from './ui/section';
@@ -14,30 +19,11 @@ import styles from './patient-attachments-panel.module.css';
 const ACCEPTED_EXTENSIONS =
   '.jpg,.jpeg,.png,.pdf,.doc,.docx,.mp4,.mov,.webm';
 
-type AttachmentKind = 'doc' | 'image' | 'video';
-
-const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
-const VIDEO_EXTENSIONS = new Set(['mp4', 'mov', 'webm']);
-
-/** Documento (PDF/Word) es el valor por defecto: es lo más común del caso. */
-function attachmentKind(fileName: string): AttachmentKind {
-  const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
-  if (IMAGE_EXTENSIONS.has(ext)) return 'image';
-  if (VIDEO_EXTENSIONS.has(ext)) return 'video';
-  return 'doc';
-}
-
 const KIND_ICON_CLASS: Record<AttachmentKind, string> = {
   doc: styles['patient-attachments-panel-item-icon-doc'],
   image: styles['patient-attachments-panel-item-icon-image'],
   video: styles['patient-attachments-panel-item-icon-video'],
 };
-
-function AttachmentKindIcon({ kind }: Readonly<{ kind: AttachmentKind }>) {
-  if (kind === 'image') return <CameraIcon />;
-  if (kind === 'video') return <VideoIcon />;
-  return <DocIcon />;
-}
 
 /**
  * "Exámenes y documentos" de la ficha: imágenes, PDF, Word o video sueltos

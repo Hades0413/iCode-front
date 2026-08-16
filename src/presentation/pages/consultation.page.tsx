@@ -1,16 +1,23 @@
 import { useState } from 'react';
-import { patientService } from '../../composition-root';
+import { patientAttachmentService, patientService } from '../../composition-root';
 import type { ClinicalSummary } from '../../domain/entities/clinical-summary.entity';
 import type { Patient } from '../../domain/entities/patient.entity';
+import type { PatientAttachment } from '../../domain/entities/patient-attachment.entity';
 import type { AppointmentReport } from '../../domain/entities/journey.entity';
 import {
   CONSULTATION_PASS_MESSAGES,
   decodeConsultationPass,
 } from '../../domain/rules/consultation-pass.rules';
+import {
+  ATTACHMENT_KIND_LABELS,
+  attachmentKind,
+} from '../../domain/rules/patient-attachment.rules';
 import { formatShortDate } from '../../common/utils/format-date';
+import { formatFileSize } from '../../common/utils/format-file-size';
 import { getApiErrorMessage } from '../../common/utils/get-api-error-message';
 import { useAuth } from '../hooks/use-auth';
 import { useToasts } from '../hooks/use-toasts';
+import { AttachmentKindIcon } from '../components/attachment-kind-icon';
 import { Notice } from '../components/ui/notice';
 import { Toasts } from '../components/toasts';
 import { ConsultationScanner } from '../components/consultation-scanner';
@@ -48,6 +55,7 @@ export function ConsultationPage() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [summary, setSummary] = useState<ClinicalSummary | null>(null);
+  const [attachments, setAttachments] = useState<PatientAttachment[]>([]);
 
   async function open(rawCode: string) {
     const normalized = normalizeCode(rawCode);
@@ -57,16 +65,21 @@ export function ConsultationPage() {
     setStatus('loading');
     setError(null);
     try {
-      const [patientResult, summaryResult] = await Promise.all([
-        patientService.getPatientByConsultationCode(normalized),
-        patientService.getClinicalSummaryByConsultationCode(normalized),
-      ]);
+      const [patientResult, summaryResult, attachmentsResult] =
+        await Promise.all([
+          patientService.getPatientByConsultationCode(normalized),
+          patientService.getClinicalSummaryByConsultationCode(normalized),
+          patientAttachmentService.listAttachmentsByConsultationCode(
+            normalized,
+          ),
+        ]);
       if (!patientResult || !summaryResult) {
         setStatus('notfound');
         return;
       }
       setPatient(patientResult);
       setSummary(summaryResult);
+      setAttachments(attachmentsResult);
       setStatus('idle');
     } catch (err) {
       setStatus('idle');
@@ -94,6 +107,7 @@ export function ConsultationPage() {
   function reset() {
     setPatient(null);
     setSummary(null);
+    setAttachments([]);
     setStatus('idle');
     setError(null);
     setScanError(null);
@@ -106,6 +120,7 @@ export function ConsultationPage() {
         code={code}
         patient={patient}
         summary={summary}
+        attachments={attachments}
         onPatientUpdate={setPatient}
         onReset={reset}
       />
@@ -180,12 +195,14 @@ function ConsultationSummaryView({
   code,
   patient,
   summary,
+  attachments,
   onPatientUpdate,
   onReset,
 }: Readonly<{
   code: string;
   patient: Patient;
   summary: ClinicalSummary;
+  attachments: readonly PatientAttachment[];
   onPatientUpdate: (patient: Patient) => void;
   onReset: () => void;
 }>) {
@@ -238,6 +255,29 @@ function ConsultationSummaryView({
           </Notice>
         )}
       </section>
+
+      {attachments.length > 0 && (
+        <section className="jn-card">
+          <h2 className="jn-card-title jn-t">Exámenes y documentos</h2>
+          <ul className="attlist">
+            {attachments.map((attachment) => (
+              <li key={attachment.id} className="attitem">
+                <AttachmentKindIcon kind={attachmentKind(attachment.fileName)} />
+                <div className="attitem-t">
+                  <b>{attachment.fileName}</b>
+                  <span className="jn-note">
+                    {ATTACHMENT_KIND_LABELS[attachmentKind(attachment.fileName)]}
+                    {' · '}
+                    {formatFileSize(attachment.fileSize)} · subido por{' '}
+                    {attachment.uploadedBy} el{' '}
+                    {formatShortDate(attachment.uploadedAt)}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <RegisterVisitCard
         code={code}
